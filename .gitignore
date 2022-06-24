@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+nbproject/
+vendor
+temp
+log
+node_modules
+bower_components
+tests/_output/*
+tests/_output/*

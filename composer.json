@@ -1,0 +1,27 @@
+{
+    "name": "efabrica/neo-forms",
+    "description": "Better way to render forms",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Efabrica\\NeoForms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Richard Popelis",
+            "email": "richard@popelis.sk"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "nette/forms": "^3.1",
+        "latte/latte": "^2.11",
+        "nette/application": "^3.1"
+    },
+    "require": {
+        "php": "^7.4 || ^8.1"
+    }
+}

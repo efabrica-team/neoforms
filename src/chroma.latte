@@ -1,0 +1,99 @@
+{block form}
+    <form n:attr="$attrs" class="c-form">
+        {$inside}
+    </form>
+{/block}
+
+{block row}
+    {do $attrs['class'] = trim('group ' . ($attrs['class'] ?? ''))}
+    <div n:attr="$attrs">
+        {$label}
+        {$errors}
+        {$input}
+    </div>
+{/block}
+
+{block label}
+    <label class="c-form-label" for="{$for}">
+        {$caption}
+        <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+            <i class="material-icons-round">info</i>
+        </span>
+    </label>
+{/block}
+
+{block errors}
+    {foreach $errors as $error}
+        <div class="c-alert alert -alt -error -sm">
+            <i class="material-icons-round">warning</i>
+            <p>{$error}</p>
+        </div>
+    {/foreach}
+{/block}
+
+{block inputText}
+    <input n:attr="$attrs" class="c-form-element">
+    <div n:ifcontent class="c-input-helper">{$desc}</div>
+{/block}
+
+{block selectBox}
+    <select class="c-select js-custom-select" n:attr="$attrs">
+        <option n:foreach="$items as $optionName => $optionLabel" n:attr="name: $optionName">{$optionLabel}</option>
+    </select>
+    <div n:ifcontent class="c-input-helper">{$desc}</div>
+{/block}
+
+{block checkbox}
+    {if ($options['toggleSwitch'] ?? false)}
+        <div class="c-checkbox-toggle">
+            <input id="{$id}" type="checkbox" name="{$name}" n:attr="checked: $checked">
+            <label for="{$id}">
+                <div class="switch"></div>
+                {$caption}
+                <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+                    <i class="material-icons-round">info</i>
+                </span>
+            </label>
+        </div>
+    {else}
+        <div class="c-checkbox-wrapper">
+            <input id="{$id}" type="checkbox" class="c-checkbox" name="{$name}" n:attr="checked: $checked">
+            <label for="{$id}">
+                {$caption}
+                <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+                    <i class="material-icons-round">info</i>
+                </span>
+            </label>
+        </div>
+    {/if}
+    <div n:ifcontent class="c-input-helper">{$desc}</div>
+{/block}
+
+{block submitButton}
+    <button class="c-button -info" n:attr="$attrs">
+        {do bdump($attrs)}
+        <i class="material-icons-round">{$icon}</i>
+        {$caption}
+    </button>
+{/block}
+
+{block section}
+    <fieldset>
+        <legend class="c-section-title">{$caption}</legend>
+        {$inside}
+    </fieldset>
+{/block}
+
+
+{block formRest}
+    {foreach $rest as $restRow}
+        {$renderer->row($restRow)|noescape}
+    {/foreach}
+    <div n:ifcontent class="row">
+        {foreach $buttons as $button}
+            <div class="col">
+                {$renderer->row($button)|noescape}
+            </div>
+        {/foreach}
+    </div>
+{/block}
