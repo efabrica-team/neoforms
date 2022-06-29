@@ -37,7 +37,7 @@ includes:
 ---
 ### `{neoForm}`
 
-Creates the `<form></form>` tags. Also renders all the unrendered inputs in the end of the form.
+Renders the `<form>` tag. Also renders all the unrendered inputs in the end of the form.
 
 To render an entire form without specifying any sub-elements write:
 ```latte
@@ -51,7 +51,7 @@ If you do not wish to render certain form fields, use:
 {/neoForm}
 ```
 
-This would render an empty form, similar to if you used the `{form}` tag.
+This would render an empty `<form>`, similar to if you used the `{form}` tag.
 
 ---
 ### `{formRow}`
@@ -101,9 +101,12 @@ Renders the `<label>`.
 {* <label ... class="c-form-element text-large" data-yes="no">{$caption}</label> *}
 ```
 
+If the form element is hidden field or checkbox, the label is an empty HTML string.
 
 ---
 ### `{formInput}`
+
+Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of the form row.
 
 ```latte
 {formInput $form['category'], data-select2 => true}
@@ -113,8 +116,14 @@ Renders the `<label>`.
 ---
 ### `{formSection}`
 
-```latte
-{formSection "kronos.section.options.title"}
-```
-
 Creates a `<fieldset>` with caption that is optionally translated.
+
+```latte
+{if !empty($form->getGroup('Options')->getControls())}
+    {formSection "Options"}
+        {foreach $form->getGroup('Options')->getControls() as $option}
+            {formRow $option}
+        {/foreach}
+    {/formSection}
+{/if}
+```
