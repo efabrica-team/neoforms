@@ -116,7 +116,7 @@ Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of 
 ---
 ### `{formSection}`
 
-Creates a `<fieldset>` with caption that is optionally translated.
+Creates a `<fieldset>` with first argument being the caption that is optionally translated.
 
 ```latte
 {if !empty($form->getGroup('Options')->getControls())}
