@@ -1,6 +1,16 @@
 {block form}
     <form n:attr="$attrs" class="c-form">
+        {foreach $errors as $error}
+            <div class="c-alert alert -alt -error">
+                <i class="material-icons-round">warning</i>
+                <p>{$error}</p>
+            </div>
+        {/foreach}
         {$inside}
+        <input type="hidden" name="_do" value="{$form->getName()}-submit">
+        {if $renderRest}
+            {formRest $form}
+        {/if}
     </form>
 {/block}
 
@@ -8,80 +18,107 @@
     {do $attrs['class'] = trim('group ' . ($attrs['class'] ?? ''))}
     <div n:attr="$attrs">
         {$label}
-        {$errors}
         {$input}
     </div>
 {/block}
 
+{block hiddenRow}
+    {$input}
+{/block}
+
 {block label}
-    <label class="c-form-label" for="{$for}">
-        {$caption}
+    <label for="{$for}" class="c-form-label{if $errors} text-danger{/if}">
+        {_$caption}
         <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
             <i class="material-icons-round">info</i>
         </span>
+        {foreach $errors as $error}
+            <span n:if="$error" class="c-button -icon -error -tooltip" data-bs-toggle="tooltip" title="{$error}">
+                <i class="material-icons-round">warning</i>
+            </span>
+        {/foreach}
     </label>
 {/block}
 
-{block errors}
-    {foreach $errors as $error}
-        <div class="c-alert alert -alt -error -sm">
-            <i class="material-icons-round">warning</i>
-            <p>{$error}</p>
-        </div>
-    {/foreach}
+{block description}
+    <div n:ifcontent class="c-input-helper">{$description}</div>
 {/block}
 
 {block inputText}
-    <input n:attr="$attrs" class="c-form-element">
-    <div n:ifcontent class="c-input-helper">{$desc}</div>
+    <input n:attr="$attrs" n:class="c-form-element, $attrs['class'] ?? ''">
 {/block}
 
 {block selectBox}
     <select class="c-select js-custom-select" n:attr="$attrs">
-        <option n:foreach="$items as $optionName => $optionLabel" n:attr="name: $optionName">{$optionLabel}</option>
+        {foreach $items as $optionName => $optionLabel}
+            <option n:attr="name: $optionName, selected: $optionName === $value">
+                {$optionLabel}
+            </option>
+        {/foreach}
     </select>
-    <div n:ifcontent class="c-input-helper">{$desc}</div>
 {/block}
 
 {block checkbox}
-    {if ($options['toggleSwitch'] ?? false)}
-        <div class="c-checkbox-toggle">
-            <input id="{$id}" type="checkbox" name="{$name}" n:attr="checked: $checked">
-            <label for="{$id}">
-                <div class="switch"></div>
-                {$caption}
-                <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
-                    <i class="material-icons-round">info</i>
-                </span>
-            </label>
-        </div>
-    {else}
-        <div class="c-checkbox-wrapper">
-            <input id="{$id}" type="checkbox" class="c-checkbox" name="{$name}" n:attr="checked: $checked">
-            <label for="{$id}">
-                {$caption}
-                <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
-                    <i class="material-icons-round">info</i>
-                </span>
-            </label>
-        </div>
-    {/if}
-    <div n:ifcontent class="c-input-helper">{$desc}</div>
+    <div class="c-checkbox-wrapper">
+        <input class="c-checkbox" n:attr="$inputAttrs">
+        <label n:attr="$labelAttrs">
+            {_$caption}
+            <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+                <i class="material-icons-round">info</i>
+            </span>
+        </label>
+    </div>
+{/block}
+
+{block toggleSwitch}
+    <div class="c-checkbox-toggle">
+        <input n:attr="$inputAttrs">
+        <label n:attr="$labelAttrs">
+            <div class="switch"></div>
+            {_$caption}
+            <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+                <i class="material-icons-round">info</i>
+            </span>
+        </label>
+    </div>
 {/block}
 
 {block submitButton}
     <button class="c-button -info" n:attr="$attrs">
-        {do bdump($attrs)}
-        <i class="material-icons-round">{$icon}</i>
-        {$caption}
+        <i n:ifcontent class="material-icons-round">{$icon}</i>
+        {_$caption}
     </button>
 {/block}
 
 {block section}
     <fieldset>
-        <legend class="c-section-title">{$caption}</legend>
+        <legend class="c-section-title">{_$caption}</legend>
         {$inside}
     </fieldset>
+{/block}
+
+{block textarea}
+    {do $attrs['class'] = trim('c-form-element ' . ($attrs['class'] ?? ''))}
+    <textarea n:attr="$attrs">{$value}</textarea>
+{/block}
+
+{block datepicker}
+    {do $attrs['class'] = 'c-form-element js-datepicker ' . ($attrs['class'] ?? '')}
+    {do $attrs['readonly'] = 'readonly'}
+    {do $attrs['data-enable-time'] = $isTime ? 'true' : 'false'}
+    <div class="c-datepicker-wrapper">
+        <input n:attr="$attrs">
+    </div>
+{/block}
+
+{block hidden}
+    <input n:attr="$attrs">
+    {foreach $errors as $error}
+        <div class="c-alert alert -alt -error">
+            <i class="material-icons-round">warning</i>
+            <p>{$error}</p>
+        </div>
+    {/foreach}
 {/block}
 
 
@@ -89,7 +126,7 @@
     {foreach $rest as $restRow}
         {$renderer->row($restRow)|noescape}
     {/foreach}
-    <div n:ifcontent class="row">
+    <div n:if="count($buttons) > 0" class="row">
         {foreach $buttons as $button}
             <div class="col">
                 {$renderer->row($button)|noescape}

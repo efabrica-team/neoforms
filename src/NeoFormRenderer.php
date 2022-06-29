@@ -2,27 +2,32 @@
 
 namespace Efabrica\NeoForms;
 
+use Efabrica\NeoForms\Control\ToggleSwitch;
+use Efabrica\Nette\Forms\Rte\RteControl;
 use Latte\Engine;
-use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
+use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\SelectBox;
-use Nette\Forms\Controls\SubmitButton;
+use Nette\Forms\Controls\TextArea;
 use Nette\Forms\Controls\TextInput;
 use Nette\Forms\Form;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
+use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
+use RadekDostal\NetteComponents\DateTimePicker\DateTimePicker;
+use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 
 class NeoFormRenderer
 {
     private Engine $engine;
     private string $template;
 
-    public function __construct(Engine $engine, ?string $template = null)
+    public function __construct(Engine $engine)
     {
         $this->engine = $engine;
-        $this->template = $template ?? __DIR__ . '/chroma.latte';
+        $this->template = __DIR__ . '/chroma.latte';
     }
 
     protected function block(string $blockName, array $attrs = []): string
@@ -32,18 +37,25 @@ class NeoFormRenderer
 
     public function row($el, array $options = []): string
     {
+        if ($el instanceof HiddenField) {
+            return $this->block('hiddenRow', [
+                'input' => Html::fromHtml($this->input($el, $options['input'] ?? [])),
+                'attrs' => array_filter($options, 'is_scalar'),
+                'options' => $options,
+            ]);
+        }
         if ($el instanceof BaseControl) {
             return $this->block('row', [
-                'label' => Html::fromHtml($this->label($el, $options['input'] ?? [])),
-                'input' => Html::fromHtml($this->input($el, $options['label'] ?? [])),
-                'errors' => Html::fromHtml($this->errors($el)),
+                'label' => Html::fromHtml($this->label($el, $options['label'] ?? [])),
+                'input' => Html::fromHtml($this->input($el, $options['input'] ?? [])),
                 'attrs' => array_filter($options, 'is_scalar'),
+                'options' => $options,
             ]);
         }
         if ($el instanceof Form) {
             return $this->form($el);
         }
-        throw new \RuntimeException(get_class($el)."is not yet supported in NeoFormRenderer");
+        throw new \RuntimeException(get_class($el) . " is not yet supported in NeoFormRenderer");
     }
 
     public function form(Form $form): string
@@ -55,32 +67,43 @@ class NeoFormRenderer
         return $s . $this->formEnd($form);
     }
 
-    public function formStart(Form $form): string
+    public function formStart(Form $form, array $options): string
     {
+        foreach ($form->getControls() as $control) {
+            $control->setOption('rendered', false);
+        }
+        bdump($options);
         $inside = uniqid();
         return Strings::before($this->block('form', [
             'form' => $form,
             'attrs' => $form->getElementPrototype()->attrs,
             'inside' => $inside,
+            'errors' => $form->getOwnErrors(),
+            'options' => $options,
+            'renderRest' => false,
         ]), $inside);
     }
 
-    public function formEnd(Form $form): string
+    public function formEnd(Form $form, $options): string
     {
         $inside = uniqid();
         return Strings::after($this->block('form', [
             'form' => $form,
             'attrs' => $form->getElementPrototype()->attrs,
             'inside' => $inside,
+            'errors' => $form->getOwnErrors(),
+            'options' => $options,
+            'renderRest' => $options['rest'] ?? true,
         ]), $inside);
     }
 
-    public function formRest(Form $form, bool $withButtons = false)
+    public function formRest(Form $form, array $options = [])
     {
-        $components = array_filter(iterator_to_array($form->getComponents()), fn($a) => $a instanceof BaseControl && !$a->getOption('rendered'));
+        $components = array_filter(iterator_to_array($form->getComponents()),
+            fn($a) => $a instanceof BaseControl && !$a->getOption('rendered'));
         $rest = array_filter($components, fn($a) => !$a instanceof Button);
-        $buttons = array_diff($components, $rest);
-        return $this->block('formButtons', [
+        $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
+        return $this->block('formRest', [
             'renderer' => $this,
             'form' => $form,
             'rest' => $rest,
@@ -90,24 +113,22 @@ class NeoFormRenderer
 
     public function label(BaseControl $el, array $options = []): string
     {
-        if ($el instanceof Checkbox) {
-            return '';
-        }
-        if ($el instanceof Button) {
+        if ($el instanceof Checkbox || $el instanceof Button || $el instanceof HiddenField) {
             return '';
         }
         return $this->block('label', [
             'for' => $el->getHtmlId(),
             'caption' => $el->getCaption(),
             'info' => $el->getOption('info'),
-            'attrs' => array_filter($options, 'is_scalar')
+            'errors' => $el->getErrors(),
+            'attrs' => array_filter($options, 'is_scalar'),
         ]);
     }
 
-    public function errors(BaseControl $el)
+    public function formErrors(Form $el)
     {
         return $this->block('errors', [
-            'errors' => $el->getErrors(),
+            'errors' => $el->getOwnErrors(),
         ]);
     }
 
@@ -121,33 +142,51 @@ class NeoFormRenderer
         unset($attrs['data-nette-rules']);
         $attrs += array_filter($options, 'is_scalar');
 
-        if ($el instanceof TextInput) {
-            return $this->textInput($el, $attrs, $options);
+        $s = '';
+        if ($el instanceof AbstractDateTimePicker) {
+            $s .= $this->datepicker($el, $attrs, $options);
+        } elseif ($el instanceof TextInput) {
+            $s .= $this->textInput($el, $attrs, $options);
+        } elseif ($el instanceof SelectBox) {
+            $s .= $this->selectBox($el, $attrs, $options);
+        } elseif ($el instanceof Button) {
+            $s .= $this->button($el, $attrs, $options);
+        } elseif ($el instanceof TextArea || $el instanceof RteControl) {
+            $s .= $this->textarea($el, $attrs, $options);
+        } elseif ($el instanceof HiddenField) {
+            $s .= $this->hidden($el, $attrs, $options);
+        } else {
+            throw new \RuntimeException(get_class($el) . " is not yet supported in NeoFormRenderer");
         }
-        if ($el instanceof SelectBox) {
-            return $this->selectBox($el, $attrs, $options);
-        }
-        if ($el instanceof Button) {
-            return $this->button($el, $attrs, $options);
-        }
+
+        return $s . $this->description($el, $options);
     }
 
-    protected function textInput(TextInput $el, array $attrs, array $options): string
+    public function description(BaseControl $el, array $options)
+    {
+        return $this->block('description', [
+            'el' => $el,
+            'description' => $el->getOption('description'),
+            'options' => $options,
+        ]);
+    }
+
+    public function textInput(TextInput $el, array $attrs, array $options): string
     {
         return $this->block('inputText', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
-            'desc' => $el->getOption('desc'),
+            'description' => $el->getOption('description'),
         ]);
     }
 
-    protected function selectBox(SelectBox $el, array $attrs, array $options): string
+    public function selectBox(SelectBox $el, array $attrs, array $options): string
     {
         return $this->block('selectBox', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
             'items' => $el->getItems(),
-            'desc' => $el->getOption('desc'),
+            'value' => $el->getValue(),
         ]);
     }
 
@@ -158,21 +197,36 @@ class NeoFormRenderer
             'options' => $el->getOptions() + $options,
             'icon' => $el->getOption('icon', 'done'),
             'caption' => $el->getCaption(),
-            'desc' => $el->getOption('desc'),
         ]);
     }
 
     public function checkbox(Checkbox $checkbox, array $options): string
     {
-        return $this->block('checkbox', [
-            'id' => $checkbox->getHtmlId(),
-            'name' => $checkbox->getHtmlName(),
+
+        return $this->block($checkbox instanceof ToggleSwitch ? 'toggleSwitch' : 'checkbox', [
             'caption' => $checkbox->getCaption(),
-            'checked' => $checkbox->getValue(),
             'info' => $checkbox->getOption('info'),
-            'desc' => $checkbox->getOption('desc'),
-            'attrs' => array_filter($options, 'is_scalar'),
+            'labelAttrs' => array_filter($checkbox->getLabelPart()->attrs, 'is_scalar'),
+            'inputAttrs' => array_filter($checkbox->getControlPart()->attrs, 'is_scalar'),
             'options' => $checkbox->getOptions() + $options,
+        ]);
+    }
+
+    public function textarea(BaseControl $el, array $attrs, array $options): string
+    {
+        return $this->block('textarea', [
+            'value' => $el->getValue(),
+            'attrs' => $attrs,
+            'options' => $el->getOptions() + $options,
+        ]);
+    }
+
+    public function datepicker(AbstractDateTimePicker $el, array $attrs, array $options): string
+    {
+        return $this->block('datepicker', [
+            'attrs' => $attrs,
+            'options' => $el->getOptions() + $options,
+            'isTime' => $el instanceof DateTimePicker || $el instanceof TbDateTimePicker,
         ]);
     }
 
@@ -192,5 +246,14 @@ class NeoFormRenderer
             'inside' => $sep,
             'caption' => $caption,
         ]), $sep);
+    }
+
+    public function hidden(HiddenField $el, array $attrs, array $options)
+    {
+        return $this->block('hidden', [
+            'attrs' => $attrs,
+            'options' => $options,
+            'errors' => $el->getErrors(),
+        ]);
     }
 }

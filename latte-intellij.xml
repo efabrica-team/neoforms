@@ -2,9 +2,10 @@
 <!DOCTYPE latte PUBLIC "-//LATTE//Latte plugin XML V0.0.1//EN" ".idea/intellij-latte/xmlSources/Latte.dtd">
 <latte version="1" vendor="myVendor/myPackage">
     <tags>
-        <tag name="neoForm" type="PAIR" arguments="$formControl"/>
+        <tag name="neoForm" type="PAIR" arguments="$formControl, rest => true"/>
         <tag name="formSection" type="PAIR" arguments="$caption"/>
-        <tag name="formRow" type="UNPAIRED_ATTR" arguments="$element, []"/>
-        <tag name="formInput" type="PAIR" arguments="$element, []"/>
+        <tag name="formRow" type="UNPAIRED_ATTR" arguments="$element, input => [data-joke => 1]"/>
+        <tag name="formRest" type="UNPAIRED_ATTR" arguments="$element"/>
+        <tag name="formInput" type="PAIR" arguments="$element, "/>
     </tags>
 </latte>

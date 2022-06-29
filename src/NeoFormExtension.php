@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms;
 
 use Latte\CompileException;
-use Latte\Macro;
 use Latte\MacroNode;
 use Latte\Macros\MacroSet;
 use Latte\Compiler;
@@ -43,13 +42,13 @@ class NeoFormExtension extends MacroSet
 
     public function neoFormEnd(MacroNode $node, PhpWriter $writer): string
     {
-        return $writer->write('echo $this->global->neoFormRenderer->formEnd(array_pop($this->global->formsStack));');
+        return $writer->write('echo $this->global->neoFormRenderer->formEnd(array_pop($this->global->formsStack), %node.array);');
     }
 
     public function neoFormRow(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->row('.$node->args.');'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->row(%node.word, %node.array);'. " /* line $node->startLine */;");
     }
 
     public function neoFormRest(MacroNode $node, PhpWriter $writer): string
