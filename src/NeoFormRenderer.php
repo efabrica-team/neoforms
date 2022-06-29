@@ -11,11 +11,14 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
+use RuntimeException;
 
 class NeoFormRenderer
 {
     private Engine $engine;
+
     private string $template;
+
     public NeoInputRenderer $inputRenderer;
 
     public function __construct(Engine $engine)
@@ -56,18 +59,16 @@ class NeoFormRenderer
         if ($el instanceof HiddenField) {
             return '';
         }
-        if ($el instanceof BaseControl) {
-            $inside = uniqid();
-            return Strings::before($this->block('row', [
-                'inside' => $inside,
-                'label' => '',
-                'input' => '',
-                'errors' => '',
-                'attrs' => array_filter($options, 'is_scalar'),
-                'options' => $options,
-            ]), $inside);
-        }
-        throw new \RuntimeException(get_class($el) . " is not yet supported in NeoFormRenderer");
+
+        $inside = uniqid();
+        return Strings::before($this->block('row', [
+            'inside' => $inside,
+            'label' => '',
+            'input' => '',
+            'errors' => '',
+            'attrs' => array_filter($options, 'is_scalar'),
+            'options' => $options,
+        ]), $inside);
     }
 
     public function rowGroupEnd($el, array $options = []): string
@@ -86,7 +87,7 @@ class NeoFormRenderer
                 'options' => $options,
             ]), $inside);
         }
-        throw new \RuntimeException(get_class($el) . " is not yet supported in NeoFormRenderer");
+        throw new RuntimeException(get_class($el) . ' is not yet supported in NeoFormRenderer');
     }
 
     public function formStart(Form $form, array $options): string
@@ -94,7 +95,6 @@ class NeoFormRenderer
         foreach ($form->getControls() as $control) {
             $control->setOption('rendered', false);
         }
-        bdump($options);
         $inside = uniqid();
         return Strings::before($this->block('form', [
             'form' => $form,
@@ -123,8 +123,10 @@ class NeoFormRenderer
 
     public function formRest(Form $form, array $options = [])
     {
-        $components = array_filter(iterator_to_array($form->getComponents()),
-            fn($a) => $a instanceof BaseControl && !$a->getOption('rendered'));
+        $components = array_filter(
+            iterator_to_array($form->getComponents()),
+            fn($a) => $a instanceof BaseControl && !$a->getOption('rendered')
+        );
         $rest = array_filter($components, fn($a) => !$a instanceof Button);
         $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
         return $this->block('formRest', [
@@ -162,6 +164,7 @@ class NeoFormRenderer
                 'options' => $options,
             ]);
         }
+        throw new RuntimeException(get_class($el).' is not yet supported in NeoFormRenderer');
     }
 
     public function sectionStart(string $caption): string

@@ -15,6 +15,7 @@ use Nette\Forms\Controls\TextInput;
 use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\DateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
+use RuntimeException;
 
 class NeoInputRenderer
 {
@@ -54,13 +55,11 @@ class NeoInputRenderer
         } elseif ($el instanceof HiddenField) {
             $s .= $this->hidden($el, $attrs, $options);
         } else {
-            throw new \RuntimeException(get_class($el) . " is not yet supported in NeoFormRenderer");
+            throw new RuntimeException(get_class($el) . ' is not yet supported in NeoFormRenderer');
         }
 
         return $s . $this->description($el, $options);
     }
-
-
 
     public function textInput(TextInput $el, array $attrs, array $options): string
     {

@@ -1,0 +1,194 @@
+image: efabrica/php:7.4
+
+stages:
+  - info
+  - test
+  - deploy
+
+# Select what we should cache between builds
+cache:
+  paths:
+  - vendor/
+
+before_script:
+  # Install ssh-agent if not already installed, it is required by Docker.
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  # Run ssh-agent (inside the build environment)
+  - eval $(ssh-agent -s)
+  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  # For Docker builds disable host key checking. Be aware that by adding that
+  # you are suspectible to man-in-the-middle attacks.
+  # WARNING: Use this only with the Docker executor, if you use it with shell
+  # you will overwrite your user's SSH config.
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+
+Sniffer:
+  script:
+  - php ~/tests/php_codesniffer/vendor/bin/phpcs src --standard=~/tests/php_codesniffer/vendor/efabrica/coding-standard/eFabrica --extensions="php" -n
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Magic numbers detector:
+  script:
+  - php ~/tests/phpmnd/vendor/bin/phpmnd src --non-zero-exit-on-violation
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+  allow_failure: false
+Composer validate:
+  script:
+  - composer validate
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Neon validate:
+  script:
+  - ~/tests/neon-checker-3_0/vendor/bin/neon-checker validate src -vvv
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Validate lang files:
+  script:
+  - ~/tests/neon-checker-3_0/vendor/bin/neon-checker validate lang */lang */*/lang */*/*/lang --type=translate -vvv
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Changelog:
+  script:
+  - git fetch
+  - git diff --name-only origin/master | grep -i changelog.md
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+  - master
+  - ci-fixes
+PHP extensions finder:
+  script:
+  - php ~/tests/php-extensions-finder/vendor/bin/php-extensions-finder check src
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+No tabs:
+  script:
+  - '! grep -P "\t" -R src -n -I'
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Security checker:
+  script:
+  - composer install --no-interaction --ansi
+  - ~/tests/security-checker/symfony check:security
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Check syntax errors PHP 7.4:
+  image: efabrica/php:7.4
+  script:
+  - find src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Composer outdated PHP 7.4:
+  image: efabrica/php:7.4
+  script:
+  - composer install --no-interaction --ansi
+  - composer extended-outdated -D --strict --host-to-type="git.efabrica.sk|gitlab" --ansi --ignore=nette/utils
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Latte syntax check PHP 7.4:
+  image: efabrica/php:7.4
+  script:
+  - mkdir -p temp
+  - mkdir -p log
+  - composer install --no-dev --no-interaction --ansi
+  - php ~/tests/latte-syntax-checker-3_0/vendor/bin/latte-syntax-checker check src  -vvv
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Check syntax errors PHP 8.1:
+  image: efabrica/php:8.1
+  script:
+  - find src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
+  tags:
+  - ci-81
+  except:
+  - deploy
+  - tags
+Composer outdated PHP 8.1:
+  image: efabrica/php:8.1
+  script:
+  - composer install --no-interaction --ansi
+  - composer outdated -D --strict  --ansi --ignore=nette/utils --ignore=symfony/console --ignore=symfony/process
+  tags:
+  - ci-81
+  except:
+  - deploy
+  - tags
+Latte syntax check PHP 8.1:
+  image: efabrica/php:8.1
+  script:
+  - mkdir -p temp
+  - mkdir -p log
+  - composer install --no-dev --no-interaction --ansi
+  - php ~/tests/latte-syntax-checker-3_0/vendor/bin/latte-syntax-checker check src  -vvv
+  tags:
+  - ci-81
+  except:
+  - deploy
+  - tags
+PHPStan new Level max PHP 7.4:
+  image: efabrica/php:7.4
+  script:
+  - composer install --no-interaction --ansi
+  - php -d memory_limit=-1 ~/tests/phpstan/vendor/bin/phpstan analyse  -c ~/tests/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.max.neon --no-progress
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+  allow_failure: false
+
+PHPStan new Level max PHP 8.1:
+  image: efabrica/php:8.1
+  script:
+  - composer install --no-interaction --ansi
+  - php -d memory_limit=-1 ~/tests/phpstan/vendor/bin/phpstan analyse  -c ~/tests/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.max.neon --no-progress
+  tags:
+  - ci-81
+  except:
+  - deploy
+  - tags
+  allow_failure: false
+
+Magic numbers detector:
+  script: echo OK
+  when: manual
+  allow_failure: true

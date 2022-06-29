@@ -9,6 +9,7 @@ use Nette\Utils\Json;
 class Tags extends TextInput
 {
     private array $config;
+
     private ?string $placeholder;
 
     public function __construct(string $label, array $config, ?string $placeholder = null)

@@ -3,16 +3,16 @@
 namespace Efabrica\NeoForms;
 
 use Latte\CompileException;
+use Latte\Compiler;
 use Latte\MacroNode;
 use Latte\Macros\MacroSet;
-use Latte\Compiler;
 use Latte\PhpWriter;
 
 class NeoFormExtension extends MacroSet
 {
     public static function install(Compiler $compiler): void
     {
-        $me = new static($compiler);
+        $me = new self($compiler);
         $me->addMacro('neoForm', fn($n, $w) => $me->neoFormStart($n, $w), fn($n, $w) => $me->neoFormEnd($n, $w));
         $me->addMacro('formRow', fn($n, $w) => $me->neoFormRow($n, $w));
         $me->addMacro('formRowGroup', fn($n, $w) => $me->neoFormRowGroupStart($n, $w), fn($n, $w) => $me->neoFormRowGroupEnd($n, $w));
@@ -28,7 +28,7 @@ class NeoFormExtension extends MacroSet
         $this->validate($node);
 
         $name = $node->tokenizer->fetchWord();
-        if ($name === null || $name === false) {
+        if ($name === null) {
             throw new CompileException('Missing form name in ' . $node->getNotation());
         }
 
@@ -51,60 +51,60 @@ class NeoFormExtension extends MacroSet
 
     public function neoFormRowGroupStart(MacroNode $node, PhpWriter $writer): string
     {
-        return $writer->write('echo $this->global->neoFormRenderer->rowGroupStart(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->rowGroupStart(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRowGroupEnd(MacroNode $node, PhpWriter $writer): string
     {
-        return $writer->write('echo $this->global->neoFormRenderer->rowGroupEnd(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->rowGroupEnd(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRow(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->row(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->row(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRowEnd(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->rowEnd(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->rowEnd(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRest(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->formRest(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->formRest(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormErrors(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->errors(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->errors(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormInput(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->inputRenderer->input(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->inputRenderer->input(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormLabel(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->label(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->label(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoSectionStart(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->sectionStart(%node.word, %node.array);'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->sectionStart(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoSectionEnd(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->sectionEnd($translator->translate(%node.word, %node.array));'. " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->sectionEnd($translator->translate(%node.word, %node.array));' . " /* line $node->startLine */;");
     }
 
     private function validate(MacroNode $node)
