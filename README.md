@@ -45,10 +45,11 @@ To render an entire form without specifying any sub-elements write:
 {* similar to {control topicForm} *}
 ```
 
-If you do not wish to render certain form fields, use:
+If you do not wish to render certain form fields, use `rest => false` to not render rest of the form:
 ```latte
 {neoForm topicForm, rest => false}
 {/neoForm}
+{* similar to {form topicform}{/form} *}
 ```
 
 This would render an empty `<form>`, similar to if you used the `{form}` tag.
