@@ -15,8 +15,8 @@ includes:
 # Documentation
 
 ### Example
-```latte
-{neoForm itemForm} {* equivalent of {form itemForm} *}
+```html
+{neoForm itemForm}
     {formRow $form['title'], data-joke => 123}
     {formRow $form['bodytext']} 
     {formRow $form['published_at'], input => [class => 'reverse']}
@@ -40,16 +40,16 @@ includes:
 Renders the `<form>` tag. Also renders all the unrendered inputs in the end of the form.
 
 To render an entire form without specifying any sub-elements write:
-```latte
+```html
 {neoForm topicForm}{/neoForm}
-{* similar to {control topicForm} *}
+<!-- similar to {control topicForm} -->
 ```
 
 If you do not wish to render certain form fields, use `rest => false` to not render rest of the form:
-```latte
+```html
 {neoForm topicForm, rest => false}
 {/neoForm}
-{* similar to {form topicform}{/form} *}
+<!-- similar to {form topicform}{/form} -->
 ```
 
 This would render an empty `<form>`, similar to if you used the `{form}` tag.
@@ -61,19 +61,22 @@ Renders `{formLabel}` and `{formInput}` inside a `div.group`. Accepts options.
 
 The first argument can be any instance of `BaseControl`.
 
-```latte
+```html
 {formRow $form['title'], class => 'mt-3'}
-{* <div class="group mt-3">...</div> *}
+=
+<div class="group mt-3">...</div>
 ```
 
-```latte
+```html
 {formRow $form['title'], input => [data-tooltip => 'HA!']}
-{* <div class="group">...<input data-tooltip="HA!"></div> *}
+=
+<div class="group">...<input ... data-tooltip="HA!"></div>
 ```
 
-```latte
+```html
 {formRow $form['title'], label => [data-toggle => 'modal']}
-{* <div class="group">...<label data-toggle="modal"></div> *}
+=
+<div class="group">...<label for="..." data-toggle="modal">...</label></div>
 ```
 
 If you want to change the layout of content inside the formRow, see `{formRowGroup}` below
@@ -83,7 +86,7 @@ If you want to change the layout of content inside the formRow, see `{formRowGro
 
 Use this tag to alter the inside of the `div.group`. Example:
 
-```latte
+```html
 {formRowGroup $form['title']}
     {formLabel $form['title']}
     <div class="warning-strip" data-warning-strip="title"></div>
@@ -97,9 +100,10 @@ Use this tag to alter the inside of the `div.group`. Example:
 
 Renders the `<label>`.
 
-```latte
+```html
 {formLabel $form['title'], class => 'text-large', data-yes="no"}
-{* <label ... class="c-form-element text-large" data-yes="no">{$caption}</label> *}
+=
+<label ... class="c-form-element text-large" data-yes="no">{$caption}</label>
 ```
 
 If the form element is hidden field or checkbox, the label is an empty HTML string.
@@ -109,9 +113,10 @@ If the form element is hidden field or checkbox, the label is an empty HTML stri
 
 Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of the form row.
 
-```latte
+```html
 {formInput $form['category'], data-select2 => true}
-{* <input ... data-select2> *}
+=
+<input ... data-select2>
 ```
 
 ---
@@ -119,7 +124,7 @@ Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of 
 
 Creates a `<fieldset>` with first argument being the caption that is optionally translated.
 
-```latte
+```html
 {if !empty($form->getGroup('Options')->getControls())}
     {formSection "Options"}
         {foreach $form->getGroup('Options')->getControls() as $option}
