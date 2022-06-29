@@ -1,11 +1,8 @@
 {block form}
     <form n:attr="$attrs" class="c-form">
-        {foreach $errors as $error}
-            <div class="c-alert alert -alt -error">
-                <i class="material-icons-round">warning</i>
-                <p>{$error}</p>
-            </div>
-        {/foreach}
+        {if $formErrors && count($errors) > 0}
+            {formErrors $form}
+        {/if}
         {$inside}
         <input type="hidden" name="_do" value="{$form->getName()}-submit">
         {if $renderRest}
@@ -17,13 +14,34 @@
 {block row}
     {do $attrs['class'] = trim('group ' . ($attrs['class'] ?? ''))}
     <div n:attr="$attrs">
+        {$inside}
         {$label}
+        {$errors}
         {$input}
     </div>
 {/block}
 
 {block hiddenRow}
     {$input}
+{/block}
+
+{block formErrors}
+    {foreach $errors as $error}
+        <div class="c-alert alert -alt -error">
+            <i class="material-icons-round">warning</i>
+            <p>{$error}</p>
+        </div>
+    {/foreach}
+{/block}
+
+{block errors}
+{*    Errors in chroma are in the label *}
+{*    {foreach $errors as $error}*}
+{*        <div class="c-alert alert -alt -error -sm">*}
+{*            <i class="material-icons-round">warning</i>*}
+{*            <p>{$error}</p>*}
+{*        </div>*}
+{*    {/foreach}*}
 {/block}
 
 {block label}

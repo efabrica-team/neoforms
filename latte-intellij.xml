@@ -4,8 +4,11 @@
     <tags>
         <tag name="neoForm" type="PAIR" arguments="$formControl, rest => true"/>
         <tag name="formSection" type="PAIR" arguments="$caption"/>
-        <tag name="formRow" type="UNPAIRED_ATTR" arguments="$element, input => [data-joke => 1]"/>
-        <tag name="formRest" type="UNPAIRED_ATTR" arguments="$element"/>
-        <tag name="formInput" type="PAIR" arguments="$element, "/>
+        <tag name="formRow" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
+        <tag name="formRowGroup" type="PAIR" arguments="$element, attrs"/>
+        <tag name="formRest" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
+        <tag name="formInput" type="UNPAIRED_ATTR" arguments="$element, "/>
+        <tag name="formLabel" type="UNPAIRED_ATTR" arguments="$element, "/>
+        <tag name="formErrors" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
     </tags>
 </latte>
