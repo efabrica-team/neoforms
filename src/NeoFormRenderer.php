@@ -62,23 +62,6 @@ class NeoFormRenderer
 
         $inside = uniqid();
         return Strings::before($this->block('row', [
-            'inside' => $inside,
-            'label' => '',
-            'input' => '',
-            'errors' => '',
-            'attrs' => array_filter($options, 'is_scalar'),
-            'options' => $options,
-        ]), $inside) ?? '';
-    }
-
-    public function rowGroupEnd($el, array $options = []): string
-    {
-        if ($el instanceof HiddenField) {
-            return '';
-        }
-        if ($el instanceof BaseControl) {
-            $inside = uniqid();
-            return Strings::after($this->block('row', [
                 'inside' => $inside,
                 'label' => '',
                 'input' => '',
@@ -86,39 +69,55 @@ class NeoFormRenderer
                 'attrs' => array_filter($options, 'is_scalar'),
                 'options' => $options,
             ]), $inside) ?? '';
+    }
+
+    public function rowGroupEnd(BaseControl $el, array $options = []): string
+    {
+        if ($el instanceof HiddenField) {
+            return '';
         }
-        throw new RuntimeException(get_class($el) . ' is not yet supported in NeoFormRenderer');
+
+        $inside = uniqid();
+        return Strings::after($this->block('row', [
+                'inside' => $inside,
+                'label' => '',
+                'input' => '',
+                'errors' => '',
+                'attrs' => array_filter($options, 'is_scalar'),
+                'options' => $options,
+            ]), $inside) ?? '';
     }
 
     public function formStart(Form $form, array $options): string
     {
+        /** @var BaseControl $control */
         foreach ($form->getControls() as $control) {
             $control->setOption('rendered', false);
         }
         $inside = uniqid();
         return Strings::before($this->block('form', [
-            'form' => $form,
-            'attrs' => $form->getElementPrototype()->attrs,
-            'inside' => $inside,
-            'errors' => $form->getOwnErrors(),
-            'options' => $options,
-            'renderRest' => false,
-            'formErrors' => $options['formErrors'] ?? true,
-        ]), $inside) ?? '';
+                'form' => $form,
+                'attrs' => $form->getElementPrototype()->attrs,
+                'inside' => $inside,
+                'errors' => $form->getOwnErrors(),
+                'options' => $options,
+                'renderRest' => false,
+                'formErrors' => $options['formErrors'] ?? true,
+            ]), $inside) ?? '';
     }
 
     public function formEnd(Form $form, array $options): string
     {
         $inside = uniqid();
         return Strings::after($this->block('form', [
-            'form' => $form,
-            'attrs' => $form->getElementPrototype()->attrs,
-            'inside' => $inside,
-            'errors' => $form->getOwnErrors(),
-            'options' => $options,
-            'renderRest' => $options['rest'] ?? true,
-            'formErrors' => $options['formErrors'] ?? true,
-        ]), $inside) ?? '';
+                'form' => $form,
+                'attrs' => $form->getElementPrototype()->attrs,
+                'inside' => $inside,
+                'errors' => $form->getOwnErrors(),
+                'options' => $options,
+                'renderRest' => $options['rest'] ?? true,
+                'formErrors' => $options['formErrors'] ?? true,
+            ]), $inside) ?? '';
     }
 
     public function formRest(Form $form, array $options = []): string
@@ -153,7 +152,7 @@ class NeoFormRenderer
 
     /**
      * @param BaseControl|Form $el
-     * @param array $options
+     * @param array            $options
      * @return string
      */
     public function errors($el, array $options): string
@@ -176,17 +175,17 @@ class NeoFormRenderer
     {
         $sep = uniqid();
         return Strings::before($this->block('section', [
-            'inside' => $sep,
-            'caption' => $caption,
-        ]), $sep) ?? '';
+                'inside' => $sep,
+                'caption' => $caption,
+            ]), $sep) ?? '';
     }
 
     public function sectionEnd(string $caption): string
     {
         $sep = uniqid();
         return Strings::after($this->block('section', [
-            'inside' => $sep,
-            'caption' => $caption,
-        ]), $sep) ?? '';
+                'inside' => $sep,
+                'caption' => $caption,
+            ]), $sep) ?? '';
     }
 }
