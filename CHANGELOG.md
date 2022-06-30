@@ -7,4 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/master...master
+## 0.0.1 - 2022-06-30
+- Initial release
+
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/0.0.1...master
