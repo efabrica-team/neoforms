@@ -12,6 +12,7 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
 use Nette\Forms\Controls\TextInput;
+use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\DateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
@@ -26,7 +27,7 @@ class NeoInputRenderer
         $this->renderer = $renderer;
     }
 
-    private function block(string $blockName, array $attrs)
+    private function block(string $blockName, array $attrs): string
     {
         return $this->renderer->block($blockName, $attrs);
     }
@@ -37,7 +38,9 @@ class NeoInputRenderer
             return $this->checkbox($el, $options);
         }
 
-        $attrs = $el->getControl()->attrs;
+        /** @var Html $control */
+        $control = $el->getControl();
+        $attrs = $control->attrs;
         unset($attrs['data-nette-rules']);
         $attrs += array_filter($options, 'is_scalar');
 

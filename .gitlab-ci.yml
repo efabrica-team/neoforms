@@ -115,7 +115,7 @@ Composer outdated PHP 7.4:
   image: efabrica/php:7.4
   script:
   - composer install --no-interaction --ansi
-  - composer extended-outdated -D --strict --host-to-type="git.efabrica.sk|gitlab" --ansi --ignore=nette/utils
+  - composer extended-outdated -D --strict --host-to-type="git.efabrica.sk|gitlab" --ansi --ignore=nette/utils --ignore=latte/latte
   tags:
   - ci-74
   except:
@@ -146,7 +146,7 @@ Composer outdated PHP 8.1:
   image: efabrica/php:8.1
   script:
   - composer install --no-interaction --ansi
-  - composer outdated -D --strict  --ansi --ignore=nette/utils --ignore=symfony/console --ignore=symfony/process
+  - composer outdated -D --strict  --ansi --ignore=nette/utils --ignore=latte/latte --ignore=symfony/console --ignore=symfony/process
   tags:
   - ci-81
   except:
@@ -189,6 +189,16 @@ PHPStan new Level max PHP 8.1:
   allow_failure: false
 
 Magic numbers detector:
+  script: echo OK
+  when: manual
+  allow_failure: true
+
+Latte syntax check PHP 7.4:
+  script: echo OK
+  when: manual
+  allow_failure: true
+
+Latte syntax check PHP 8.1:
   script: echo OK
   when: manual
   allow_failure: true

@@ -4,10 +4,10 @@
             {formErrors $form}
         {/if}
         {$inside}
-        <input type="hidden" name="_do" value="{$form->getName()}-submit">
         {if $renderRest}
             {formRest $form}
         {/if}
+        <input type="hidden" name="_do" value="{$form->getName()}-submit">
     </form>
 {/block}
 
@@ -102,7 +102,8 @@
 {/block}
 
 {block submitButton}
-    <button class="c-button -info" n:attr="$attrs">
+    {do $attrs['class'] ??= 'c-button'}
+    <button n:attr="$attrs">
         <i n:ifcontent class="material-icons-round">{$icon}</i>
         {_$caption}
     </button>

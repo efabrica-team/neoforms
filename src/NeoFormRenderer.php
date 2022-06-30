@@ -68,7 +68,7 @@ class NeoFormRenderer
             'errors' => '',
             'attrs' => array_filter($options, 'is_scalar'),
             'options' => $options,
-        ]), $inside);
+        ]), $inside) ?? '';
     }
 
     public function rowGroupEnd($el, array $options = []): string
@@ -85,7 +85,7 @@ class NeoFormRenderer
                 'errors' => '',
                 'attrs' => array_filter($options, 'is_scalar'),
                 'options' => $options,
-            ]), $inside);
+            ]), $inside) ?? '';
         }
         throw new RuntimeException(get_class($el) . ' is not yet supported in NeoFormRenderer');
     }
@@ -104,10 +104,10 @@ class NeoFormRenderer
             'options' => $options,
             'renderRest' => false,
             'formErrors' => $options['formErrors'] ?? true,
-        ]), $inside);
+        ]), $inside) ?? '';
     }
 
-    public function formEnd(Form $form, $options): string
+    public function formEnd(Form $form, array $options): string
     {
         $inside = uniqid();
         return Strings::after($this->block('form', [
@@ -118,10 +118,10 @@ class NeoFormRenderer
             'options' => $options,
             'renderRest' => $options['rest'] ?? true,
             'formErrors' => $options['formErrors'] ?? true,
-        ]), $inside);
+        ]), $inside) ?? '';
     }
 
-    public function formRest(Form $form, array $options = [])
+    public function formRest(Form $form, array $options = []): string
     {
         $components = array_filter(
             iterator_to_array($form->getComponents()),
@@ -151,6 +151,11 @@ class NeoFormRenderer
         ]);
     }
 
+    /**
+     * @param BaseControl|Form $el
+     * @param array $options
+     * @return string
+     */
     public function errors($el, array $options): string
     {
         if ($el instanceof BaseControl) {
@@ -164,7 +169,7 @@ class NeoFormRenderer
                 'options' => $options,
             ]);
         }
-        throw new RuntimeException(get_class($el).' is not yet supported in NeoFormRenderer');
+        throw new RuntimeException(get_class($el) . ' is not yet supported in NeoFormRenderer');
     }
 
     public function sectionStart(string $caption): string
@@ -173,7 +178,7 @@ class NeoFormRenderer
         return Strings::before($this->block('section', [
             'inside' => $sep,
             'caption' => $caption,
-        ]), $sep);
+        ]), $sep) ?? '';
     }
 
     public function sectionEnd(string $caption): string
@@ -182,6 +187,6 @@ class NeoFormRenderer
         return Strings::after($this->block('section', [
             'inside' => $sep,
             'caption' => $caption,
-        ]), $sep);
+        ]), $sep) ?? '';
     }
 }

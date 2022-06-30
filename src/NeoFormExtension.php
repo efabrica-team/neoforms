@@ -23,7 +23,7 @@ class NeoFormExtension extends MacroSet
         $me->addMacro('formLabel', fn($n, $w) => $me->neoFormLabel($n, $w));
     }
 
-    public function neoFormStart(MacroNode $node, PhpWriter $writer)
+    public function neoFormStart(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
 
@@ -107,7 +107,7 @@ class NeoFormExtension extends MacroSet
         return $writer->write('echo $this->global->neoFormRenderer->sectionEnd($translator->translate(%node.word, %node.array));' . " /* line $node->startLine */;");
     }
 
-    private function validate(MacroNode $node)
+    private function validate(MacroNode $node): void
     {
         if ($node->modifiers) {
             throw new CompileException('Modifiers are not allowed in ' . $node->getNotation());
