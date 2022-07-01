@@ -7,3 +7,4 @@ log
 node_modules
 bower_components
 tests/_output/*
+composer.lock
