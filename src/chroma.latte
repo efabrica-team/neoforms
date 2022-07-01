@@ -70,7 +70,7 @@
     <select class="c-select js-custom-select" n:attr="$attrs">
         {foreach $items as $optionName => $optionLabel}
             <option n:attr="name: $optionName, selected: $optionName === $value">
-                {$optionLabel}
+                {_$optionLabel}
             </option>
         {/foreach}
     </select>
