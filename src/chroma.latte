@@ -69,7 +69,7 @@
 {block selectBox}
     <select class="c-select js-custom-select" n:attr="$attrs">
         {foreach $items as $optionName => $optionLabel}
-            <option n:attr="name: $optionName, selected: $optionName === $value">
+            <option n:attr="value: $optionName, selected: $optionName === $value">
                 {_$optionLabel}
             </option>
         {/foreach}
