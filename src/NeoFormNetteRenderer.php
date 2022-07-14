@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms;
 
+use Latte\Engine;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
 
@@ -9,9 +10,9 @@ class NeoFormNetteRenderer implements FormRenderer
 {
     private NeoFormRenderer $renderer;
 
-    public function setRenderer(NeoFormRenderer $renderer): void
+    public function init(Engine $engine): void
     {
-        $this->renderer = $renderer;
+        $this->renderer = $engine->getProviders()['neoFormRenderer'];
     }
 
     public function render(Form $form): string

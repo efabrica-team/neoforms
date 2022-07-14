@@ -6,4 +6,4 @@ services:
         setup:
             - addProvider('neoFormRenderer', Efabrica\NeoForms\NeoFormRenderer(@self))
             - Efabrica\NeoForms\NeoFormExtension::install(@self::getCompiler())
-            - Efabrica\NeoForms\NeoFormNetteRenderer::setRenderer(@self::getProviders()['neoFormRenderer'])
+            - Efabrica\NeoForms\NeoFormNetteRenderer::init(@self)
