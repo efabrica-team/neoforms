@@ -1,5 +1,6 @@
 services:
-    - Efabrica\NeoForms\NeoFormNetteRenderer()
+   - Efabrica\NeoForms\NeoFormNetteRenderer()
+   - Efabrica\NeoForms\NeoFormFactory()
 
     nette.latteFactory:
         setup:

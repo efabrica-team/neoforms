@@ -5,7 +5,7 @@ namespace Efabrica\NeoForms;
 use Nette\Application\UI\Form;
 use Nette\Localization\Translator;
 
-abstract class NeoFormFactory
+class NeoFormFactory
 {
     private NeoFormNetteRenderer $formRenderer;
     private Translator $translator;
@@ -21,9 +21,6 @@ abstract class NeoFormFactory
         $form = new Form();
         $form->setRenderer($this->formRenderer);
         $form->setTranslator($this->translator);
-        $this->build($form);
         return $form;
     }
-
-    abstract protected function build(Form $form): void;
 }
