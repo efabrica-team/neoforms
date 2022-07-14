@@ -1,4 +1,6 @@
 services:
+    - Efabrica\NeoForms\NeoFormNetteRenderer()
+
     nette.latteFactory:
         setup:
             - addProvider('neoFormRenderer', Efabrica\NeoForms\NeoFormRenderer(@self))
