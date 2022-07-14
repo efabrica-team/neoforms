@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms;
 
+use Efabrica\NeoForms\Control\Div;
 use Efabrica\NeoForms\Render\NeoInputRenderer;
 use Latte\Engine;
 use Nette\Forms\Controls\BaseControl;
@@ -42,6 +43,10 @@ class NeoFormRenderer
                 'attrs' => array_filter($options, 'is_scalar'),
                 'options' => $options,
             ]);
+        }
+
+        if ($el instanceof Div) {
+            return $this->div($el);
         }
 
         return $this->block('row', [
@@ -88,7 +93,7 @@ class NeoFormRenderer
             ]), $inside) ?? '';
     }
 
-    public function formStart(Form $form, array $options): string
+    public function formStart(Form $form, array $options = []): string
     {
         /** @var BaseControl $control */
         foreach ($form->getControls() as $control) {
@@ -106,7 +111,7 @@ class NeoFormRenderer
             ]), $inside) ?? '';
     }
 
-    public function formEnd(Form $form, array $options): string
+    public function formEnd(Form $form, array $options = []): string
     {
         $inside = uniqid();
         return Strings::after($this->block('form', [
@@ -187,5 +192,13 @@ class NeoFormRenderer
                 'inside' => $sep,
                 'caption' => $caption,
             ]), $sep) ?? '';
+    }
+
+    public function div(Div $div): string
+    {
+        return $this->block('div',[
+            'attrs' => $div->getAttrs(),
+            'children' => $div->getComponents(),
+        ]);
     }
 }

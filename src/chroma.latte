@@ -21,6 +21,14 @@
     </div>
 {/block}
 
+{block div}
+    <div n:attr="$attrs">
+        {foreach $children as $child}
+            {formRow $child}
+        {/foreach}
+    </div>
+{/block}
+
 {block hiddenRow}
     {$input}
 {/block}
