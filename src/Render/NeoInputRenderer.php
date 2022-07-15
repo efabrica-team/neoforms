@@ -9,6 +9,7 @@ use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
+use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
 use Nette\Forms\Controls\TextInput;
@@ -49,7 +50,7 @@ class NeoInputRenderer
             $s .= $this->datepicker($el, $attrs, $options);
         } elseif ($el instanceof TextInput) {
             $s .= $this->textInput($el, $attrs, $options);
-        } elseif ($el instanceof SelectBox) {
+        } elseif ($el instanceof SelectBox || $el instanceof MultiSelectBox) {
             $s .= $this->selectBox($el, $attrs, $options);
         } elseif ($el instanceof Button) {
             $s .= $this->button($el, $attrs, $options);
@@ -73,7 +74,7 @@ class NeoInputRenderer
         ]);
     }
 
-    public function selectBox(SelectBox $el, array $attrs, array $options): string
+    public function selectBox($el, array $attrs, array $options): string
     {
         return $this->block('selectBox', [
             'attrs' => $attrs,

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nette Form Renderer (you can use `{control form}` now)
 - NeoFormFactory
 - Div, Row, Col
+- MultiSelectBox
 
 ## [0.0.2] - 2022-07-01
 ### Fixed
