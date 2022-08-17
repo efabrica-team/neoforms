@@ -5,6 +5,7 @@
         <tag name="neoForm" type="PAIR" arguments="$formControl, rest => true"/>
         <tag name="formSection" type="PAIR" arguments="$caption"/>
         <tag name="formRow" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
+        <tag name="formGroup" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
         <tag name="formRowGroup" type="PAIR" arguments="$element, attrs"/>
         <tag name="formRest" type="UNPAIRED_ATTR" arguments="$element, attrs"/>
         <tag name="formInput" type="UNPAIRED_ATTR" arguments="$element, "/>

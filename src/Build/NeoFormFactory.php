@@ -1,7 +1,9 @@
 <?php
 
-namespace Efabrica\NeoForms;
+namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Render\NeoFormNetteRenderer;
 use Nette\Application\UI\Form;
 use Nette\Localization\Translator;
 
@@ -16,11 +18,16 @@ class NeoFormFactory
         $this->translator = $translator;
     }
 
-    public function create(): Form
+    public function create(): NeoForm
     {
-        $form = new Form();
+        $form = new NeoForm();
         $form->setRenderer($this->formRenderer);
         $form->setTranslator($this->translator);
         return $form;
+    }
+
+    public function getTranslator(): Translator
+    {
+        return $this->translator;
     }
 }

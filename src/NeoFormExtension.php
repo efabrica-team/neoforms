@@ -15,6 +15,7 @@ class NeoFormExtension extends MacroSet
         $me = new self($compiler);
         $me->addMacro('neoForm', fn($n, $w) => $me->neoFormStart($n, $w), fn($n, $w) => $me->neoFormEnd($n, $w));
         $me->addMacro('formRow', fn($n, $w) => $me->neoFormRow($n, $w));
+        $me->addMacro('formGroup', fn($n, $w) => $me->neoFormGroup($n, $w));
         $me->addMacro('formRowGroup', fn($n, $w) => $me->neoFormRowGroupStart($n, $w), fn($n, $w) => $me->neoFormRowGroupEnd($n, $w));
         $me->addMacro('formRest', fn($n, $w) => $me->neoFormRest($n, $w));
         $me->addMacro('formSection', fn($n, $w) => $me->neoSectionStart($n, $w), fn($n, $w) => $me->neoSectionEnd($n, $w));
@@ -63,6 +64,12 @@ class NeoFormExtension extends MacroSet
     {
         $this->validate($node);
         return $writer->write('echo $this->global->neoFormRenderer->row(%node.word, %node.array);' . " /* line $node->startLine */;");
+    }
+
+    public function neoFormGroup(MacroNode $node, PhpWriter $writer): string
+    {
+        $this->validate($node);
+        return $writer->write('echo $this->global->neoFormRenderer->group(%node.word, %node.array);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRowEnd(MacroNode $node, PhpWriter $writer): string

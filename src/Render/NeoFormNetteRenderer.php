@@ -1,7 +1,8 @@
 <?php
 
-namespace Efabrica\NeoForms;
+namespace Efabrica\NeoForms\Render;
 
+use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Latte\Engine;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;

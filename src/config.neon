@@ -1,9 +1,9 @@
 services:
-    - Efabrica\NeoForms\NeoFormNetteRenderer()
-    - Efabrica\NeoForms\NeoFormFactory()
+    - Efabrica\NeoForms\Render\NeoFormNetteRenderer()
+    - Efabrica\NeoForms\Build\NeoFormFactory()
 
     nette.latteFactory:
         setup:
-            - addProvider('neoFormRenderer', Efabrica\NeoForms\NeoFormRenderer(@self))
+            - addProvider('neoFormRenderer', Efabrica\NeoForms\Render\NeoFormRenderer(@self))
             - Efabrica\NeoForms\NeoFormExtension::install(@self::getCompiler())
-            - @Efabrica\NeoForms\NeoFormNetteRenderer::init(@self)
+            - @Efabrica\NeoForms\Render\NeoFormNetteRenderer::init(@self)

@@ -12,7 +12,7 @@ class Tags extends TextInput
 
     private ?string $placeholder;
 
-    public function __construct(string $label, array $config, ?string $placeholder = null)
+    public function __construct(?string $label = null, array $config = [], ?string $placeholder = null)
     {
         parent::__construct($label);
         $this->config = $config;
@@ -38,5 +38,22 @@ class Tags extends TextInput
         ;
         $control->setAttribute('class', 'js-tagsinput ' . $control->getAttribute('class'));
         return $control;
+    }
+
+    public static function getTagValues(?string $json): array
+    {
+        if ($json === null) {
+            return [];
+        }
+        $decoded = Json::decode($json, Json::FORCE_ARRAY);
+        $ret = [];
+        if (is_iterable($decoded)) {
+            foreach ($decoded as $item) {
+                if (isset($item['value'])) {
+                    $ret[] = $item['value'];
+                }
+            }
+        }
+        return $ret;
     }
 }

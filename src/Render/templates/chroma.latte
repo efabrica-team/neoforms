@@ -7,7 +7,6 @@
         {if $renderRest}
             {formRest $form}
         {/if}
-        <input type="hidden" name="_do" value="{$form->getName()}-submit">
     </form>
 {/block}
 
@@ -67,11 +66,21 @@
 {/block}
 
 {block description}
-    <div n:ifcontent class="c-input-helper">{$description}</div>
+    <div n:ifcontent class="c-input-helper">{_$description|noescape}</div>
 {/block}
 
 {block inputText}
     <input n:attr="$attrs" n:class="c-form-element, $attrs['class'] ?? ''">
+{/block}
+
+{block upload}
+    <div class="c-file-upload">
+        <div class="content js-file-upload-toggle">
+            <i class="material-icons-round">file_upload</i>
+            <div class="file-select-name js-file-upload-title">Upload</div>
+        </div>
+        <input n:attr="$attrs" n:class="js-file-upload, $attrs['class'] ?? ''">
+    </div>
 {/block}
 
 {block selectBox}
@@ -154,14 +163,66 @@
 
 
 {block formRest}
+    {$groups}
     {foreach $rest as $restRow}
-        {$renderer->row($restRow)|noescape}
+        {formRow $restRow}
     {/foreach}
     <div n:if="count($buttons) > 0" class="row">
         {foreach $buttons as $button}
             <div class="col">
-                {$renderer->row($button)|noescape}
+                {formRow $button}
             </div>
         {/foreach}
     </div>
+{/block}
+
+
+{block inputViewSingle}
+    {if $value}
+        <p><span class="c-code-txt">{$value}</span></p>
+    {else}
+        <span class="c-code-txt pe-1 py-1 -info"><i class="material-icons-round me-0">hide_source</i></span>
+    {/if}
+{/block}
+
+{block inputViewMulti}
+    <p>
+        {if is_iterable($values) && count($values) > 0}
+            <span class="c-code-txt me-1" n:foreach="$values as $_value">{$_value}</span>
+        {else}
+            <span class="c-code-txt pe-1 py-1 -info"><i class="material-icons-round me-0">hide_source</i></span>
+        {/if}
+    </p>
+{/block}
+
+{block inputViewTextarea}
+    <pre class="c-pre">{$value}</pre>
+{/block}
+
+{block inputViewCheckbox}
+    {if $value}
+        <span class="c-button -icon -success">
+            <i class="material-icons-round">done</i>
+        </span>
+    {else}
+        <span class="c-button -icon -error">
+            <i class="material-icons-round">close</i>
+        </span>
+    {/if}
+{/block}
+
+{block tagsView}
+    <p>
+        {var $tags = is_string($value) ? json_decode($value, true) : $value}
+        {if is_array($tags)}
+            <span class="c-code-txt me-1" n:foreach="$tags as $_tag">
+                <i class="material-icons-round">{$options['viewIcon'] ?? 'tag'}</i>
+                {if is_array($_tag)}
+                    {$_tag['value'] ?? json_encode($_tag)}
+                {elseif is_string($_tag)}
+                    {$_tag}
+                {/if}
+            </span>
+        {/if}
+    </p>
 {/block}

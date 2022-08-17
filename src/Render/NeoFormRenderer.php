@@ -1,10 +1,13 @@
 <?php
 
-namespace Efabrica\NeoForms;
+namespace Efabrica\NeoForms\Render;
 
+use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Efabrica\NeoForms\Control\Div;
 use Efabrica\NeoForms\Render\NeoInputRenderer;
 use Latte\Engine;
+use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
@@ -25,7 +28,7 @@ class NeoFormRenderer
     public function __construct(Engine $engine)
     {
         $this->engine = $engine;
-        $this->template = __DIR__ . '/chroma.latte';
+        $this->template = __DIR__ . '/templates/chroma.latte';
         $this->inputRenderer = new NeoInputRenderer($this);
     }
 
@@ -34,8 +37,38 @@ class NeoFormRenderer
         return $this->engine->renderToString($this->template, $attrs, $blockName);
     }
 
+    public function group(ControlGroup $group): string
+    {
+        $container = $group->getOption('container') ?? Html::el();
+        assert($container instanceof Html);
+        $html = '';
+        $children = $group->getOption('children');
+        if (is_iterable($children)) {
+            foreach ($children as $child) {
+                if ($child instanceof ControlGroup) {
+                    $html .= $this->group($child);
+                }
+            }
+        }
+        foreach ($group->getControls() as $control) {
+            /** @var BaseControl $control */
+            if (!$control->getOption('rendered')) {
+                $html .= $this->row($control, []);
+            }
+        }
+
+        if (Strings::trim($html) === '') {
+            return '';
+        }
+
+        return $container->addHtml($html)->toHtml();
+    }
+
     public function row(BaseControl $el, array $options = []): string
     {
+        if ($options['readonly'] ?? false) {
+            $options['input']['readonly'] = $options['readonly'];
+        }
         if ($el instanceof HiddenField) {
             return $this->block('hiddenRow', [
                 'inside' => '',
@@ -45,13 +78,17 @@ class NeoFormRenderer
             ]);
         }
 
-        if ($el instanceof Div) {
-            return $this->div($el);
+        if ($el instanceof Checkbox) {
+            $label = '';
+            $options['input'] ??= [];
+            $options['input']['caption'] = true;
+        } else {
+            $label = $this->label($el, $options['label'] ?? []);
         }
 
         return $this->block('row', [
             'inside' => '',
-            'label' => Html::fromHtml($this->label($el, $options['label'] ?? [])),
+            'label' => Html::fromHtml($label),
             'input' => Html::fromHtml($this->inputRenderer->input($el, $options['input'] ?? [])),
             'errors' => Html::fromHtml($this->errors($el, $options['input'] ?? [])),
             'attrs' => array_filter($options, 'is_scalar'),
@@ -95,9 +132,15 @@ class NeoFormRenderer
 
     public function formStart(Form $form, array $options = []): string
     {
+        $form->fireRenderEvents();
         /** @var BaseControl $control */
         foreach ($form->getControls() as $control) {
             $control->setOption('rendered', false);
+        }
+        if ($options['readonly'] ?? ($form instanceof NeoForm && $form->isReadonly())) {
+            foreach ($form->getControls() as $control) {
+                $control->setOption('readonly', $control->getOption('readonly') ?? true);
+            }
         }
         $inside = uniqid();
         return Strings::before($this->block('form', [
@@ -127,6 +170,7 @@ class NeoFormRenderer
 
     public function formRest(Form $form, array $options = []): string
     {
+        $groups = Html::fromHtml(implode('', array_map(fn(ControlGroup $group) => $this->group($group), $form->getGroups())));
         $components = array_filter(
             iterator_to_array($form->getComponents()),
             fn($a) => $a instanceof BaseControl && !$a->getOption('rendered')
@@ -135,6 +179,7 @@ class NeoFormRenderer
         $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
         return $this->block('formRest', [
             'renderer' => $this,
+            'groups' => $groups,
             'form' => $form,
             'rest' => $rest,
             'buttons' => $buttons,
@@ -143,7 +188,7 @@ class NeoFormRenderer
 
     public function label(BaseControl $el, array $options = []): string
     {
-        if ($el instanceof Checkbox || $el instanceof Button || $el instanceof HiddenField) {
+        if ($el instanceof Button || $el instanceof HiddenField) {
             return '';
         }
         return $this->block('label', [
@@ -167,7 +212,8 @@ class NeoFormRenderer
                 'errors' => $el->getErrors(),
                 'options' => $options,
             ]);
-        } elseif ($el instanceof Form) {
+        }
+        if ($el instanceof Form) {
             return $this->block('formErrors', [
                 'errors' => $el->getOwnErrors(),
                 'options' => $options,
@@ -192,13 +238,5 @@ class NeoFormRenderer
                 'inside' => $sep,
                 'caption' => $caption,
             ]), $sep) ?? '';
-    }
-
-    public function div(Div $div): string
-    {
-        return $this->block('div',[
-            'attrs' => $div->getAttrs(),
-            'children' => $div->getComponents(),
-        ]);
     }
 }

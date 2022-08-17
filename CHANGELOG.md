@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NeoFormFactory
 - Div, Row, Col
 - MultiSelectBox
+- Changed namespaces and directory structure
+- readonly renderer
+- NeoForm class
+- ControlGroupBuilder
+- Tags::getTagValues
+- StaticTags -> allowCustomTags
+- {formGroup}
+- NeoFormFactory
+- AbstractForm
+- more documentation
 
 ## [0.0.2] - 2022-07-01
 ### Fixed
