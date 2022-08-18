@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Build;
 
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
+use Nette\Application\UI\Template;
 use Nette\Database\Table\ActiveRow;
 use Throwable;
 use Tracy\Debugger;
@@ -42,16 +43,8 @@ abstract class AbstractForm
         return $this->formFactory->getTranslator()->translate($message, ...$parameters);
     }
 
-    protected function templateFile(): ?string
+    protected function template(Template $template): void
     {
-        // use this to change the form template
-        return null;
-    }
-
-    protected function templateVars(NeoForm $form, ?ActiveRow $row): array
-    {
-        // use this to pass variables to the form template
-        return [];
     }
 
     public function create(?ActiveRow $row = null): NeoFormControl
@@ -79,6 +72,6 @@ abstract class AbstractForm
                 $form->addError('Request failed, please try again later.');
             }
         };
-        return new NeoFormControl($form, $this->templateFile(), $this->templateVars($form, $row));
+        return new NeoFormControl($form, fn(Template $template) => $this->template($template));
     }
 }
