@@ -2,46 +2,72 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
-use Nette\Application\UI\Control;
 use Nette\Database\Table\ActiveRow;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
-use Nette\Application\AbortException;
 
-abstract class AbstractForm extends Control
+abstract class AbstractForm
 {
     private NeoFormFactory $formFactory;
-    protected ?ActiveRow $row;
 
-    public function __construct(NeoFormFactory $formFactory, ?ActiveRow $row = null)
+    public function __construct(NeoFormFactory $formFactory)
     {
         $this->formFactory = $formFactory;
-        $this->row = $row;
     }
 
-    public function render(): void
+    abstract protected function buildForm(NeoForm $form, ?ActiveRow $row): void;
+
+    abstract protected function initFormData(ActiveRow $row): array;
+
+    protected function onSuccess(NeoForm $form, array $values): void
     {
-        $form = $this->getComponent('form');
-        assert($form instanceof NeoForm);
-        $form->render();
+        // this is called on form success
     }
 
-    public function createComponentForm(): NeoForm
+    protected function onCreate(NeoForm $form, array $values): void
+    {
+        // this is called after onSuccess, if $row is null
+    }
+
+    protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
+    {
+        // this is called after onSuccess, if $row is not null
+    }
+
+    protected function translate(string $message, ...$parameters): string
+    {
+        return $this->formFactory->getTranslator()->translate($message, ...$parameters);
+    }
+
+    protected function templateFile(): ?string
+    {
+        // use this to change the form template
+        return null;
+    }
+
+    protected function templateVars(NeoForm $form, ?ActiveRow $row): array
+    {
+        // use this to pass variables to the form template
+        return [];
+    }
+
+    public function create(?ActiveRow $row = null): NeoFormControl
     {
         $form = $this->formFactory->create();
-        $this->buildForm($form, $this->row);
-        if ($this->row !== null) {
-            $form->setDefaults($this->initFormData($this->row));
+        $this->buildForm($form, $row);
+        if ($row !== null) {
+            $form->setDefaults($this->initFormData($row));
         }
-        $form->onSuccess[] = function (NeoForm $form, array $values) {
+        $form->onSuccess[] = function (NeoForm $form, array $values) use ($row) {
             try {
                 $this->onSuccess($form, $values);
-                if ($this->row === null) {
+                if ($row === null) {
                     $this->onCreate($form, $values);
                 } else {
-                    $this->onUpdate($form, $values, $this->row);
+                    $this->onUpdate($form, $values, $row);
                 }
             } catch (Throwable $exception) {
                 if (Debugger::isEnabled()
@@ -53,39 +79,6 @@ abstract class AbstractForm extends Control
                 $form->addError('Request failed, please try again later.');
             }
         };
-        return $form;
-    }
-
-    abstract protected function buildForm(NeoForm $form, ?ActiveRow $row): void;
-
-    abstract protected function initFormData(ActiveRow $row): array;
-
-    protected function onSuccess(NeoForm $form, array $values): void
-    {
-    }
-
-    protected function onCreate(NeoForm $form, array $values): void
-    {
-    }
-
-    protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
-    {
-    }
-
-    /**
-     * @param scalar[]|scalar $redirectArgs
-     * @throws AbortException
-     */
-    protected function finish(string $flashMessage, string $redirect = 'default', $redirectArgs = []): void
-    {
-        $presenter = $this->getPresenter();
-        assert($presenter instanceof Control);
-        $presenter->flashMessage($this->translate($flashMessage), 'success');
-        $presenter->redirect($redirect, $redirectArgs);
-    }
-
-    protected function translate(string $message, ...$parameters): string
-    {
-        return $this->formFactory->getTranslator()->translate($message, ...$parameters);
+        return new NeoFormControl($form, $this->templateFile(), $this->templateVars($form, $row));
     }
 }

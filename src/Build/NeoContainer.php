@@ -2,8 +2,6 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Efabrica\NeoForms\Build\NeoContainerTrait;
-use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\Container;
 
 class NeoContainer extends Container

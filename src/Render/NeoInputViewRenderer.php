@@ -3,8 +3,6 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Control\Tags;
-use Efabrica\NeoForms\Control\ToggleSwitch;
-use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
@@ -13,7 +11,6 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
-use Nette\Forms\Controls\TextInput;
 use Nette\Forms\Controls\UploadControl;
 
 class NeoInputViewRenderer

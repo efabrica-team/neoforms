@@ -28,7 +28,9 @@
         "nette/application": "^3.1",
         "efabrica/nette-rte": "^3.1",
         "radekdostal/nette-datetimepicker": "^3.1",
-        "efabrica/nette-chooze": "^2.0"
+        "efabrica/nette-chooze": "^2.0",
+        "tracy/tracy": "^2.9",
+        "nette/database": "^3.1"
     },
     "require": {
         "php": "^7.4 || ^8.1"

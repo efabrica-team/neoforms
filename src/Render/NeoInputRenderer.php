@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Control\ToggleSwitch;
-use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
@@ -12,17 +11,16 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
-use Nette\Forms\Controls\TextInput;
 use Nette\Forms\Controls\UploadControl;
 use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\DateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
-use RuntimeException;
 
 class NeoInputRenderer
 {
     private NeoFormRenderer $renderer;
+
     private NeoInputViewRenderer $viewRenderer;
 
     public function __construct(NeoFormRenderer $renderer)

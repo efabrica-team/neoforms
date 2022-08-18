@@ -2,9 +2,7 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\NeoFormNetteRenderer;
-use Nette\Application\UI\Form;
 use Nette\Localization\Translator;
 
 class NeoFormFactory

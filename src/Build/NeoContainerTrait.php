@@ -2,12 +2,10 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
-use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\Nette\Chooze\ChoozeControl;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Application\UI\Multiplier;

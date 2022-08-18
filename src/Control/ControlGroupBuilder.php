@@ -5,7 +5,6 @@ namespace Efabrica\NeoForms\Control;
 use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\ControlGroup;
 use Nette\Utils\Html;
-use Nette\Utils\Random;
 
 class ControlGroupBuilder
 {

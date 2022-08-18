@@ -79,24 +79,33 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
         ];
     }
 
+    // called if $row is null
     protected function onCreate(NeoForm $form, array $values): void
     {
         $category = $this->repository->insert($values);
         $this->finish('Kategória ' . $category->name . ' úspešne vytvorená.', 'detail', $row->id);
     }
 
+    // called if $row is not null
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
         $this->repository->update($row, $values);
         $this->finish('Kategória úspešne upravená.', 'detail', $row->id);
     }
-}
-```
-#### Factory
-```php
-interface CategoryFormFactory
-{
-    public function create(?ActiveRow $category = null): CategoryForm;
+    
+    // optional, if you want a custom template
+    protected function templateFile(): ?string
+    {
+        return __DIR__ . '/templates/default.latte';
+    }
+
+    // vars for the custom template
+    protected function templateVars(NeoForm $form, ?ActiveRow $row): array
+    {
+        return [
+            'metaKeys' => $this->metaKeyRepository->findAll()->order('sorting ASC')
+        ];
+    }
 }
 ```
 
@@ -104,18 +113,18 @@ interface CategoryFormFactory
 ```php
 class CategoryPresenter extends AdminPresenter 
 {
-    private CategoryFormFactory $formFactory;
+    private CategoryForm $form;
     private CategoryRepository $repository;
 
     public function actionCreate(): void
     {
-        $this->addComponent($this->formFactory->create(), 'categoryForm');
+        $this->addComponent($this->form->create(), 'categoryForm');
     }
     
     public function actionUpdate(int $id): void
     {
         $row = $this->repository->findOneById($id);
-        $this->addComponent($this->formFactory->create($row), 'categoryForm');
+        $this->addComponent($this->form->create($row), 'categoryForm');
     }
 }
 ```
