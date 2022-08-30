@@ -10,6 +10,7 @@ use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
+use Nette\Localization\Translator;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
 use RuntimeException;
@@ -22,11 +23,11 @@ class NeoFormRenderer
 
     public NeoInputRenderer $inputRenderer;
 
-    public function __construct(Engine $engine)
+    public function __construct(Engine $engine, Translator $translator)
     {
         $this->engine = $engine;
         $this->template = __DIR__ . '/templates/chroma.latte';
-        $this->inputRenderer = new NeoInputRenderer($this);
+        $this->inputRenderer = new NeoInputRenderer($this, $translator);
     }
 
     public function block(string $blockName, array $attrs = []): string

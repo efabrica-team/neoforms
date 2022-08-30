@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms;
 
+use Efabrica\NeoForms\Build\NeoFormControl;
 use Latte\CompileException;
 use Latte\Compiler;
 use Latte\MacroNode;
@@ -40,7 +41,7 @@ class NeoFormExtension extends MacroSet
             . ($name[0] === '$'
                 ? 'is_object($ʟ_tmp = %node.word) ? $ʟ_tmp : $this->global->uiControl[$ʟ_tmp]'
                 : '$this->global->uiControl[%node.word]')
-            . ', %node.array)'
+            . ', %node.array)' . '; if ($form instanceof ' . NeoFormControl::class . ') $form = $form->form;'
             . " /* line $node->startLine */;"
         );
     }

@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Added
+- NeoForm::setOnSuccess() (automatically adds production-safe debug-friendly error handler)
+- NeoFormControl::getForm()
+- Errors are now translated automatically
+- Translated placeholders (html attribute)
+- RadioList support
 
 
 ## [1.0.0]

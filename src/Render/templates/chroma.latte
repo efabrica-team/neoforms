@@ -36,29 +36,29 @@
     {foreach $errors as $error}
         <div class="c-alert alert -alt -error">
             <i class="material-icons-round">warning</i>
-            <p>{$error}</p>
+            <p>{_$error}</p>
         </div>
     {/foreach}
 {/block}
 
 {block errors}
-    {*    Errors in chroma are in the label *}
-    {*    {foreach $errors as $error}*}
-    {*        <div class="c-alert alert -alt -error -sm">*}
-    {*            <i class="material-icons-round">warning</i>*}
-    {*            <p>{$error}</p>*}
-    {*        </div>*}
-    {*    {/foreach}*}
+{*    Errors in chroma are in the label *}
+{*    {foreach $errors as $error}*}
+{*        <div class="c-alert alert -alt -error -sm">*}
+{*            <i class="material-icons-round">warning</i>*}
+{*            <p>{$error}</p>*}
+{*        </div>*}
+{*    {/foreach}*}
 {/block}
 
 {block label}
     <label for="{$for}" class="c-form-label{if $errors} text-danger{/if}">
         {_$caption}
-        <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{$info}">
+        <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{_$info}">
                 <i class="material-icons-round">info</i>
         </span>
         {foreach $errors as $error}
-            <span n:if="$error" class="c-button -icon -error -tooltip" data-bs-toggle="tooltip" title="{$error}">
+            <span n:if="$error" class="c-button -icon -error -tooltip" data-bs-toggle="tooltip" title="{_$error}">
                 <i class="material-icons-round">warning</i>
             </span>
         {/foreach}
@@ -80,6 +80,19 @@
             <div class="file-select-name js-file-upload-title">Upload</div>
         </div>
         <input n:attr="$attrs" n:class="js-file-upload, $attrs['class'] ?? ''">
+    </div>
+{/block}
+
+{block radio}
+    <div class="inline-group" n:attr="$attrs">
+        {foreach $items as $optionValue => $optionLabel}
+            <div class="c-radio-wrapper">
+                {var $uniqid = uniqid()}
+                <input class="c-radio" id="{$uniqid}" type="radio" name="{$name}" value="{$optionValue}"
+                       {if $optionValue == $value}checked{/if} {if $required}required{/if}>
+                <label for="{$uniqid}">{_$optionLabel}</label>
+            </div>
+        {/foreach}
     </div>
 {/block}
 

@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Build;
 
 use Closure;
 use Nette\Application\UI\Control;
+use Nette\Application\UI\Template;
 
 class NeoFormControl extends Control
 {
@@ -19,12 +20,22 @@ class NeoFormControl extends Control
         $this->onRender = $onRender ? Closure::fromCallable($onRender) : null;
     }
 
+    public static function withTemplate(NeoForm $form, string $templatePath): self
+    {
+        return new NeoFormControl($form, fn(Template $template) => $template->setFile($templatePath));
+    }
+
     public function render(): void
     {
         $this->template->setFile(__DIR__ . '/../Render/templates/control.latte');
         if ($this->onRender !== null) {
-            $this->onRender->__invoke($this->template);
+            ($this->onRender)($this->template);
         }
         $this->template->render();
+    }
+
+    public function getForm(): NeoForm
+    {
+        return $this->form;
     }
 }

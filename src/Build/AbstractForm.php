@@ -2,13 +2,8 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Nette\Application\AbortException;
-use Nette\Application\BadRequestException;
 use Nette\Application\UI\Template;
 use Nette\Database\Table\ActiveRow;
-use Throwable;
-use Tracy\Debugger;
-use Tracy\ILogger;
 
 abstract class AbstractForm
 {
@@ -21,21 +16,27 @@ abstract class AbstractForm
 
     abstract protected function buildForm(NeoForm $form, ?ActiveRow $row): void;
 
+    /**
+     * @param ActiveRow $row
+     * @return array $form->setDefaults(...)
+     */
     abstract protected function initFormData(ActiveRow $row): array;
 
-    protected function onSuccess(NeoForm $form, array $values): void
+    protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row = null): void
     {
-        // this is called on form success
+        if ($row === null) {
+            $this->onCreate($form, $values);
+        } else {
+            $this->onUpdate($form, $values, $row);
+        }
     }
 
     protected function onCreate(NeoForm $form, array $values): void
     {
-        // this is called after onSuccess, if $row is null
     }
 
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
-        // this is called after onSuccess, if $row is not null
     }
 
     protected function translate(string $message, ...$parameters): string
@@ -54,24 +55,8 @@ abstract class AbstractForm
         if ($row !== null) {
             $form->setDefaults($this->initFormData($row));
         }
-        $form->onSuccess[] = function (NeoForm $form, array $values) use ($row) {
-            try {
-                $this->onSuccess($form, $values);
-                if ($row === null) {
-                    $this->onCreate($form, $values);
-                } else {
-                    $this->onUpdate($form, $values, $row);
-                }
-            } catch (Throwable $exception) {
-                if (Debugger::isEnabled()
-                    || $exception instanceof AbortException
-                    || $exception instanceof BadRequestException) {
-                    throw $exception;
-                }
-                Debugger::log($exception, ILogger::EXCEPTION);
-                $form->addError('Request failed, please try again later.');
-            }
-        };
+        $form->setOnSuccess(fn(NeoForm $form, array $values) => $this->onSuccess($form, $values, $row));
+
         return new NeoFormControl($form, fn(Template $template) => $this->template($template));
     }
 }

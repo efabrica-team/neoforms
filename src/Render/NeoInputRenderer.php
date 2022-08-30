@@ -9,9 +9,11 @@ use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\MultiSelectBox;
+use Nette\Forms\Controls\RadioList;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
 use Nette\Forms\Controls\UploadControl;
+use Nette\Localization\Translator;
 use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 use RadekDostal\NetteComponents\DateTimePicker\DateTimePicker;
@@ -23,10 +25,13 @@ class NeoInputRenderer
 
     private NeoInputViewRenderer $viewRenderer;
 
-    public function __construct(NeoFormRenderer $renderer)
+    private Translator $translator;
+
+    public function __construct(NeoFormRenderer $renderer, Translator $translator)
     {
         $this->renderer = $renderer;
         $this->viewRenderer = new NeoInputViewRenderer($renderer);
+        $this->translator = $translator;
     }
 
     private function block(string $blockName, array $attrs): string
@@ -47,6 +52,9 @@ class NeoInputRenderer
 
         $attrs = $control->attrs;
         unset($attrs['data-nette-rules']);
+        if (is_string($attrs['placeholder'] ?? null)) {
+            $attrs['placeholder'] = $this->translator->translate($attrs['placeholder']);
+        }
         $attrs += array_filter($options, 'is_scalar');
 
         $s = '';
@@ -62,6 +70,8 @@ class NeoInputRenderer
             $s .= $this->hidden($el, $attrs, $options);
         } elseif ($el instanceof UploadControl) {
             $s .= $this->upload($el, $attrs, $options);
+        } elseif ($el instanceof RadioList) {
+            $s .= $this->radio($el, $attrs, $options);
         } else {
             $s .= $this->textInput($el, $attrs, $options);
         }
@@ -85,6 +95,18 @@ class NeoInputRenderer
             'options' => $el->getOptions() + $options,
             'items' => $el->getItems(),
             'value' => $el->getValue(),
+        ]);
+    }
+
+    public function radio(RadioList $el, array $attrs, array $options)
+    {
+        return $this->block('radio', [
+            'attrs' => $attrs,
+            'options' => $el->getOptions() + $options,
+            'items' => $el->getItems(),
+            'value' => $el->getValue(),
+            'name' => $el->getHtmlName(),
+            'required' => $el->isRequired(),
         ]);
     }
 
