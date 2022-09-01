@@ -20,11 +20,6 @@ class NeoFormControl extends Control
         $this->onRender = $onRender ? Closure::fromCallable($onRender) : null;
     }
 
-    public static function withTemplate(NeoForm $form, string $templatePath): self
-    {
-        return new NeoFormControl($form, fn(Template $template) => $template->setFile($templatePath));
-    }
-
     public function render(): void
     {
         $this->template->setFile(__DIR__ . '/../Render/templates/control.latte');

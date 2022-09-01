@@ -6,6 +6,7 @@ use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Form;
+use Nette\Application\UI\Template;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
@@ -65,6 +66,9 @@ class NeoForm extends Form
     public function setOnSuccess(callable $onSuccess): self
     {
         $this->onSuccess[] = static function (NeoForm $form, array $values) use ($onSuccess) {
+            if ($form->isReadonly()) {
+                return; // there is no submit button if the form is readonly
+            }
             try {
                 $onSuccess($form, $values);
             } catch (Throwable $exception) {
@@ -78,5 +82,15 @@ class NeoForm extends Form
             }
         };
         return $this;
+    }
+
+    public function withTemplate(string $templatePath, array $args = []): NeoFormControl
+    {
+        return new NeoFormControl($this, function (Template $template) use ($templatePath, $args) {
+            $template->setFile($templatePath);
+            foreach ($args as $key => $value) {
+                $template->$key = $value;
+            }
+        });
     }
 }

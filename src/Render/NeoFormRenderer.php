@@ -237,4 +237,14 @@ class NeoFormRenderer
                 'caption' => $caption,
             ]), $sep) ?? '';
     }
+
+    public function getTemplatePath(): string
+    {
+        return $this->template;
+    }
+
+    public function setTemplatePath(string $templatePath): void
+    {
+        $this->template = $templatePath;
+    }
 }

@@ -80,7 +80,7 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
         $this->repository->update($row, $values);
-        $this->finish('Kategória úspešne upravená.', 'detail', $row->id);
+        $form->finish('Kategória úspešne upravená.', 'detail', $row->id);
     }
 
     // can be empty and not implemented
@@ -238,6 +238,8 @@ this control renders:
 
 Renders the `<form>` tag. Also renders all the unrendered inputs in the end of the form.
 
+Argument is the name of the control without quotes.
+
 To render an entire form without specifying any sub-elements write:
 
 ```html
@@ -260,6 +262,8 @@ This would render an empty `<form>`, similar to if you used the `{form}` tag.
 ### `{formRow}`
 
 Renders `{formLabel}` and `{formInput}` inside a `{formRowGroup}`. Accepts options.
+
+Argument is the `BaseControl` instance (ex. `$form['title']`)
 
 The first argument can be any instance of `BaseControl`.
 
@@ -290,7 +294,8 @@ If you want to change the layout of content inside the formRow, see `{formRowGro
 
 ### `{formGroup}`
 
-Accepts ControlGroup as required argument. Renders all controls in the group.
+Accepts `ControlGroup` as required argument. 
+Renders all controls in the group. Uses `{formRow}` internally.
 
 ```latte
 {formGroup $form->getGroup('main')}
@@ -300,7 +305,9 @@ Accepts ControlGroup as required argument. Renders all controls in the group.
 
 ### `{formRowGroup}`
 
-Use this tag to alter the inside of the `div.group`. Example:
+Simply said, renders `<div class='group'>`.
+
+Use this tag to alter the inside of `div.group`. Example:
 
 ```html
 {formRowGroup $form['title']}
@@ -314,7 +321,7 @@ Use this tag to alter the inside of the `div.group`. Example:
 
 ### `{formLabel}`
 
-Renders the `<label>`.
+Renders the `<label>`. Argument is `BaseControl` instance.
 
 ```html
 {formLabel $form['title'], class => 'text-large', data-yes="no"}
@@ -330,6 +337,8 @@ If the form element is hidden field or checkbox, the label is an empty HTML stri
 
 Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of the form row.
 
+Argument is `BaseControl` instance.
+
 ```html
 {formInput $form['category'], data-select2 => true}
 =
@@ -341,6 +350,10 @@ Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of 
 ### `{formSection}`
 
 Creates a `<fieldset>` with first argument being the caption that is optionally translated.
+
+This is visual only, has no deeper functionality.
+
+Argument is `string`.
 
 ```html
 {if !empty($form->getGroup('Options')->getControls())}
