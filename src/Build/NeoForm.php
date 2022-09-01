@@ -6,11 +6,15 @@ use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Form;
+use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
+/**
+ * @method Presenter getPresenter()
+ */
 class NeoForm extends Form
 {
     private bool $readonly = false;
