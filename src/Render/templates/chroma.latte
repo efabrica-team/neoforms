@@ -1,5 +1,6 @@
 {block form}
-    <form n:attr="$attrs" class="c-form">
+    {do $attrs['class'] = trim('c-form ' . ($attrs['class'] ?? ''))}
+    <form n:attr="$attrs">
         {if $formErrors && count($errors) > 0}
             {formErrors $form}
         {/if}
