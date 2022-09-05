@@ -12,7 +12,7 @@ composer require efabrica/neo-forms
 ```neon
 # config.neon
 includes:
-    - ../../vendor/efabrica/neo-forms/src/config.neon
+    - ../../vendor/efabrica/neo-forms/config.neon
 ```
 
 # Documentation

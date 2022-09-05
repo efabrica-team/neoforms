@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+
+## [1.2.1] - 2022-09-06
+### Fixed
+- Moved config.neon to correct directory
+
 ## [1.2.0] - 2022-09-06
 ### Added
 - readonly security check in setOnSuccess
@@ -49,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.2.0...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.2.1...master
+[1.2.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.2.0...1.2.1
 [1.2.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.1.0...1.2.0
 [1.1.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.0.0...1.1.0
 [1.0.0]: https://git.efabrica.sk/libraries/neoforms/compare/0.0.2...1.0.0
