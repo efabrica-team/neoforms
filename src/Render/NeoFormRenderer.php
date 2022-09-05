@@ -143,7 +143,7 @@ class NeoFormRenderer
         $inside = uniqid();
         return Strings::before($this->block('form', [
                 'form' => $form,
-                'attrs' => $form->getElementPrototype()->attrs,
+                'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
                 'inside' => $inside,
                 'errors' => $form->getOwnErrors(),
                 'options' => $options,
@@ -157,7 +157,7 @@ class NeoFormRenderer
         $inside = uniqid();
         return Strings::after($this->block('form', [
                 'form' => $form,
-                'attrs' => $form->getElementPrototype()->attrs,
+                'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
                 'inside' => $inside,
                 'errors' => $form->getOwnErrors(),
                 'options' => $options,

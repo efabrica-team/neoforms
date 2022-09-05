@@ -57,7 +57,6 @@ class NeoForm extends Form
     public function finish(?string $flashMessage = null, string $redirect = 'default', $redirectArgs = []): void
     {
         $presenter = $this->getPresenter();
-        assert($presenter instanceof Control);
         if ($flashMessage !== null) {
             $presenter->flashMessage($this->getTranslator()->translate($flashMessage), 'success');
         }
