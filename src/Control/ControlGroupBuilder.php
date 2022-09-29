@@ -21,7 +21,7 @@ class ControlGroupBuilder
 
     public function group(?string $name = null, ?string $class = null): self
     {
-        $child = new self($this->form, $class ?? '', $name);
+        $child = new self($this->form, $class ?? 'c-form', $name);
         $this->group->setOption('children', [...($this->group->getOption('children') ?? []), $child->group]);
         return $child;
     }
@@ -33,9 +33,9 @@ class ControlGroupBuilder
         return $child;
     }
 
-    public function col(string $column, ?string $name = null): self
+    public function col(?string $col = null, ?string $name = null): self
     {
-        $child = new self($this->form, 'col-'.$column, $name);
+        $child = new self($this->form, 'col' . ($col ? '-' : '') . $col, $name);
         $this->group->setOption('children', [...($this->group->getOption('children') ?? []), $child->group]);
         return $child;
     }

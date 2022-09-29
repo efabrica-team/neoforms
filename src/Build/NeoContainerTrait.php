@@ -72,7 +72,7 @@ trait NeoContainerTrait
     public function group(?string $name = null, ?string $class = null)
     {
         /** @var NeoForm $group */
-        $group = new ControlGroupBuilder($this, $class ?? '', $name);
+        $group = new ControlGroupBuilder($this, $class ?? 'c-form', $name);
         return $group;
     }
 
