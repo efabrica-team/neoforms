@@ -156,6 +156,12 @@
     <textarea n:attr="$attrs">{$value}</textarea>
 {/block}
 
+{block codeEditor}
+    <div style="width:100%;display:block;">
+        <textarea n:attr="$attrs">{$value}</textarea>
+    </div>
+{/block}
+
 {block datepicker}
     {do $attrs['class'] = 'c-form-element js-datepicker ' . ($attrs['class'] ?? '')}
     {do $attrs['readonly'] = 'readonly'}

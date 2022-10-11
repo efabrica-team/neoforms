@@ -2,12 +2,14 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\Nette\Chooze\ChoozeControl;
 use Efabrica\Nette\Forms\Rte\RteControl;
+use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
 use Nette\Forms\Container;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
@@ -62,6 +64,17 @@ trait NeoContainerTrait
     public function addRte(string $name, ?string $label = null): RteControl
     {
         $component = new RteControl($label);
+        $this->addComponent($component, $name);
+        return $component;
+    }
+
+    public function addCodeEditor(
+        string $name,
+        #[ExpectedValues(CodeEditor::MODES)]
+        string $mode,
+        ?string $label = null
+    ): CodeEditor {
+        $component = new CodeEditor($mode, $label);
         $this->addComponent($component, $name);
         return $component;
     }

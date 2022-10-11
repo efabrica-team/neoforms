@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms\Render;
 
+use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
@@ -134,7 +135,8 @@ class NeoInputRenderer
 
     public function textarea(BaseControl $el, array $attrs, array $options): string
     {
-        return $this->block('textarea', [
+        $blockName = $el instanceof CodeEditor ? 'codeEditor' : 'textarea';
+        return $this->block($blockName, [
             'value' => $el->getValue(),
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,

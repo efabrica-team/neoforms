@@ -37,11 +37,12 @@ class NeoFormExtension extends MacroSet
         $node->replaced = true;
         $node->tokenizer->reset();
         return $writer->write(
-            'echo $this->global->neoFormRenderer->formStart($form = $this->global->formsStack[] = '
+            '$form = '
             . ($name[0] === '$'
                 ? 'is_object($ʟ_tmp = %node.word) ? $ʟ_tmp : $this->global->uiControl[$ʟ_tmp]'
-                : '$this->global->uiControl[%node.word]')
-            . ', %node.array)' . '; if ($form instanceof ' . NeoFormControl::class . ') $form = $form->form;'
+                : '$this->global->uiControl[%node.word]') . ';'
+            . 'if ($form instanceof ' . NeoFormControl::class . ') $form = $form->form;'
+            . 'echo $this->global->neoFormRenderer->formStart($this->global->formsStack[] = $form, %node.array);'
             . " /* line $node->startLine */;"
         );
     }
