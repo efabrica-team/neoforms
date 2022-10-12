@@ -8,6 +8,7 @@ use Nette\Localization\Translator;
 class NeoFormFactory
 {
     private NeoFormNetteRenderer $formRenderer;
+
     private Translator $translator;
 
     public function __construct(NeoFormNetteRenderer $formRenderer, Translator $translator)

@@ -12,7 +12,9 @@ class NeoFormNetteRenderer implements FormRenderer
 
     public function init(Engine $engine): void
     {
-        $this->renderer = $engine->getProviders()['neoFormRenderer'];
+        $provider = $engine->getProviders()['neoFormRenderer'];
+        assert($provider instanceof NeoFormRenderer);
+        $this->renderer = $provider;
     }
 
     public function render(Form $form): string

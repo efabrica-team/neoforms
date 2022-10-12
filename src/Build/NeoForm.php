@@ -2,12 +2,13 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
-use Nette\Application\UI\Control;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
+use Nette\Localization\Translator;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
@@ -20,7 +21,6 @@ class NeoForm extends Form
     private bool $readonly = false;
 
     private array $options = [];
-
     use NeoContainerTrait;
 
     /**
@@ -37,12 +37,16 @@ class NeoForm extends Form
         return $this->readonly;
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getOption(string $name)
     {
         return $this->options[$name] ?? null;
     }
 
     /**
+     * @param mixed $value
      * @return $this
      */
     public function setOption(string $name, $value): self
@@ -58,7 +62,9 @@ class NeoForm extends Form
     {
         $presenter = $this->getPresenter();
         if ($flashMessage !== null) {
-            $presenter->flashMessage($this->getTranslator()->translate($flashMessage), 'success');
+            $translator = $this->getTranslator();
+            assert($translator instanceof Translator);
+            $presenter->flashMessage($translator->translate($flashMessage), 'success');
         }
         $presenter->redirect($redirect, $redirectArgs);
     }
@@ -68,7 +74,7 @@ class NeoForm extends Form
      */
     public function setOnSuccess(callable $onSuccess): self
     {
-        $this->onSuccess[] = static function (NeoForm $form, array $values) use ($onSuccess) {
+        $fn = static function (NeoForm $form, array $values) use ($onSuccess) {
             if ($form->isReadonly()) {
                 return; // there is no submit button if the form is readonly
             }
@@ -84,6 +90,9 @@ class NeoForm extends Form
                 $form->addError('Request failed, please try again later.');
             }
         };
+        /** @var callable $fn */
+        $this->onSuccess[] = $fn;
+
         return $this;
     }
 
@@ -95,5 +104,31 @@ class NeoForm extends Form
                 $template->$key = $value;
             }
         });
+    }
+
+    /**
+     * @return NeoForm to fool the IDE into seeing all ->add*() methods
+     */
+    public function group(?string $name = null, ?string $class = null)
+    {
+        /** @var NeoForm $group */
+        $group = new ControlGroupBuilder($this, $class ?? 'c-form', $name);
+        return $group;
+    }
+
+    /**
+     * @return NeoForm to fool the IDE into seeing all ->add*() methods
+     */
+    public function row(?string $name = null): self
+    {
+        return $this->group($name, 'row');
+    }
+
+    /**
+     * @return NeoForm to fool the IDE into seeing all ->add*() methods
+     */
+    public function col(?string $col = null, ?string $name = null): self
+    {
+        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
     }
 }

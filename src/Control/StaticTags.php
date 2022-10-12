@@ -25,7 +25,7 @@ class StaticTags extends Tags
         );
     }
 
-    public static function formatChoices($choices): array
+    public static function formatChoices(array $choices): array
     {
         if (is_string($choices[0] ?? null)) {
             return array_map(static fn($c) => ['value' => $c], $choices);

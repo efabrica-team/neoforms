@@ -50,7 +50,7 @@ class NeoFormRenderer
         }
         foreach ($group->getControls() as $control) {
             /** @var BaseControl $control */
-            if (!$control->getOption('rendered')) {
+            if ((bool)$control->getOption('rendered') === false) {
                 $html .= $this->row($control, []);
             }
         }
@@ -102,13 +102,13 @@ class NeoFormRenderer
 
         $inside = uniqid();
         return Strings::before($this->block('row', [
-                'inside' => $inside,
-                'label' => '',
-                'input' => '',
-                'errors' => '',
-                'attrs' => array_filter($options, 'is_scalar'),
-                'options' => $options,
-            ]), $inside) ?? '';
+            'inside' => $inside,
+            'label' => '',
+            'input' => '',
+            'errors' => '',
+            'attrs' => array_filter($options, 'is_scalar'),
+            'options' => $options,
+        ]), $inside) ?? '';
     }
 
     public function rowGroupEnd(BaseControl $el, array $options = []): string
@@ -119,13 +119,13 @@ class NeoFormRenderer
 
         $inside = uniqid();
         return Strings::after($this->block('row', [
-                'inside' => $inside,
-                'label' => '',
-                'input' => '',
-                'errors' => '',
-                'attrs' => array_filter($options, 'is_scalar'),
-                'options' => $options,
-            ]), $inside) ?? '';
+            'inside' => $inside,
+            'label' => '',
+            'input' => '',
+            'errors' => '',
+            'attrs' => array_filter($options, 'is_scalar'),
+            'options' => $options,
+        ]), $inside) ?? '';
     }
 
     public function formStart(Form $form, array $options = []): string
@@ -137,47 +137,51 @@ class NeoFormRenderer
         }
         if ($options['readonly'] ?? ($form instanceof NeoForm && $form->isReadonly())) {
             foreach ($form->getControls() as $control) {
+                assert($control instanceof BaseControl);
                 $control->setOption('readonly', $control->getOption('readonly') ?? true);
             }
         }
         $inside = uniqid();
         return Strings::before($this->block('form', [
-                'form' => $form,
-                'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
-                'inside' => $inside,
-                'errors' => $form->getOwnErrors(),
-                'options' => $options,
-                'renderRest' => false,
-                'formErrors' => $options['formErrors'] ?? true,
-            ]), $inside) ?? '';
+            'form' => $form,
+            'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
+            'inside' => $inside,
+            'errors' => $form->getOwnErrors(),
+            'options' => $options,
+            'renderRest' => false,
+            'formErrors' => $options['formErrors'] ?? true,
+        ]), $inside) ?? '';
     }
 
     public function formEnd(Form $form, array $options = []): string
     {
         $inside = uniqid();
         return Strings::after($this->block('form', [
-                'form' => $form,
-                'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
-                'inside' => $inside,
-                'errors' => $form->getOwnErrors(),
-                'options' => $options,
-                'renderRest' => $options['rest'] ?? true,
-                'formErrors' => $options['formErrors'] ?? true,
-            ]), $inside) ?? '';
+            'form' => $form,
+            'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
+            'inside' => $inside,
+            'errors' => $form->getOwnErrors(),
+            'options' => $options,
+            'renderRest' => $options['rest'] ?? true,
+            'formErrors' => $options['formErrors'] ?? true,
+        ]), $inside) ?? '';
     }
 
     public function formRest(Form $form, array $options = []): string
     {
-        $groups = Html::fromHtml(implode('', array_map(fn(ControlGroup $group) => $this->group($group), $form->getGroups())));
+        $groupHtml = Html::el();
+        foreach ($form->getGroups() as $group) {
+            $groupHtml->addHtml($this->group($group));
+        }
         $components = array_filter(
             iterator_to_array($form->getComponents()),
-            fn($a) => $a instanceof BaseControl && !$a->getOption('rendered')
+            fn($a) => $a instanceof BaseControl && !(bool)$a->getOption('rendered')
         );
         $rest = array_filter($components, fn($a) => !$a instanceof Button);
         $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
         return $this->block('formRest', [
             'renderer' => $this,
-            'groups' => $groups,
+            'groups' => $groupHtml,
             'form' => $form,
             'rest' => $rest,
             'buttons' => $buttons,
@@ -199,8 +203,8 @@ class NeoFormRenderer
     }
 
     /**
-     * @param BaseControl|Form $el
-     * @param array            $options
+     * @param BaseControl|Form|object $el
+     * @param array                   $options
      * @return string
      */
     public function errors($el, array $options): string
@@ -224,18 +228,18 @@ class NeoFormRenderer
     {
         $sep = uniqid();
         return Strings::before($this->block('section', [
-                'inside' => $sep,
-                'caption' => $caption,
-            ]), $sep) ?? '';
+            'inside' => $sep,
+            'caption' => $caption,
+        ]), $sep) ?? '';
     }
 
     public function sectionEnd(string $caption): string
     {
         $sep = uniqid();
         return Strings::after($this->block('section', [
-                'inside' => $sep,
-                'caption' => $caption,
-            ]), $sep) ?? '';
+            'inside' => $sep,
+            'caption' => $caption,
+        ]), $sep) ?? '';
     }
 
     public function getTemplatePath(): string

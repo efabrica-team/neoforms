@@ -2,14 +2,14 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\Nette\Chooze\ChoozeControl;
 use Efabrica\Nette\Forms\Rte\RteControl;
+use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
-use Nette\Forms\Container;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 
@@ -67,33 +67,17 @@ trait NeoContainerTrait
     }
 
     /**
-     * @return NeoForm
+     * @param value-of<CodeEditor::MODES> $mode
      */
-    public function group(?string $name = null, ?string $class = null)
-    {
-        /** @var NeoForm $group */
-        $group = new ControlGroupBuilder($this, $class ?? 'c-form', $name);
-        return $group;
-    }
-
-    /**
-     * @return NeoForm to fool the IDE into adding all ->add*() methods
-     */
-    public function row(?string $name = null)
-    {
-        /** @var NeoForm $group */
-        $group = new ControlGroupBuilder($this, 'row', $name);
-        return $group;
-    }
-
-    /**
-     * @return NeoForm to fool the IDE into adding all ->add*() methods
-     */
-    public function col(?string $col = '', ?string $name = null)
-    {
-        /** @var NeoForm $group */
-        $group = new ControlGroupBuilder($this, 'col' . ($col ? '-' : '') . $col, $name);
-        return $group;
+    public function addCodeEditor(
+        string $name,
+        #[ExpectedValues(CodeEditor::MODES)]
+        string $mode,
+        ?string $label = null
+    ): CodeEditor {
+        $component = new CodeEditor($mode, $label);
+        $this->addComponent($component, $name);
+        return $component;
     }
 
     /**
@@ -120,11 +104,7 @@ trait NeoContainerTrait
         return $component;
     }
 
-    /**
-     * @param $name
-     * @return NeoContainer
-     */
-    public function addContainer($name): Container
+    public function addContainer($name): NeoContainer
     {
         $control = new NeoContainer();
         $control->currentGroup = $this->currentGroup;
@@ -132,7 +112,7 @@ trait NeoContainerTrait
             $this->currentGroup->add($control);
         }
 
-        $this->addComponent($control, $name);
+        $this->addComponent($control, is_int($name) ? "$name" : $name);
         return $control;
     }
 }
