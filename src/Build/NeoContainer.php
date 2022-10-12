@@ -10,7 +10,8 @@ class NeoContainer extends Container
 
     public function getForm(bool $throw = true): NeoForm
     {
-        /** @var NeoForm $form */
-        return $form = $this->lookup(NeoForm::class, $throw);
+        $form = $this->lookup(NeoForm::class, $throw);
+        assert($form instanceof NeoForm);
+        return $form;
     }
 }

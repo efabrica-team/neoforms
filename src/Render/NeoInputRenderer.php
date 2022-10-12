@@ -44,7 +44,7 @@ class NeoInputRenderer
     {
         /** @var Html $control */
         $control = $el->getControl();
-        if (($options['readonly'] ?? false) || $el->getOption('readonly')) {
+        if (((bool)($options['readonly'] ?? false)) || (bool)$el->getOption('readonly')) {
             return $this->viewRenderer->input($el);
         }
         if ($el instanceof Checkbox) {
@@ -89,6 +89,12 @@ class NeoInputRenderer
         ]);
     }
 
+    /**
+     * @param SelectBox|MultiSelectBox $el
+     * @param array                    $attrs
+     * @param array                    $options
+     * @return string
+     */
     public function selectBox($el, array $attrs, array $options): string
     {
         return $this->block('selectBox', [
@@ -99,7 +105,7 @@ class NeoInputRenderer
         ]);
     }
 
-    public function radio(RadioList $el, array $attrs, array $options)
+    public function radio(RadioList $el, array $attrs, array $options): string
     {
         return $this->block('radio', [
             'attrs' => $attrs,

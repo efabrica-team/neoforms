@@ -17,11 +17,12 @@ class NeoFormControl extends Control
     {
         $this->addComponent($form, 'form');
         $this->form = $form;
-        $this->onRender = $onRender ? Closure::fromCallable($onRender) : null;
+        $this->onRender = is_callable($onRender) ? Closure::fromCallable($onRender) : null;
     }
 
     public function render(): void
     {
+        assert($this->template instanceof Template);
         $this->template->setFile(__DIR__ . '/../Render/templates/control.latte');
         if ($this->onRender !== null) {
             ($this->onRender)($this->template);

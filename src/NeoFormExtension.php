@@ -118,11 +118,11 @@ class NeoFormExtension extends MacroSet
 
     private function validate(MacroNode $node): void
     {
-        if ($node->modifiers) {
+        if ($node->modifiers !== null) {
             throw new CompileException('Modifiers are not allowed in ' . $node->getNotation());
         }
 
-        if ($node->prefix) {
+        if ($node->prefix !== null) {
             throw new CompileException('neoForm does not support n:attribute');
         }
 

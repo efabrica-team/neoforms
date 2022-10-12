@@ -39,6 +39,9 @@ abstract class AbstractForm
     {
     }
 
+    /**
+     * @param mixed ...$parameters
+     */
     protected function translate(string $message, ...$parameters): string
     {
         return $this->formFactory->getTranslator()->translate($message, ...$parameters);

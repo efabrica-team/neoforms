@@ -2,7 +2,6 @@
 
 namespace Efabrica\NeoForms\Control;
 
-use Nette;
 use Nette\Forms\Controls\TextArea;
 use Nette\Utils\Html;
 use Nette\Utils\Json;
@@ -20,7 +19,7 @@ class CodeEditor extends TextArea
 
     /**
      * @param self::MODE_JAVASCRIPT|self::MODE_HTML|self::MODE_CSS|self::MODE_PHP $mode
-     * @param mixed                                                               $label
+     * @param string|object                                                       $label
      */
     public function __construct(string $mode, $label = null)
     {

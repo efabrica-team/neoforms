@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoForm;
-use Efabrica\NeoForms\Build\NeoFormControl;
 use Latte\Engine;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
@@ -51,7 +50,7 @@ class NeoFormRenderer
         }
         foreach ($group->getControls() as $control) {
             /** @var BaseControl $control */
-            if (!$control->getOption('rendered')) {
+            if ((bool)$control->getOption('rendered') === false) {
                 $html .= $this->row($control, []);
             }
         }
@@ -138,6 +137,7 @@ class NeoFormRenderer
         }
         if ($options['readonly'] ?? ($form instanceof NeoForm && $form->isReadonly())) {
             foreach ($form->getControls() as $control) {
+                assert($control instanceof BaseControl);
                 $control->setOption('readonly', $control->getOption('readonly') ?? true);
             }
         }
@@ -175,7 +175,7 @@ class NeoFormRenderer
         }
         $components = array_filter(
             iterator_to_array($form->getComponents()),
-            fn($a) => $a instanceof BaseControl && !$a->getOption('rendered')
+            fn($a) => $a instanceof BaseControl && !(bool)$a->getOption('rendered')
         );
         $rest = array_filter($components, fn($a) => !$a instanceof Button);
         $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
@@ -203,8 +203,8 @@ class NeoFormRenderer
     }
 
     /**
-     * @param BaseControl|Form $el
-     * @param array            $options
+     * @param BaseControl|Form|object $el
+     * @param array                   $options
      * @return string
      */
     public function errors($el, array $options): string
