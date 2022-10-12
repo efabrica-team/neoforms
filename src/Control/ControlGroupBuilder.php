@@ -46,7 +46,7 @@ class ControlGroupBuilder
     /**
      * @return mixed
      */
-    public function __call(string $name, iterable $arguments = [])
+    public function __call(string $name, array $arguments = [])
     {
         $prevGroup = $this->form->getCurrentGroup();
         $this->form->setCurrentGroup($this->group);
