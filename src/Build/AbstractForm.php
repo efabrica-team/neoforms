@@ -51,9 +51,12 @@ abstract class AbstractForm
     {
     }
 
-    public function create(?ActiveRow $row = null): NeoFormControl
+    public function create(?ActiveRow $row = null, iterable $options = []): NeoFormControl
     {
         $form = $this->formFactory->create();
+        foreach ($options as $key => $value) {
+            $form->setOption($key, $value);
+        }
         $this->buildForm($form, $row);
         if ($row !== null) {
             $form->setDefaults($this->initFormData($row));
