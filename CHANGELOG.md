@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AbstractForm $options argument in create()
 ### Fixed
 - NeoForm row/col return type
+- Tags::getTagValues() not empty-string safe
 
 
 ## [1.3.0] - 2022-10-12

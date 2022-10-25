@@ -42,7 +42,7 @@ class Tags extends TextInput
 
     public static function getTagValues(?string $json): array
     {
-        if ($json === null) {
+        if (trim((string)$json) === '') {
             return [];
         }
         $decoded = Json::decode($json, Json::FORCE_ARRAY);
