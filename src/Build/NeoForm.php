@@ -119,7 +119,7 @@ class NeoForm extends Form
     /**
      * @return NeoForm to fool the IDE into seeing all ->add*() methods
      */
-    public function row(?string $name = null): self
+    public function row(?string $name = null)
     {
         return $this->group($name, 'row');
     }
@@ -127,7 +127,7 @@ class NeoForm extends Form
     /**
      * @return NeoForm to fool the IDE into seeing all ->add*() methods
      */
-    public function col(?string $col = null, ?string $name = null): self
+    public function col(?string $col = null, ?string $name = null)
     {
         return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
     }
