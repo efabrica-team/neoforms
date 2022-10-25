@@ -60,7 +60,7 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
             ->setHtmlAttribute('placeholder', 'dictionary.app.adminmodule.form.categoryform.type_category_description')
             ->setRequired('dictionary.app.adminmodule.form.categoryform.description_is_required_to_fill')
         ;
-        // You can use $this->translate(...) if needed, but most of the things are already translated
+        // You can use $this->translate(...) if needed, but most of the things are already translated in render
         $form->addSubmit('save', 'dictionary.app.adminmodule.form.categoryform.default.' . ($row === null ? 'edit' : 'create'));
     }
 
@@ -69,14 +69,21 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
         return ['name' => $row->name, 'description' => $row->description];
     }
 
-    // called if $row is null
+    // optional, called before onCreate and onUpdate
+    protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row): void
+    {
+        $category = $this->repository->insert($values);
+        $form->finish('Kategória ' . $category->name . ' úspešne vytvorená.', 'detail', $row->id);
+    }
+
+    // optional, called if $row is null
     protected function onCreate(NeoForm $form, array $values): void
     {
         $category = $this->repository->insert($values);
         $form->finish('Kategória ' . $category->name . ' úspešne vytvorená.', 'detail', $row->id);
     }
 
-    // called if $row is not null
+    // optional, called if $row is not null
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
         $this->repository->update($row, $values);
@@ -201,10 +208,10 @@ $checkboxes->addCheckbox('verified', 'Verified');
 ```php
 /** @var \Efabrica\NeoForms\Build\NeoForm $form */
 $row1 = $form->row(); // returns row instnace
-$col1 = $row1->col('6'); // returns col instance
+$col1 = $row1->col('6'); // returns new col instance
 $col1->addText('a');
 $col1->addTextArea('b');
-$col2 = $row1->col('6'); // returns another col instance
+$col2 = $row1->col('6'); // returns new different col instance
 $col2->addCheckbox('c');
 
 $a = $form->row('main');
@@ -216,7 +223,7 @@ assert($a === $b); // true, it's the same instance
 ```latte
 {control categoryForm}
 
-this control renders:
+this control renders something like this without you needing to write form HTML in Latte:
 <div class="row">
     <div class="col-6">
         {formRow $form['a']}
@@ -226,6 +233,26 @@ this control renders:
         {formRow $form['c']}
     </div>
 </div>
+```
+
+
+## AbstractForm extra parameters
+If you need to pass an extra parameter, like a user id or a parent entity/sub-entity reference, you can use `NeoForm->options`
+
+```php
+class ArticleForm extends AbstractForm {
+    protected function buildForm(NeoForm $form, ?ActiveRow $row): void
+    {
+        $category = $form->getOption('category');
+        assert($category instanceof ActiveRow);
+
+        $form->addSelect('subcategories', $this->categoryRepository->getSubcategoriesForCategory($category));
+    }
+}
+
+
+// in Presenter:
+$this->addComponent($this->articleForm->create($article, ['category' => $category]), 'articleForm');
 ```
 
 ------
