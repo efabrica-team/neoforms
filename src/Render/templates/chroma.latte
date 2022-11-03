@@ -1,5 +1,5 @@
 {block form}
-    {do $attrs['class'] = trim('c-form ' . ($attrs['class'] ?? ''))}
+    {do $attrs['class'] ??= 'c-form'}
     <form n:attr="$attrs">
         {if $formErrors && count($errors) > 0}
             {formErrors $form}
@@ -12,7 +12,7 @@
 {/block}
 
 {block row}
-    {do $attrs['class'] = trim('group ' . ($attrs['class'] ?? ''))}
+    {do $attrs['class'] ??= 'group'}
     <div n:attr="$attrs">
         {$inside}
         {$label}
@@ -53,7 +53,8 @@
 {/block}
 
 {block label}
-    <label for="{$for}" class="c-form-label{if $errors} text-danger{/if}">
+    {do $attrs['class'] ??= 'c-form-label'.($errors?' text-danger':'')}
+    <label for="{$for}" n:attr="$attrs">
         {_$caption}
         <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{_$info}">
                 <i class="material-icons-round">info</i>
@@ -137,7 +138,7 @@
 {/block}
 
 {block submitButton}
-    {do $attrs['class'] = $attrs['class'] ?? 'c-button'}
+    {do $attrs['class'] ??= 'c-button'}
     <button n:attr="$attrs">
         <i n:ifcontent class="material-icons-round">{$icon}</i>
         {_$caption}
@@ -152,7 +153,7 @@
 {/block}
 
 {block textarea}
-    {do $attrs['class'] = trim('c-form-element ' . ($attrs['class'] ?? ''))}
+    {do $attrs['class'] ??= 'c-form-element'}
     <textarea n:attr="$attrs">{$value}</textarea>
 {/block}
 
@@ -163,9 +164,9 @@
 {/block}
 
 {block datepicker}
-    {do $attrs['class'] = 'c-form-element js-datepicker ' . ($attrs['class'] ?? '')}
+    {do $attrs['class'] ??= 'c-form-element js-datepicker'}
     {do $attrs['readonly'] = 'readonly'}
-    {do $attrs['data-enable-time'] = $isTime ? 'true' : 'false'}
+    {do $attrs['data-enable-time'] ??= $isTime ? 'true' : 'false'}
     <div class="c-datepicker-wrapper">
         <input n:attr="$attrs">
     </div>
