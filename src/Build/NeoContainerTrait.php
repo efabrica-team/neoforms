@@ -7,18 +7,40 @@ use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\Nette\Chooze\ChoozeControl;
+use Efabrica\Nette\Forms\Rte\Registrator;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
+use Nette\NotImplementedException;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 
 /**
- * @uses \Efabrica\NeoForms\Build\NeoForm
- * @uses \Efabrica\NeoForms\Build\NeoContainer
+ * @used-by \Efabrica\NeoForms\Build\NeoForm
+ * @used-by \Efabrica\NeoForms\Build\NeoContainer
  */
 trait NeoContainerTrait
 {
+    protected array $options = [];
+
+    /**
+     * @return mixed|null
+     */
+    public function getOption(string $name)
+    {
+        return $this->options[$name] ?? null;
+    }
+
+    /**
+     * @param mixed $value
+     * @return $this
+     */
+    public function setOption(string $name, $value): self
+    {
+        $this->options[$name] = $value;
+        return $this;
+    }
+
     public function addToggleSwitch(string $name, ?string $label = null): ToggleSwitch
     {
         $component = new ToggleSwitch($label);
@@ -62,6 +84,13 @@ trait NeoContainerTrait
     public function addRte(string $name, ?string $label = null): RteControl
     {
         $component = new RteControl($label);
+        $registrator = $this->getOption(NeoForm::OPT_RTE);
+        if (!$registrator instanceof Registrator) {
+            throw new NotImplementedException('require efabrica/nette-rte');
+        }
+        foreach ($registrator->getDataUrls() as $type => $url) {
+            $component->setDataUrl($type, $url);
+        }
         $this->addComponent($component, $name);
         return $component;
     }
@@ -107,6 +136,7 @@ trait NeoContainerTrait
     public function addContainer($name): NeoContainer
     {
         $control = new NeoContainer();
+        $control->setOption(NeoForm::OPT_RTE, $this->getOption(NeoForm::OPT_RTE));
         $control->currentGroup = $this->currentGroup;
         if ($this->currentGroup !== null) {
             $this->currentGroup->add($control);

@@ -18,9 +18,9 @@ use Tracy\ILogger;
  */
 class NeoForm extends Form
 {
-    private bool $readonly = false;
+    public const OPT_RTE = 'rteRegistrator';
 
-    private array $options = [];
+    private bool $readonly = false;
     use NeoContainerTrait;
 
     /**
@@ -35,24 +35,6 @@ class NeoForm extends Form
     public function isReadonly(): bool
     {
         return $this->readonly;
-    }
-
-    /**
-     * @return mixed|null
-     */
-    public function getOption(string $name)
-    {
-        return $this->options[$name] ?? null;
-    }
-
-    /**
-     * @param mixed $value
-     * @return $this
-     */
-    public function setOption(string $name, $value): self
-    {
-        $this->options[$name] = $value;
-        return $this;
     }
 
     /**
