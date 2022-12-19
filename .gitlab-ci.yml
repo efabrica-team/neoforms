@@ -35,7 +35,7 @@ Sniffer:
   - tags
 Magic numbers detector:
   script:
-  - php ~/tests/phpmnd/vendor/bin/phpmnd src --non-zero-exit-on-violation
+  - php ~/tests/phpmnd/vendor/bin/phpmnd src
   tags:
   - ci-74
   except:
@@ -52,6 +52,7 @@ Composer validate:
   - tags
 Neon validate:
   script:
+  - composer install --no-dev --no-interaction --ansi
   - ~/tests/neon-checker-3_0/vendor/bin/neon-checker validate src -vvv
   tags:
   - ci-74
@@ -60,7 +61,20 @@ Neon validate:
   - tags
 Validate lang files:
   script:
+  - composer install --no-dev --no-interaction --ansi
   - ~/tests/neon-checker-3_0/vendor/bin/neon-checker validate lang */lang */*/lang */*/*/lang --type=translate -vvv
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+Check translation dictionaries:
+  image: efabrica/php:7.4
+  script:
+  - composer install --no-dev --no-interaction --ansi
+  - mkdir -p temp
+  - mkdir -p log
+  - ~/tests/translation-automatization/vendor/bin/translation-automatization check:dictionaries ~/tests/translation-automatization/vendor/efabrica/translation-automatization/config_examples/CheckDictionaries/config.php --params="basePath=.&fallbacks[ro_RO][]=en_US&fallbacks[cs_CZ][]=sk_SK" -vvv
   tags:
   - ci-74
   except:
@@ -68,8 +82,23 @@ Validate lang files:
   - tags
 Changelog:
   script:
-  - git fetch
-  - git diff --name-only origin/master | grep -i changelog.md
+  - |-
+    git fetch
+    last_tag=$(git tag -l --sort=-version:refname | head -n 1)
+    echo $last_tag
+    if [[ $last_tag == "" ]]; then
+      echo "No tags found"
+      exit 0
+    fi
+    changelog=$(git diff --name-only origin/master | grep -i changelog.md | head -n 1) || true
+    error=""
+    exit_code=0
+    if [[ $changelog == "" ]]; then
+      error="Changelog is not updated"
+      exit_code=1
+    fi
+  - echo $error
+  - exit $exit_code
   tags:
   - ci-74
   except:
@@ -77,6 +106,43 @@ Changelog:
   - tags
   - master
   - ci-fixes
+Backward compatibility check:
+  image: efabrica/php:8.2
+  script:
+  - |-
+    git fetch
+    last_tag=$(git tag -l --sort=-version:refname | head -n 1)
+    echo $last_tag
+    if [[ $last_tag == "" ]]; then
+      echo "No tags found. No BC breaks found."
+      exit 0
+    fi
+    exit_code=0
+    error=""
+    php -d memory_limit=-1 ~/tests/backward-compatibility-check/vendor/bin/roave-backward-compatibility-check --from=$last_tag || exit_code=$?
+    if [[ $exit_code != 0 ]]; then
+      changelog=$(git diff --name-only $last_tag | grep -i changelog.md | head -n 1) || true
+      if [[ $changelog == "" ]]; then
+        error="There are some BC breaks (see above), but changelog is missing."
+      else
+        bcbreaks=$(git diff $last_tag $changelog | grep -i "BC break\|\[BC\]") || true
+        if [[ $bcbreaks == "" ]]; then
+          error="There are some BC breaks (see above), but $changelog doesn't contain any BC breaks info."
+        else
+          exit_code=0
+        fi
+      fi
+    fi
+  - echo $error
+  - exit $exit_code
+  tags:
+  - ci-81
+  except:
+  - deploy
+  - tags
+  - master
+  allow_failure: true
+
 PHP extensions finder:
   script:
   - php ~/tests/php-extensions-finder/vendor/bin/php-extensions-finder check src
@@ -168,6 +234,17 @@ PHPStan new Level max PHP 7.4:
   image: efabrica/php:7.4
   script:
   - composer install --no-interaction --ansi
+  - php -d memory_limit=-1 ~/tests/phpstan/vendor/bin/phpstan analyse  -c ~/tests/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.max.neon --no-progress
+  tags:
+  - ci-74
+  except:
+  - deploy
+  - tags
+  allow_failure: false
+PHPStan new Level max PHP 7.4 lowest:
+  image: efabrica/php:7.4
+  script:
+  - composer update --no-interaction --prefer-lowest --prefer-stable --ansi
   - php -d memory_limit=-1 ~/tests/phpstan/vendor/bin/phpstan analyse  -c ~/tests/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.max.neon --no-progress
   tags:
   - ci-74

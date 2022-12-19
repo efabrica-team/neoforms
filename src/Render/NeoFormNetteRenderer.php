@@ -5,10 +5,11 @@ namespace Efabrica\NeoForms\Render;
 use Latte\Engine;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
+use RuntimeException;
 
 class NeoFormNetteRenderer implements FormRenderer
 {
-    private NeoFormRenderer $renderer;
+    private ?NeoFormRenderer $renderer = null;
 
     public function init(Engine $engine): void
     {
@@ -19,6 +20,9 @@ class NeoFormNetteRenderer implements FormRenderer
 
     public function render(Form $form): string
     {
-        return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
+        if ($this->renderer instanceof NeoFormRenderer) {
+            return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
+        }
+        throw new RuntimeException('neonFormRenderer not set');
     }
 }

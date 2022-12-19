@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RTE registrator
 ### Fixed
 - Don't prepend html classes
+- Added missing prompt in select input
 
 
 ## [1.4.0] - 2022-10-25
