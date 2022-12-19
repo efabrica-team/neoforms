@@ -13,8 +13,7 @@ class NeoFormFactory
 
     private Translator $translator;
 
-    /** @var Registrator */
-    private $rteRegistrator;
+    private ?Registrator $rteRegistrator;
 
     public function __construct(NeoFormNetteRenderer $formRenderer, Translator $translator, Container $container)
     {
