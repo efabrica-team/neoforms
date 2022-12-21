@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.1] - 2022-12-21
+### Fixed
+- Late attribute assignment
+
 ## [1.5.0] - 2022-12-21
 ### Added
 - RTE registrator
@@ -79,7 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.5.0...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.5.1...master
+[1.5.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.5.0...1.5.1
 [1.5.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.4.0...1.5.0
 [1.4.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.3.0...1.4.0
 [1.3.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.2.2...1.3.0

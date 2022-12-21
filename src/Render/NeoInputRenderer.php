@@ -99,7 +99,7 @@ class NeoInputRenderer
     {
         $prompt = $el instanceof SelectBox ? $el->getPrompt() : null;
         if (is_string($prompt) && trim($prompt) !== '') {
-            $el->setHtmlAttribute('placeholder', $prompt);
+            $attrs['placeholder'] = $prompt;
         }
 
         return $this->block('selectBox', [
