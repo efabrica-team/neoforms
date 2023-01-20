@@ -100,12 +100,15 @@
 
 {block selectBox}
     <select class="c-select js-custom-select" n:attr="$attrs">
-        {foreach $items as $optionName => $optionLabel}
-            {var $selected = $optionName == $value}
-            {if is_array($value)}
-                {var $selected = in_array($optionName, $value)}
+        {if is_string($prompt)}
+            <option n:attr="selected: $selected === null || $selected === ''">{_$prompt}</option>
+        {/if}
+        {foreach $items as $optionValue => $optionLabel}
+            {var $isSelected = $optionValue === $selected}
+            {if is_array($selected)}
+                {var $isSelected = in_array($optionValue, $selected, true)}
             {/if}
-            <option n:attr="value: $optionName, selected: $selected">
+            <option n:attr="value: $optionValue, selected: $isSelected">
                 {_$optionLabel}
             </option>
         {/foreach}

@@ -98,15 +98,13 @@ class NeoInputRenderer
     public function selectBox($el, array $attrs, array $options): string
     {
         $prompt = $el instanceof SelectBox ? $el->getPrompt() : null;
-        if (is_string($prompt) && trim($prompt) !== '') {
-            $attrs['placeholder'] = $prompt;
-        }
 
         return $this->block('selectBox', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
+            'prompt' => $prompt,
             'items' => $el->getItems(),
-            'value' => $el->getValue(),
+            'selected' => $el->getValue(),
         ]);
     }
 
