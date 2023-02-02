@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE latte PUBLIC "-//LATTE//Latte plugin XML V0.0.1//EN" ".idea/intellij-latte-pro/xmlSources/Latte.dtd">
+<latte vendor="efabrica/grid" version="1">
+    <tags>
+        <tag name="neoForm" type="PAIR">
+            <arguments>
+                <argument
+                        name="formControl" types="CONTROL|PHP_EXPRESSION" required="true" repeatable="true"
+                        type="\Efabrica\NeoForms\Build\NeoFormControl|\Efabrica\NeoForms\Build\NeoForm"/>
+                <argument name="options" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formSection" type="UNPAIRED" description="Renders a section title for a group">
+            <arguments>
+                <argument name="label" types="PHP_EXPRESSION" type="string"/>
+            </arguments>
+        </tag>
+        <tag name="formRow" type="UNPAIRED_ATTR" description="Renders form label and input inside of a form group">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formGroup" type="UNPAIRED_ATTR" description="Renders form label and input inside of a form group">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formRowGroup" type="PAIR" description="Renders form group wrapper">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formRest" type="UNPAIRED_ATTR" description="Renders rest of the form that wasn't explicitly specified">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formInput" type="UNPAIRED_ATTR" description="Renders form input without label and group">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formLabel" type="UNPAIRED_ATTR" description="Renders form label without input and group">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+        <tag name="formErrors" type="UNPAIRED_ATTR" description="Renders form's or input's errors">
+            <arguments>
+                <argument name="element" types="PHP_EXPRESSION" type="\Nette\Forms\Controls\BaseControl"/>
+                <argument name="attrs" types="KEY_VALUE"/>
+            </arguments>
+        </tag>
+    </tags>
+</latte>
