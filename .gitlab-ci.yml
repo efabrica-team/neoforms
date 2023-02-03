@@ -265,6 +265,11 @@ PHPStan new Level max PHP 8.1:
   - tags
   allow_failure: false
 
+Backward compatibility check:
+  script: echo OK
+  when: manual
+  allow_failure: true
+
 Latte syntax check PHP 7.4:
   script: echo OK
   when: manual
