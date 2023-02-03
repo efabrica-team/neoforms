@@ -35,7 +35,10 @@ class NeoFormRenderer
         return $this->engine->renderToString($this->template, $attrs, $blockName);
     }
 
-    public function group(ControlGroup $group, $name): string
+    /**
+     * @param scalar|true|null|mixed  $name
+     */
+    public function group(ControlGroup $group, $name = null): string
     {
         $container = $group->getOption('container') ?? Html::el();
         assert($container instanceof Html);

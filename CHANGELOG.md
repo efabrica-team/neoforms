@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - initFormData is optional
 - group label option
 
-
 ## [1.5.2] - 2023-01-20
 ### Fixed
 - Fix SelectBox prompt not working
