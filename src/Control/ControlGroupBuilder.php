@@ -12,8 +12,6 @@ class ControlGroupBuilder
 
     private ControlGroup $group;
 
-    private static int $groupCounter = 0;
-
     public function __construct(NeoForm $form, string $class, ?string $name)
     {
         $this->form = $form;
