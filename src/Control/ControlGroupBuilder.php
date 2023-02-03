@@ -20,7 +20,7 @@ class ControlGroupBuilder
         if (is_string($name) && !empty($name)) {
             $this->group = $this->form->getGroup($name) ?? $this->form->addGroup($name, false);
         } else {
-            $this->group = $this->form->addGroup((++self::$groupCounter), false);
+            $this->group = $this->form->addGroup(null, false);
         }
         $this->group->setOption('container', Html::el('div')->setAttribute('class', $class));
     }
