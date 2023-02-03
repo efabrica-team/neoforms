@@ -17,10 +17,10 @@ class ControlGroupBuilder
     public function __construct(NeoForm $form, string $class, ?string $name)
     {
         $this->form = $form;
-        if (is_string($name)) {
+        if (is_string($name) && !empty($name)) {
             $this->group = $this->form->getGroup($name) ?? $this->form->addGroup($name, false);
         } else {
-            $this->group = $this->form->addGroup((++self::$groupCounter) . '#' . $class, false);
+            $this->group = $this->form->addGroup((++self::$groupCounter), false);
         }
         $this->group->setOption('container', Html::el('div')->setAttribute('class', $class));
     }
