@@ -28,8 +28,11 @@ class ControlGroupBuilder
     public function group(?string $name = null, ?string $class = null): self
     {
         $child = new self($this->form, $class ?? 'c-form', $name);
-        $children = $this->group->getOption('children');
-        $this->group->setOption('children', [...(is_iterable($children) ? $children : []), $child->group]);
+        $children = $this->group->getOption('children') ?? [];
+        if (is_array($children)) {
+            $children[$name] = $child->group;
+        }
+        $this->group->setOption('children', $children);
         return $child;
     }
 
