@@ -12,15 +12,13 @@ class ControlGroupBuilder
 
     private ControlGroup $group;
 
-    private static int $groupCounter = 0;
-
     public function __construct(NeoForm $form, string $class, ?string $name)
     {
         $this->form = $form;
-        if (is_string($name)) {
+        if (is_string($name) && !empty($name)) {
             $this->group = $this->form->getGroup($name) ?? $this->form->addGroup($name, false);
         } else {
-            $this->group = $this->form->addGroup((++self::$groupCounter) . '#' . $class, false);
+            $this->group = $this->form->addGroup(null, false);
         }
         $this->group->setOption('container', Html::el('div')->setAttribute('class', $class));
     }
@@ -28,8 +26,11 @@ class ControlGroupBuilder
     public function group(?string $name = null, ?string $class = null): self
     {
         $child = new self($this->form, $class ?? 'c-form', $name);
-        $children = $this->group->getOption('children');
-        $this->group->setOption('children', [...(is_iterable($children) ? $children : []), $child->group]);
+        $children = $this->group->getOption('children') ?? [];
+        if (is_array($children)) {
+            $children[$name] = $child->group;
+        }
+        $this->group->setOption('children', $children);
         return $child;
     }
 

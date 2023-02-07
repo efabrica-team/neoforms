@@ -35,31 +35,44 @@ class NeoFormRenderer
         return $this->engine->renderToString($this->template, $attrs, $blockName);
     }
 
-    public function group(ControlGroup $group): string
+    /**
+     * @param scalar|true|null|mixed  $name
+     */
+    public function group(ControlGroup $group, $name = null): string
     {
         $container = $group->getOption('container') ?? Html::el();
         assert($container instanceof Html);
-        $html = '';
+        $label = $group->getOption('label', Html::el());
+        if (is_string($name) && $label === true) {
+            $label = $name;
+        }
+
+        $body = Html::el();
         $children = $group->getOption('children');
         if (is_iterable($children)) {
-            foreach ($children as $child) {
+            foreach ($children as $key => $child) {
                 if ($child instanceof ControlGroup) {
-                    $html .= $this->group($child);
+                    $body->addHtml($this->group($child, $key));
                 }
             }
         }
         foreach ($group->getControls() as $control) {
             /** @var BaseControl $control */
             if ((bool)$control->getOption('rendered') === false) {
-                $html .= $this->row($control, []);
+                $body->addHtml($this->row($control, []));
             }
         }
 
-        if (Strings::trim($html) === '') {
+        if (Strings::trim($body->getText()) === '') {
             return '';
         }
 
-        return $container->addHtml($html)->toHtml();
+        return $container->addHtml(
+            $this->block('group', [
+                'body' => $body,
+                'label' => $label,
+            ])
+        )->toHtml();
     }
 
     public function row(BaseControl $el, array $options = []): string
@@ -170,8 +183,8 @@ class NeoFormRenderer
     public function formRest(Form $form, array $options = []): string
     {
         $groupHtml = Html::el();
-        foreach ($form->getGroups() as $group) {
-            $groupHtml->addHtml($this->group($group));
+        foreach ($form->getGroups() as $key => $group) {
+            $groupHtml->addHtml($this->group($group, $key));
         }
         $components = array_filter(
             iterator_to_array($form->getComponents()),

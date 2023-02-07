@@ -20,7 +20,10 @@ abstract class AbstractForm
      * @param ActiveRow $row
      * @return array $form->setDefaults(...)
      */
-    abstract protected function initFormData(ActiveRow $row): array;
+    protected function initFormData(ActiveRow $row): array
+    {
+        return [];
+    }
 
     protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row = null): void
     {

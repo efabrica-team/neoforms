@@ -21,6 +21,17 @@
     </div>
 {/block}
 
+{block group}
+    {if $label instanceof Nette\HtmlStringable}
+        {$label}
+    {elseif is_string($label)}
+        <fieldset>
+            <legend class="c-section-title">{$label}</legend>
+        </fieldset>
+    {/if}
+    {$body}
+{/block}
+
 {block div}
     <div n:attr="$attrs">
         {foreach $children as $child}
@@ -43,13 +54,13 @@
 {/block}
 
 {block errors}
-{*    Errors in chroma are in the label *}
-{*    {foreach $errors as $error}*}
-{*        <div class="c-alert alert -alt -error -sm">*}
-{*            <i class="material-icons-round">warning</i>*}
-{*            <p>{$error}</p>*}
-{*        </div>*}
-{*    {/foreach}*}
+    {*    Errors in chroma are in the label *}
+    {*    {foreach $errors as $error}*}
+    {*        <div class="c-alert alert -alt -error -sm">*}
+    {*            <i class="material-icons-round">warning</i>*}
+    {*            <p>{$error}</p>*}
+    {*        </div>*}
+    {*    {/foreach}*}
 {/block}
 
 {block label}
@@ -57,7 +68,7 @@
     <label for="{$for}" n:attr="$attrs">
         {_$caption}
         <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{_$info}">
-                <i class="material-icons-round">info</i>
+            <i class="material-icons-round">info</i>
         </span>
         {foreach $errors as $error}
             <span n:if="$error" class="c-button -icon -error -tooltip" data-bs-toggle="tooltip" title="{_$error}">
