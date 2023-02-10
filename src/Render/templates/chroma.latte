@@ -246,6 +246,10 @@
     {/if}
 {/block}
 
+{block customInput}
+    {$customEl->getControl()}
+{/block}
+
 {block tagsView}
     <p>
         {var $tags = is_string($value) ? json_decode($value, true) : $value}
