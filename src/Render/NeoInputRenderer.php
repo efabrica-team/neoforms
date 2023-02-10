@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\ToggleSwitch;
+use Efabrica\Nette\Chooze\ChoozeControl;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
@@ -73,6 +74,8 @@ class NeoInputRenderer
             $s .= $this->upload($el, $attrs, $options);
         } elseif ($el instanceof RadioList) {
             $s .= $this->radio($el, $attrs, $options);
+        } elseif ($el instanceof ChoozeControl) {
+            $s .= $this->custom($el, $attrs, $options);
         } else {
             $s .= $this->textInput($el, $attrs, $options);
         }
@@ -86,6 +89,15 @@ class NeoInputRenderer
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
             'description' => $el->getOption('description'),
+        ]);
+    }
+
+    public function custom(BaseControl $el, array $attrs, array $options): string
+    {
+        return $this->block('customInput', [
+            'attrs' => $attrs,
+            'options' => $el->getOptions() + $options,
+            'customEl' => $el,
         ]);
     }
 
