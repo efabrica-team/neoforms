@@ -8,6 +8,8 @@ use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
+use Nette\Forms\Controls\MultiSelectBox;
+use Nette\Forms\Controls\SelectBox;
 use Nette\Localization\Translator;
 use Throwable;
 use Tracy\Debugger;
@@ -112,5 +114,15 @@ class NeoForm extends Form
     public function col(?string $col = null, ?string $name = null)
     {
         return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
+    }
+
+    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
+    {
+        return parent::addSelect($name, $label, $items, $size)->checkDefaultValue(false);
+    }
+
+    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
+    {
+        return parent::addMultiSelect($name, $label, $items, $size)->checkDefaultValue(false);
     }
 }
