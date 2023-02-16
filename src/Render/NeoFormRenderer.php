@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoForm;
 use Latte\Engine;
+use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
@@ -36,7 +37,7 @@ class NeoFormRenderer
     }
 
     /**
-     * @param scalar|true|null|mixed  $name
+     * @param scalar|true|null|mixed $name
      */
     public function group(ControlGroup $group, $name = null): string
     {
@@ -57,9 +58,14 @@ class NeoFormRenderer
             }
         }
         foreach ($group->getControls() as $control) {
-            /** @var BaseControl $control */
-            if ((bool)$control->getOption('rendered') === false) {
-                $body->addHtml($this->row($control, []));
+            if ($control instanceof BaseControl) {
+                /** @var bool $rendered */
+                $rendered = $control->getOption('rendered') ?? false;
+                if ($rendered === false) {
+                    $body->addHtml($this->row($control));
+                }
+            } elseif ($control instanceof Container) {
+                $body->addHtml($this->container($control, ['rest' => true]));
             }
         }
 
@@ -68,15 +74,29 @@ class NeoFormRenderer
         }
 
         return $container->addHtml(
-            $this->block('group', [
-                'body' => $body,
-                'label' => $label,
-            ])
+            $this->block('group', ['body' => $body, 'label' => $label])
         )->toHtml();
     }
 
-    public function row(BaseControl $el, array $options = []): string
+    /**
+     * @param BaseControl|Container $el
+     * @param array                 $options ['rest' => `if true, doesn't render controls that were already rendered`]
+     * @return string
+     */
+    public function row($el, array $options = []): string
     {
+        if ($el instanceof Container) {
+            return $this->container($el, $options);
+        }
+
+        if ($options['rest'] ?? false) {
+            /** @var bool $rendered */
+            $rendered = $el->getOption('rendered') ?? false;
+            if ($rendered) {
+                return '';
+            }
+        }
+
         if ($options['readonly'] ?? false) {
             $options['input']['readonly'] = $options['readonly'];
         }
@@ -186,12 +206,24 @@ class NeoFormRenderer
         foreach ($form->getGroups() as $key => $group) {
             $groupHtml->addHtml($this->group($group, $key));
         }
-        $components = array_filter(
-            iterator_to_array($form->getComponents()),
-            fn($a) => $a instanceof BaseControl && !(bool)$a->getOption('rendered')
-        );
-        $rest = array_filter($components, fn($a) => !$a instanceof Button);
-        $buttons = ($options['buttons'] ?? true) ? array_filter($components, fn($a) => $a instanceof Button) : [];
+
+        $rest = $buttons = [];
+        foreach ($form->getComponents() as $component) {
+            if ($component instanceof BaseControl) {
+                /** @var bool $rendered */
+                $rendered = $component->getOption('rendered') ?? false;
+                if ($rendered) {
+                    continue;
+                }
+            } elseif (!$component instanceof Container) {
+                continue;
+            }
+            if (!$component instanceof Button) {
+                $rest[] = $component;
+            } elseif ($options['buttons'] ?? true) {
+                $buttons[] = $component;
+            }
+        }
         return $this->block('formRest', [
             'renderer' => $this,
             'groups' => $groupHtml,
@@ -263,5 +295,16 @@ class NeoFormRenderer
     public function setTemplatePath(string $templatePath): void
     {
         $this->template = $templatePath;
+    }
+
+    public function container(Container $el, array $options): string
+    {
+        $rows = [];
+        foreach ($el->getComponents() as $component) {
+            if ($component instanceof BaseControl || $component instanceof Container) {
+                $rows[] = $this->row($component, ['rest' => ($options['rest'] ?? false)]);
+            }
+        }
+        return implode("\n", $rows);
     }
 }

@@ -202,9 +202,9 @@
     {foreach $rest as $restRow}
         {formRow $restRow}
     {/foreach}
-    <div n:if="count($buttons) > 0" class="row">
+    <div n:if="count($buttons) > 0" class="form-rest-buttons">
         {foreach $buttons as $button}
-            <div class="col">
+            <div style="display:inline-block;margin-right:.5rem;" class="form-rest-button">
                 {formRow $button}
             </div>
         {/foreach}
