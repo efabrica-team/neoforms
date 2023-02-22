@@ -64,7 +64,7 @@
 {/block}
 
 {block label}
-    {do $attrs['class'] ??= 'c-form-label'.($errors?' text-danger':'')}
+    {do $attrs['class'] ??= 'c-form-label'.($errors?' text-danger':'').($required?' required':'')}
     <label for="{$for}" n:attr="$attrs">
         {_$caption}
         <span n:if="$info" class="c-button -icon -info -tooltip" data-bs-toggle="tooltip" title="{_$info}">

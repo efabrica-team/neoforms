@@ -120,7 +120,9 @@ trait NeoContainerTrait
         array $urlParams = [],
         array $uploadParams = []
     ): ChoozeControl {
-        $this->__call('addChooze' . ucfirst($type), func_get_args());
+        $args = func_get_args();
+        unset($args[1]);
+        $this->__call('addChooze' . ucfirst($type), $args);
         $control = $this->getComponent($name);
         assert($control instanceof ChoozeControl);
         return $control;
