@@ -243,6 +243,7 @@ class NeoFormRenderer
             'caption' => $el->getCaption(),
             'info' => $el->getOption('info'),
             'errors' => $el->getErrors(),
+            'required' => $el->isRequired(),
             'attrs' => array_filter($options, 'is_scalar'),
         ]);
     }
