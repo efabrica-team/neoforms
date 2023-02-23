@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.1] - 2023-02-23
+### Fixed
+- NeoContainer rendering twice
+
 ## [1.7.0] - 2023-02-22
 ### Added
 - `<label>` has `.required` class now when appropriate
@@ -108,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.0...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.1...master
+[1.7.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.0...1.7.1
 [1.7.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.6.2...1.7.0
 [1.6.2]: https://git.efabrica.sk/libraries/neoforms/compare/1.6.1...1.6.2
 [1.6.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.6.0...1.6.1

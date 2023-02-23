@@ -200,7 +200,7 @@
 {block formRest}
     {$groups}
     {foreach $rest as $restRow}
-        {formRow $restRow}
+        {formRow $restRow, rest => true}
     {/foreach}
     <div n:if="count($buttons) > 0" class="form-rest-buttons">
         {foreach $buttons as $button}
