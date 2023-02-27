@@ -3,12 +3,6 @@
     "description": "Better way to render forms",
     "type": "library",
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://composer.efabrica.sk"
-        }
-    ],
     "require": {
         "php": "^7.4 || ^8.1",
         "nette/forms": "^3.1",
@@ -27,15 +21,8 @@
     ],
     "require-dev": {
         "nette/application": "^3.1",
-        "efabrica/nette-rte": "^3.2",
         "radekdostal/nette-datetimepicker": "^3.1",
-        "efabrica/nette-chooze": "^2.0",
         "tracy/tracy": "^2.9",
-        "nette/database": "^3.1",
-        "jetbrains/phpstorm-attributes": "^1.0",
-        "efabrica/iris-client": "^8.5"
-    },
-    "conflict": {
-        "efabrica/nette-rte": "<3.2.0"
+        "nette/database": "^3.1"
     }
 }
