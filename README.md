@@ -1,7 +1,8 @@
-NeoForms
-========
+![NeoForms](./src/.img/logo.png)
 
-NeoForms is a better way to write forms in Nette Framework.
+NeoForms is a better way to write and render forms in Nette Framework. It gives you conventions (so that everyone writes forms the same way), 
+takes great patterns from Symfony Forms (to give you better way to write complex HTML markup), 
+allows you to style components through a .latte template file and also gives you a read-only mode.
 
 # Installation
 
