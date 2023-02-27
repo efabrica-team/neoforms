@@ -4,8 +4,7 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\ToggleSwitch;
-use Efabrica\Nette\Chooze\ChoozeControl;
-use Efabrica\Nette\Forms\Rte\RteControl;
+use Efabrica\NeoForms\Render\Input\CustomInputRenderer;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
@@ -23,33 +22,46 @@ use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 
 class NeoInputRenderer
 {
-    private NeoFormRenderer $renderer;
+    private NeoFormRendererTemplate $template;
 
     private NeoInputViewRenderer $viewRenderer;
 
     private Translator $translator;
 
-    public function __construct(NeoFormRenderer $renderer, Translator $translator)
+    /** @var CustomInputRenderer[] */
+    private array $customRenderers = [];
+
+    public function __construct(NeoFormRendererTemplate $template, Translator $translator)
     {
-        $this->renderer = $renderer;
-        $this->viewRenderer = new NeoInputViewRenderer($renderer);
+        $this->template = $template;
+        $this->viewRenderer = new NeoInputViewRenderer($template);
         $this->translator = $translator;
     }
 
-    private function block(string $blockName, array $attrs): string
+    public function block(string $blockName, array $attrs): string
     {
-        return $this->renderer->block($blockName, $attrs);
+        return $this->template->block($blockName, $attrs);
+    }
+
+    public function register(string $key, CustomInputRenderer $renderer): void
+    {
+        unset($this->customRenderers[$key]);
+        $this->customRenderers[$key] = $renderer;
     }
 
     public function input(BaseControl $el, array $options = []): string
     {
         /** @var Html $control */
         $control = $el->getControl();
-        if (((bool)($options['readonly'] ?? false)) || (bool)$el->getOption('readonly')) {
+
+        if ($options['readonly'] || (bool)$el->getOption('readonly')) {
+            foreach (array_reverse($this->customRenderers) as $renderer) {
+                $result = $renderer->readonlyRender($el, $options);
+                if ($result !== null) {
+                    return $result;
+                }
+            }
             return $this->viewRenderer->input($el);
-        }
-        if ($el instanceof Checkbox) {
-            return $this->checkbox($el, $options);
         }
 
         $attrs = $control->attrs;
@@ -59,28 +71,10 @@ class NeoInputRenderer
         }
         $attrs += array_filter($options, 'is_scalar');
 
-        $s = '';
-        if ($el instanceof AbstractDateTimePicker) {
-            $s .= $this->datepicker($el, $attrs, $options);
-        } elseif ($el instanceof SelectBox || $el instanceof MultiSelectBox) {
-            $s .= $this->selectBox($el, $attrs, $options);
-        } elseif ($el instanceof Button) {
-            $s .= $this->button($el, $attrs, $options);
-        } elseif ($el instanceof TextArea || $el instanceof RteControl) {
-            $s .= $this->textarea($el, $attrs, $options);
-        } elseif ($el instanceof HiddenField) {
-            $s .= $this->hidden($el, $attrs, $options);
-        } elseif ($el instanceof UploadControl) {
-            $s .= $this->upload($el, $attrs, $options);
-        } elseif ($el instanceof RadioList) {
-            $s .= $this->radio($el, $attrs, $options);
-        } elseif ($el instanceof ChoozeControl) {
-            $s .= $this->custom($el, $attrs, $options);
-        } else {
-            $s .= $this->textInput($el, $attrs, $options);
-        }
-
-        return $s . $this->description($el, $options);
+        return $this->block('input', [
+            'input' => $this->inputBody($el, $attrs, $options),
+            'description' => $this->description($el)
+        ]);
     }
 
     public function textInput(BaseControl $el, array $attrs, array $options): string
@@ -182,12 +176,11 @@ class NeoInputRenderer
         ]);
     }
 
-    public function description(BaseControl $el, array $options): string
+    public function description(BaseControl $el): string
     {
         return $this->block('description', [
             'el' => $el,
             'description' => $el->getOption('description'),
-            'options' => $options,
         ]);
     }
 
@@ -198,5 +191,47 @@ class NeoInputRenderer
             'options' => $el->getOptions() + $options,
             'description' => $el->getOption('description'),
         ]);
+    }
+
+    /**
+     * @param BaseControl $el
+     * @param array       $attrs
+     * @param array       $options
+     * @return string
+     */
+    private function inputBody(BaseControl $el, array $attrs, array $options): string
+    {
+        foreach (array_reverse($this->customRenderers) as $renderer) {
+            $result = $renderer->render($el, $attrs, $options);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        if ($el instanceof Checkbox) {
+            return $this->checkbox($el, $options);
+        }
+        if ($el instanceof AbstractDateTimePicker) {
+            return $this->datepicker($el, $attrs, $options);
+        }
+        if ($el instanceof SelectBox || $el instanceof MultiSelectBox) {
+            return $this->selectBox($el, $attrs, $options);
+        }
+        if ($el instanceof Button) {
+            return $this->button($el, $attrs, $options);
+        }
+        if ($el instanceof TextArea) {
+            return $this->textarea($el, $attrs, $options);
+        }
+        if ($el instanceof HiddenField) {
+            return $this->hidden($el, $attrs, $options);
+        }
+        if ($el instanceof UploadControl) {
+            return $this->upload($el, $attrs, $options);
+        }
+        if ($el instanceof RadioList) {
+            return $this->radio($el, $attrs, $options);
+        }
+
+        return $this->textInput($el, $attrs, $options);
     }
 }

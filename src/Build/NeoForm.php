@@ -8,6 +8,7 @@ use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
+use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Localization\Translator;
@@ -20,10 +21,9 @@ use Tracy\ILogger;
  */
 class NeoForm extends Form
 {
-    public const OPT_RTE = 'rteRegistrator';
+    use NeoContainerTrait;
 
     private bool $readonly = false;
-    use NeoContainerTrait;
 
     /**
      * @return $this
@@ -91,7 +91,7 @@ class NeoForm extends Form
     }
 
     /**
-     * @return NeoForm to fool the IDE into seeing all ->add*() methods
+     * @return NeoForm to fool the static analysis into seeing all ->add*() methods
      */
     public function group(?string $name = null, ?string $class = null)
     {
@@ -109,7 +109,7 @@ class NeoForm extends Form
     }
 
     /**
-     * @return NeoForm to fool the IDE into seeing all ->add*() methods
+     * @return NeoForm to fool the static analysis into seeing all ->add*() methods
      */
     public function col(?string $col = null, ?string $name = null)
     {
@@ -124,5 +124,10 @@ class NeoForm extends Form
     public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return parent::addMultiSelect($name, $label, $items, $size)->checkDefaultValue(false);
+    }
+
+    public function addButton(string $name, $caption = null, ?string $icon = null): Button
+    {
+        return parent::addButton($name, $caption)->setOption('icon', $icon);
     }
 }

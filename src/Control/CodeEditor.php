@@ -6,6 +6,9 @@ use Nette\Forms\Controls\TextArea;
 use Nette\Utils\Html;
 use Nette\Utils\Json;
 
+/**
+ * Ace Code Editor
+ */
 class CodeEditor extends TextArea
 {
     public const MODE_JAVASCRIPT = 'ace/mode/javascript';

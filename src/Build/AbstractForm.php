@@ -5,7 +5,18 @@ namespace Efabrica\NeoForms\Build;
 use Nette\Application\UI\Template;
 use Nette\Database\Table\ActiveRow;
 
-abstract class AbstractForm
+/**
+ * @deprecated  Use {@see ActiveRowForm} instead. See README on how to use it.
+ *              Migration is easy:
+ *                  1. Rename `buildForm(...)` to `create(?ActiveRow $row = null): NeoFormControl`
+ *                  2. $form = $this->formFactory->create();
+ *                  3. return $this->control($form, $row);
+ *              That's it. I'm sorry for this change, but AbstractForm has a major design flaw because
+ *                  you cannot add additional typed parameter to create().
+ *              This refactor gives you more flexibility with the create() method.
+ *              Will be removed in 3.0
+ */
+abstract class AbstractForm extends ActiveRowForm
 {
     private NeoFormFactory $formFactory;
 
@@ -14,33 +25,19 @@ abstract class AbstractForm
         $this->formFactory = $formFactory;
     }
 
-    abstract protected function buildForm(NeoForm $form, ?ActiveRow $row): void;
-
-    /**
-     * @param ActiveRow $row
-     * @return array $form->setDefaults(...)
-     */
-    protected function initFormData(ActiveRow $row): array
+    public function create(?ActiveRow $row = null, iterable $options = []): NeoFormControl
     {
-        return [];
-    }
-
-    protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row = null): void
-    {
-        if ($row === null) {
-            $this->onCreate($form, $values);
-        } else {
-            $this->onUpdate($form, $values, $row);
+        $form = $this->formFactory->create();
+        foreach ($options as $key => $value) {
+            $form->setOption($key, $value);
         }
+
+        $this->buildForm($form, $row);
+
+        return $this->control($form, $row);
     }
 
-    protected function onCreate(NeoForm $form, array $values): void
-    {
-    }
-
-    protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
-    {
-    }
+    abstract protected function buildForm(NeoForm $form, ?ActiveRow $row): void;
 
     /**
      * @param mixed ...$parameters
@@ -48,24 +45,5 @@ abstract class AbstractForm
     protected function translate(string $message, ...$parameters): string
     {
         return $this->formFactory->getTranslator()->translate($message, ...$parameters);
-    }
-
-    protected function template(Template $template): void
-    {
-    }
-
-    public function create(?ActiveRow $row = null, iterable $options = []): NeoFormControl
-    {
-        $form = $this->formFactory->create();
-        foreach ($options as $key => $value) {
-            $form->setOption($key, $value);
-        }
-        $this->buildForm($form, $row);
-        if ($row !== null) {
-            $form->setDefaults($this->initFormData($row));
-        }
-        $form->setOnSuccess(fn(NeoForm $form, array $values) => $this->onSuccess($form, $values, $row));
-
-        return new NeoFormControl($form, fn(Template $template) => $this->template($template));
     }
 }

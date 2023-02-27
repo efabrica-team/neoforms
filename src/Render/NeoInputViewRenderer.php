@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Control\Tags;
-use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
@@ -11,13 +10,12 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
-use Nette\Forms\Controls\UploadControl;
 
 class NeoInputViewRenderer
 {
-    private NeoFormRenderer $renderer;
+    private NeoFormRendererTemplate $renderer;
 
-    public function __construct(NeoFormRenderer $renderer)
+    public function __construct(NeoFormRendererTemplate $renderer)
     {
         $this->renderer = $renderer;
     }
@@ -42,7 +40,7 @@ class NeoInputViewRenderer
                 'values' => $values,
             ]);
         }
-        if ($el instanceof TextArea || $el instanceof RteControl) {
+        if ($el instanceof TextArea) {
             return $this->renderer->block('inputViewTextarea', [
                 'value' => $el->getValue(),
             ]);
@@ -51,13 +49,6 @@ class NeoInputViewRenderer
             return $this->renderer->block('inputViewCheckbox', [
                 'value' => $el->getValue(),
             ]);
-        }
-        if ($el instanceof UploadControl) {
-            $disabled = $el->isDisabled();
-            $el->setDisabled(true);
-            $s = $this->renderer->inputRenderer->upload($el, ['disabled' => true, 'readonly' => true], $options);
-            $el->setDisabled($disabled);
-            return $s;
         }
         if ($el instanceof Tags) {
             return $this->renderer->block('tagsView', [

@@ -18,13 +18,13 @@ includes:
 # Documentation
 
 <!-- TOC -->
-  * [Using AbstractForm](#using-abstractform)
+  * [Using ActiveRowForm](#using-activerowform)
       * [Presenter](#presenter)
-      * [Using component in latte](#using-component-in-latte)
-  * [Another {formRow} example](#another-formrow-example)
+      * [Using component in latte (simple rendering)](#using-component-in-latte--simple-rendering-)
+      * [Using component in latte (custom HTML structure around it)](#using-component-in-latte--custom-html-structure-around-it-)
+      * [Using component in latte (stand-alone HTML template for form)](#using-component-in-latte--stand-alone-html-template-for-form-)
   * [{formGroup} example](#formgroup-example)
   * [.row .col grid layout in PHP](#row-col-grid-layout-in-php)
-  * [AbstractForm extra parameters](#abstractform-extra-parameters)
   * [Latte Tags (API)](#latte-tags--api-)
     * [`{neoForm}`](#neoform)
     * [`{formRow}`](#formrow)
@@ -33,26 +33,45 @@ includes:
     * [`{formLabel}`](#formlabel)
     * [`{formInput}`](#forminput)
     * [`{formSection}`](#formsection)
+  * [Control Options](#control-options)
+    * [`"icon"`](#icon)
+    * [`"description"`](#description)
+    * [`"info"`](#info)
+    * [`"readonly"`](#readonly)
+    * [`"class"`](#class)
+    * [`"input"`](#input)
 <!-- TOC -->
 
-## Using AbstractForm
+## Using ActiveRowForm
 
 ```php
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Build\NeoFormFactory;
+use Efabrica\NeoForms\Build\NeoFormControl;
+use Efabrica\NeoForms\Build\ActiveRowForm;
 use Nette\Database\Table\ActiveRow;
 use Nette\Application\UI\Template;
 
-class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
+class CategoryForm extends ActiveRowForm
 {
+    private NeoFormFactory $formFactory;
     private CategoryRepository $repository;
 
+    /** No parent constructor */
     public function __construct(NeoFormFactory $formFactory, CategoryRepository $repository) {
-        parent::__construct($formFactory);
+        $this->formFactory = $formFactory;
         $this->repository = $repository;
     }
 
-    protected function buildForm(NeoForm $form, ?ActiveRow $row): void
+    /**
+     * This method is yours, it is not overridden, but needs to be implemented. 
+     * You can have any arguments that you wish. They do not have to be nullable.
+     * $row argument is optional.
+     */
+    public function create(?ActiveRow $row = null): NeoFormControl
     {
+        $form = $this->formFactory->create();
+        
         $form->addText('name', 'dictionary.app.adminmodule.form.categoryform.name')
             ->setHtmlAttribute('placeholder', 'dictionary.app.adminmodule.form.categoryform.enter_category_name')
             ->setRequired('dictionary.app.adminmodule.form.categoryform.name_is_required_to_fill')
@@ -63,6 +82,8 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
         ;
         // You can use $this->translate(...) if needed, but most of the things are already translated in render
         $form->addSubmit('save', 'dictionary.app.adminmodule.form.categoryform.default.' . ($row === null ? 'edit' : 'create'));
+        
+        return $this->control($form, $row);
     }
 
     protected function initFormData(ActiveRow $row): array
@@ -73,22 +94,22 @@ class CategoryForm extends \Efabrica\NeoForms\Build\AbstractForm
     // optional, called before onCreate and onUpdate
     protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row): void
     {
-        $category = $this->repository->insert($values);
-        $form->finish('Kategória ' . $category->name . ' úspešne vytvorená.', 'detail', $row->id);
+        $category = $this->repository->insertOrUpdate($row, $values);
+        $form->finish('Category ' . $category->name . ' saved.');
     }
 
     // optional, called if $row is null
     protected function onCreate(NeoForm $form, array $values): void
     {
         $category = $this->repository->insert($values);
-        $form->finish('Kategória ' . $category->name . ' úspešne vytvorená.', 'detail', $row->id);
+        $form->finish('Category ' . $category->name . ' created.', 'detail', $row->id);
     }
 
     // optional, called if $row is not null
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
         $this->repository->update($row, $values);
-        $form->finish('Kategória úspešne upravená.', 'detail', $row->id);
+        $form->finish('Category updated.', 'detail', $row->id);
     }
 
     // can be empty and not implemented
@@ -124,11 +145,12 @@ class CategoryPresenter extends AdminPresenter
 }
 ```
 
-#### Using component in latte
+#### Using component in latte (simple rendering)
 
 ```latte
 {* create.latte *}
 {block content}
+{* You can wrap it in your internal business template: *}
 <div class="c-card">
     <div class="body-wrapper">
         <div class="body">
@@ -138,44 +160,70 @@ class CategoryPresenter extends AdminPresenter
 </div>
 ```
 
-Optional form template:
+#### Using component in latte (custom HTML structure around it)
+
 ```latte
-{* __DIR__ . '/templates/categoryForm.latte' *}
+{* create.latte *}
+{block content}
+{* You can wrap it in your internal business template: *}
 <div class="c-card">
-    <div class="body-wrapper">
-        <div class="body">
-            {neoForm categoryForm}
-                <div class="row">
-                    <div class="col">
-                        {formRow $form['name']}
-                    </div>
-                    <div class="col">
-                        {formRow $form['description']}
-                    </div>
-                </div>
-                {* save button and every other unrendered input gets automatically
-                rendered on the end of form, because it wasn't rendered yet *}
-            {/neoForm}
+    <div class="body">
+        {neoForm categoryForm}
+        {formRow $form['title'], data-joke => 123}
+        {formRow $form['bodytext']}
+        {formRow $form['published_at'], input => [class => 'reverse']}
+        {formRow $form['time_identifier']}
+        <div class="row">
+            <div class="col-5">{formRow $form['is_pinned']}</div>
+            <div class="col-4">{formRow $form['is_highlight']}</div>
+            <div class="col-3">{formRow $form['is_published']}</div>
         </div>
+        {formRow $form['tags']}
+        {* save button and every other unrendered input gets automatically
+        rendered on the end of form, because it wasn't rendered yet *}
+        {/neoForm}
     </div>
 </div>
 ```
 
-## Another {formRow} example
+#### Using component in latte (stand-alone HTML template for form)
 
-```html
-{neoForm itemForm}
-{formRow $form['title'], data-joke => 123}
-{formRow $form['bodytext']}
-{formRow $form['published_at'], input => [class => 'reverse']}
-{formRow $form['time_identifier']}
-<div class="row">
-    <div class="col-5">{formRow $form['is_pinned']}</div>
-    <div class="col-4">{formRow $form['is_highlight']}</div>
-    <div class="col-3">{formRow $form['is_published']}</div>
-</div>
-{formRow $form['tags']}
+```latte
+{* categoryForm.latte *}
+{neoForm categoryForm}
+    {formRow $form['title'], data-joke => 123}
+    {formRow $form['bodytext']}
+    {formRow $form['published_at'], input => [class => 'reverse']}
+    {formRow $form['time_identifier']}
+    <div class="row">
+        <div class="col-5">{formRow $form['is_pinned']}</div>
+        <div class="col-4">{formRow $form['is_highlight']}</div>
+        <div class="col-3">{formRow $form['is_published']}</div>
+    </div>
+    {formRow $form['tags']}
+    {* save button and every other unrendered input gets automatically
+    rendered on the end of form, because it wasn't rendered yet *}
 {/neoForm}
+```
+
+```php
+class CategoryForm extends \Efabrica\NeoForms\Build\ActiveRowForm {
+    // ... 
+    protected function template(\Nette\Application\UI\Template $template) : void{
+        $template->setFile(__DIR__.'/templates/categoryForm.latte');
+        $template->someVariable = new SomeValue();
+    }
+}
+```
+
+```latte
+{* create.latte remains the same: *}
+{block content}
+<div class="c-card">
+    <div class="body">
+        {control categoryForm}
+    </div>
+</div>
 ```
 
 ## {formGroup} example
@@ -209,7 +257,7 @@ $checkboxes->addCheckbox('verified', 'Verified');
 ```php
 /** @var \Efabrica\NeoForms\Build\NeoForm $form */
 $row1 = $form->row(); // returns row instnace
-$col1 = $row1->col('6'); // returns new col instance
+$col1 = $row1->col('6'); // returns new col instance, class="col-6"
 $col1->addText('a');
 $col1->addTextArea('b');
 $col2 = $row1->col('6'); // returns new different col instance
@@ -221,10 +269,10 @@ assert($a === $b); // true, it's the same instance
 
 ```
 
-```latte
-{control categoryForm}
+`{control categoryForm}` then renders something like this:
 
-this control renders something like this without you needing to write form HTML in Latte:
+```latte
+
 <div class="row">
     <div class="col-6">
         {formRow $form['a']}
@@ -236,31 +284,9 @@ this control renders something like this without you needing to write form HTML 
 </div>
 ```
 
-
-## AbstractForm extra parameters
-If you need to pass an extra parameter, like a user id or a parent entity/sub-entity reference, you can use `NeoForm->options`
-
-```php
-class ArticleForm extends AbstractForm {
-    protected function buildForm(NeoForm $form, ?ActiveRow $row): void
-    {
-        $category = $form->getOption('category');
-        assert($category instanceof ActiveRow);
-
-        $form->addSelect('subcategories', $this->categoryRepository->getSubcategoriesForCategory($category));
-    }
-}
-
-
-// in Presenter:
-$this->addComponent($this->articleForm->create($article, ['category' => $category]), 'articleForm');
-```
-
 ------
 
 ## Latte Tags (API)
-
----
 
 ### `{neoForm}`
 
@@ -322,7 +348,7 @@ If you want to change the layout of content inside the formRow, see `{formRowGro
 
 ### `{formGroup}`
 
-Accepts `ControlGroup` as required argument. 
+Accepts `ControlGroup` as required argument.
 Renders all controls in the group. Uses `{formRow}` internally.
 
 ```latte
@@ -391,4 +417,71 @@ Argument is `string`.
 {/foreach}
 {/formSection}
 {/if}
+```
+
+------
+
+## Control Options
+
+You can set control options through `->setOption()` on `BaseControl` instances. This is the recommended approach.
+
+For example:
+`->addText('title', 'Title')->setOption('info', 'Shown on homepage')`
+
+Or also through latte `{formRow}` parameters. This is the less tested approach.
+
+Example: `{formRow $form['title'], info => "Shown on homepage"`
+
+### `"icon"`
+
+`string`. Works on buttons.
+`->addSubmit(...)->setOption('icon', 'fa fa-home')` adds `<i class="fa fa-home"></i>` into the button, before the text.
+
+You can modify the template and alter how the icon is added. In our company, we internally extend the template and use Google Material Icons instead.
+
+```php
+$form->addSubmit('save', 'Save')->setOption('icon', 'fa fa-save');
+```
+
+### `"description"`
+`string`. Adds gray helper text under input. Works on every traditional input/row.
+```php
+$form->addPassword('password', 'Password')->setOption('description', 'At least 8 characters.');
+```
+
+### `"info"`
+`string`. Adds a blue info circle tooltip next to the label. Works on every traditional input.
+```php
+$form->addText('title', 'Title')->setOption('info', 'This appears on homepage');
+```
+
+### `"readonly"`
+`bool`. If set to true, value is not modifiable and will not be submitted. It is rendered as a badge instead.
+
+```php
+$form->addText('title', 'Title')->setOption('readonly', true);
+```
+
+```php
+$form->addText('title', 'Title')->setOption('readonly', fn(TextInput $el) => strtoupper($el->getValue()));
+```
+### `"class"`
+`string`. You can set class, or any other HTML attribute and it will be applied to the row/input/label.
+
+```php
+$form->addText('title', 'Title')->setOption('class', 'form-control-lg');
+```
+
+### `"input"`
+`array`. You can apply this to the `{formRow}` tag to pass html attributes to input.
+
+```latte
+{formRow $form['title'], 'input' => ['class' => 'special']}
+```
+
+### `"label"`
+`array`. You can apply this to the `{formRow}` tag to pass html attributes to input.
+
+```latte
+{formRow $form['title'], 'label' => ['class' => 'special']}
 ```

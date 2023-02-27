@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Build\Internal\EfabricaTrait;
 use Nette\Forms\Container;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;

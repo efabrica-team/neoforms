@@ -6,6 +6,9 @@ use Nette\Forms\Controls\TextInput;
 use Nette\Utils\Html;
 use Nette\Utils\Json;
 
+/**
+ * Tagify.js
+ */
 class Tags extends TextInput
 {
     private array $config;

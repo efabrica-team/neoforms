@@ -10,7 +10,9 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.1"
+        "php": "^7.4 || ^8.1",
+        "nette/forms": "^3.1",
+        "latte/latte": "^2.11"
     },
     "autoload": {
         "psr-4": {
@@ -24,15 +26,14 @@
         }
     ],
     "require-dev": {
-        "nette/forms": "^3.1",
-        "latte/latte": "^2.11",
         "nette/application": "^3.1",
         "efabrica/nette-rte": "^3.2",
         "radekdostal/nette-datetimepicker": "^3.1",
         "efabrica/nette-chooze": "^2.0",
         "tracy/tracy": "^2.9",
         "nette/database": "^3.1",
-        "jetbrains/phpstorm-attributes": "^1.0"
+        "jetbrains/phpstorm-attributes": "^1.0",
+        "efabrica/iris-client": "^8.5"
     },
     "conflict": {
         "efabrica/nette-rte": "<3.2.0"

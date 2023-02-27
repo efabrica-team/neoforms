@@ -5,8 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- NeoForms is prepared to go as a stand-alone open-source library
+- ActiveRowForm as a more flexible replacement for AbstractForm
+- FormDefinition, an abstract class for forms that don't work with ActiveRow
+- ExampleActiveRowForm to copy
+- bootstrap5.latte is now the default template
+- Nette services have been named
+- NeoFormRendererTemplate is now easier to configure
 
-
+### Removed
+- AbstractForm is now deprecated. Will be removed in 3.0. Upgrade info is inside the AbstractForm class.
+- Internal eFabrica-specific code was removed. It is moved to an internal package.
+  - This includes: Choozer, chroma.latte, RteControl
 
 ## [1.7.1] - 2023-02-23
 ### Fixed

@@ -82,6 +82,11 @@
     <div n:ifcontent class="c-input-helper">{_$description|noescape}</div>
 {/block}
 
+{block input}
+    {$input}
+    {$description}
+{/block}
+
 {block inputText}
     <input n:attr="$attrs" n:class="c-form-element, $attrs['class'] ?? ''">
 {/block}

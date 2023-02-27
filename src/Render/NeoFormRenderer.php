@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoForm;
-use Latte\Engine;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
@@ -11,29 +10,19 @@ use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
-use Nette\Localization\Translator;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
 use RuntimeException;
 
 class NeoFormRenderer
 {
-    private Engine $engine;
-
-    private string $template;
-
     public NeoInputRenderer $inputRenderer;
+    private NeoFormRendererTemplate $template;
 
-    public function __construct(Engine $engine, Translator $translator)
+    public function __construct(NeoFormRendererTemplate $template, NeoInputRenderer $inputRenderer)
     {
-        $this->engine = $engine;
-        $this->template = __DIR__ . '/templates/chroma.latte';
-        $this->inputRenderer = new NeoInputRenderer($this, $translator);
-    }
-
-    public function block(string $blockName, array $attrs = []): string
-    {
-        return $this->engine->renderToString($this->template, $attrs, $blockName);
+        $this->template = $template;
+        $this->inputRenderer = $inputRenderer;
     }
 
     /**
@@ -74,7 +63,7 @@ class NeoFormRenderer
         }
 
         return $container->addHtml(
-            $this->block('group', ['body' => $body, 'label' => $label])
+            $this->template->block('group', ['body' => $body, 'label' => $label, 'options' => $group->getOptions()])
         )->toHtml();
     }
 
@@ -101,7 +90,7 @@ class NeoFormRenderer
             $options['input']['readonly'] = $options['readonly'];
         }
         if ($el instanceof HiddenField) {
-            return $this->block('hiddenRow', [
+            return $this->template->block('hiddenRow', [
                 'inside' => '',
                 'input' => Html::fromHtml($this->inputRenderer->input($el, $options['input'] ?? [])),
                 'attrs' => array_filter($options, 'is_scalar'),
@@ -117,7 +106,7 @@ class NeoFormRenderer
             $label = $this->label($el, $options['label'] ?? []);
         }
 
-        return $this->block('row', [
+        return $this->template->block('row', [
             'inside' => '',
             'label' => Html::fromHtml($label),
             'input' => Html::fromHtml($this->inputRenderer->input($el, $options['input'] ?? [])),
@@ -134,7 +123,7 @@ class NeoFormRenderer
         }
 
         $inside = uniqid();
-        return Strings::before($this->block('row', [
+        return Strings::before($this->template->block('row', [
             'inside' => $inside,
             'label' => '',
             'input' => '',
@@ -151,7 +140,7 @@ class NeoFormRenderer
         }
 
         $inside = uniqid();
-        return Strings::after($this->block('row', [
+        return Strings::after($this->template->block('row', [
             'inside' => $inside,
             'label' => '',
             'input' => '',
@@ -175,7 +164,7 @@ class NeoFormRenderer
             }
         }
         $inside = uniqid();
-        return Strings::before($this->block('form', [
+        return Strings::before($this->template->block('form', [
             'form' => $form,
             'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
             'inside' => $inside,
@@ -189,7 +178,7 @@ class NeoFormRenderer
     public function formEnd(Form $form, array $options = []): string
     {
         $inside = uniqid();
-        return Strings::after($this->block('form', [
+        return Strings::after($this->template->block('form', [
             'form' => $form,
             'attrs' => $form->getElementPrototype()->attrs + array_filter($options, 'is_scalar'),
             'inside' => $inside,
@@ -224,7 +213,7 @@ class NeoFormRenderer
                 $buttons[] = $component;
             }
         }
-        return $this->block('formRest', [
+        return $this->template->block('formRest', [
             'renderer' => $this,
             'groups' => $groupHtml,
             'form' => $form,
@@ -238,7 +227,7 @@ class NeoFormRenderer
         if ($el instanceof Button || $el instanceof HiddenField) {
             return '';
         }
-        return $this->block('label', [
+        return $this->template->block('label', [
             'for' => $el->getHtmlId(),
             'caption' => $el->getCaption(),
             'info' => $el->getOption('info'),
@@ -256,13 +245,13 @@ class NeoFormRenderer
     public function errors($el, array $options): string
     {
         if ($el instanceof BaseControl) {
-            return $this->block('errors', [
+            return $this->template->block('errors', [
                 'errors' => $el->getErrors(),
                 'options' => $options,
             ]);
         }
         if ($el instanceof Form) {
-            return $this->block('formErrors', [
+            return $this->template->block('formErrors', [
                 'errors' => $el->getOwnErrors(),
                 'options' => $options,
             ]);
@@ -273,7 +262,7 @@ class NeoFormRenderer
     public function sectionStart(string $caption): string
     {
         $sep = uniqid();
-        return Strings::before($this->block('section', [
+        return Strings::before($this->template->block('section', [
             'inside' => $sep,
             'caption' => $caption,
         ]), $sep) ?? '';
@@ -282,20 +271,10 @@ class NeoFormRenderer
     public function sectionEnd(string $caption): string
     {
         $sep = uniqid();
-        return Strings::after($this->block('section', [
+        return Strings::after($this->template->block('section', [
             'inside' => $sep,
             'caption' => $caption,
         ]), $sep) ?? '';
-    }
-
-    public function getTemplatePath(): string
-    {
-        return $this->template;
-    }
-
-    public function setTemplatePath(string $templatePath): void
-    {
-        $this->template = $templatePath;
     }
 
     public function container(Container $el, array $options): string
