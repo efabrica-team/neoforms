@@ -2,7 +2,6 @@
 
 namespace Efabrica\NeoForms\Build;
 
-use Nette\Application\UI\Template;
 use Nette\Database\Table\ActiveRow;
 
 /**

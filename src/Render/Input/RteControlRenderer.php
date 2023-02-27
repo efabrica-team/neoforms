@@ -3,7 +3,6 @@
 namespace Efabrica\NeoForms\Render\Input;
 
 use Efabrica\NeoForms\Render\NeoInputRenderer;
-use Efabrica\NeoForms\Render\NeoInputViewRenderer;
 use Efabrica\Nette\Forms\Rte\RteControl;
 use Nette\Forms\Controls\BaseControl;
 

@@ -73,7 +73,7 @@ class NeoInputRenderer
 
         return $this->block('input', [
             'input' => $this->inputBody($el, $attrs, $options),
-            'description' => $this->description($el)
+            'description' => $this->description($el),
         ]);
     }
 

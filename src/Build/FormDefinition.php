@@ -8,7 +8,8 @@ abstract class FormDefinition
 {
     // abstract public function create([never ...$args]): NeoFormControl
 
-    protected function control(NeoForm $form): NeoFormControl {
+    protected function control(NeoForm $form): NeoFormControl
+    {
         $form->setOnSuccess(fn(NeoForm $form, array $values) => $this->onSuccess($form, $values));
 
         return new NeoFormControl($form, fn(Template $template) => $this->template($template));

@@ -9,7 +9,8 @@ abstract class ActiveRowForm extends FormDefinition
 {
     // abstract public function create([never ...$args]): NeoFormControl
 
-    final protected function control(NeoForm $form, ?ActiveRow $row = null): NeoFormControl {
+    final protected function control(NeoForm $form, ?ActiveRow $row = null): NeoFormControl
+    {
         if ($row !== null) {
             $form->setDefaults($this->initFormData($row));
         }

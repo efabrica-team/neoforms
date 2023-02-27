@@ -17,6 +17,7 @@ use RuntimeException;
 class NeoFormRenderer
 {
     public NeoInputRenderer $inputRenderer;
+
     private NeoFormRendererTemplate $template;
 
     public function __construct(NeoFormRendererTemplate $template, NeoInputRenderer $inputRenderer)
