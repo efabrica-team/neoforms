@@ -93,4 +93,14 @@ trait NeoContainerTrait
         $this->addComponent($control, is_int($name) ? "$name" : $name);
         return $control;
     }
+
+    public function row(?string $name = null): self
+    {
+        return $this->group($name, 'row');
+    }
+
+    public function col(?string $col = null, ?string $name = null): self
+    {
+        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
+    }
 }

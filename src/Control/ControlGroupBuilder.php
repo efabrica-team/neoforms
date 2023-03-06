@@ -28,20 +28,14 @@ class ControlGroupBuilder
         $child = new self($this->form, $class ?? 'c-form', $name);
         $children = $this->group->getOption('children') ?? [];
         if (is_array($children)) {
-            $children[$name] = $child->group;
+            if ($name !== null) {
+                $children[$name] = $child->group;
+            } else {
+                $children[] = $child->group;
+            }
         }
         $this->group->setOption('children', $children);
         return $child;
-    }
-
-    public function row(?string $name = null): self
-    {
-        return $this->group($name, 'row');
-    }
-
-    public function col(?string $col = null, ?string $name = null): self
-    {
-        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
     }
 
     /**

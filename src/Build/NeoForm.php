@@ -100,22 +100,6 @@ class NeoForm extends Form
         return $group;
     }
 
-    /**
-     * @return NeoForm to fool the IDE into seeing all ->add*() methods
-     */
-    public function row(?string $name = null)
-    {
-        return $this->group($name, 'row');
-    }
-
-    /**
-     * @return NeoForm to fool the static analysis into seeing all ->add*() methods
-     */
-    public function col(?string $col = null, ?string $name = null)
-    {
-        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
-    }
-
     public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return parent::addSelect($name, $label, $items, $size)->checkDefaultValue(false);
