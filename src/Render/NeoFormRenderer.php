@@ -215,13 +215,14 @@ class NeoFormRenderer
                 $buttons[] = $component;
             }
         }
-        return $this->template->block('formRest', [
+        $rest = $this->template->block('formRest', [
             'renderer' => $this,
             'groups' => $groupHtml,
             'form' => $form,
             'rest' => $rest,
             'buttons' => $buttons,
         ]);
+        return $rest;
     }
 
     public function label(BaseControl $el, array $options = []): string

@@ -72,7 +72,7 @@ class NeoInputRenderer
         $attrs += array_filter($options, 'is_scalar');
 
         return $this->block('input', [
-            'input' => $this->inputBody($el, $attrs, $options),
+            'input' => Html::fromHtml($this->inputBody($el, $attrs, $options)),
             'description' => $this->description($el),
         ]);
     }
@@ -170,6 +170,7 @@ class NeoInputRenderer
     public function hidden(HiddenField $el, array $attrs, array $options): string
     {
         return $this->block('hidden', [
+            'el' => $el,
             'attrs' => $attrs,
             'options' => $options,
             'errors' => $el->getErrors(),
