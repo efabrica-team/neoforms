@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Latte\Engine;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
@@ -287,5 +288,12 @@ class NeoFormRenderer
             }
         }
         return implode("\n", $rows);
+    }
+
+    public static function obtainFromEngine(Engine $engine): self
+    {
+        $self = $engine->getProviders()['neoFormRenderer'];
+        assert($self instanceof self);
+        return $self;
     }
 }

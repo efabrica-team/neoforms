@@ -7,7 +7,7 @@ services:
         create: Efabrica\NeoForms\Render\NeoInputRenderer()
     neoFormRenderer:
         type: Efabrica\NeoForms\Render\NeoFormRenderer
-        create: @nette.latteFactory::getProviders()['neoFormRenderer']
+        create: Efabrica\NeoForms\Render\NeoFormRenderer::obtainFromEngine(@nette.latteFactory)
 
     nette.latteFactory:
         setup:
