@@ -54,7 +54,7 @@ class NeoInputRenderer
         /** @var Html $control */
         $control = $el->getControl();
 
-        if ($options['readonly'] || (bool)$el->getOption('readonly')) {
+        if ($options['readonly'] ?? (bool)$el->getOption('readonly')) {
             foreach (array_reverse($this->customRenderers) as $renderer) {
                 $result = $renderer->readonlyRender($el, $options);
                 if ($result !== null) {
