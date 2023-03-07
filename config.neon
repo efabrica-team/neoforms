@@ -2,7 +2,9 @@ services:
     neoFormNetteRenderer: Efabrica\NeoForms\Render\NeoFormNetteRenderer()
     neoFormFactory: Efabrica\NeoForms\Build\NeoFormFactory()
     neoFormRendererTemplate: Efabrica\NeoForms\Render\NeoFormRendererTemplate()
-    neoInputRenderer: Efabrica\NeoForms\Render\NeoInputRenderer()
+    neoInputRenderer:
+        type: Efabrica\NeoForms\Render\NeoInputRenderer
+        create: Efabrica\NeoForms\Render\NeoInputRenderer()
     neoFormRenderer:
         type: Efabrica\NeoForms\Render\NeoFormRenderer
         create: @nette.latteFactory::getProviders()['neoFormRenderer']

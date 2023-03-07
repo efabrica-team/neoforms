@@ -2,9 +2,11 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
+use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
@@ -78,6 +80,20 @@ trait NeoContainerTrait
     public function addMultiplier(string $name, callable $factory): Multiplier
     {
         $component = new Multiplier($factory);
+        $this->addComponent($component, $name);
+        return $component;
+    }
+
+    /**
+     * @param value-of<CodeEditor::MODES> $mode
+     */
+    public function addCodeEditor(
+        string $name,
+        #[ExpectedValues(CodeEditor::MODES)]
+        string $mode,
+        ?string $label = null
+    ): CodeEditor {
+        $component = new CodeEditor($mode, $label);
         $this->addComponent($component, $name);
         return $component;
     }
