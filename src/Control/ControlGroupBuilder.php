@@ -38,6 +38,16 @@ class ControlGroupBuilder
         return $child;
     }
 
+    public function row(?string $name = null): self
+    {
+        return $this->group($name, 'row');
+    }
+
+    public function col(?string $col = null, ?string $name = null): self
+    {
+        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
+    }
+
     /**
      * @return mixed
      */
