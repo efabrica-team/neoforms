@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+
+## [2.0.0] - 2023-03-13
 ### Added
 - NeoForms is prepared to go as a stand-alone open-source library
 - ActiveRowForm as a more flexible replacement for AbstractForm
@@ -16,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - AbstractForm is now deprecated. Will be removed in 3.0. Upgrade info is inside the AbstractForm class.
-- Internal eFabrica-specific code was removed. It is moved to an internal package.
+- Internal eFabrica-specific code was removed. It is moved to an internal package. (BC Break)
   - This includes: Choozer, chroma.latte, RteControl
   
 ### Fixed
@@ -126,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.1...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/2.0.0...master
+[2.0.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.1...2.0.0
 [1.7.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.0...1.7.1
 [1.7.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.6.2...1.7.0
 [1.6.2]: https://git.efabrica.sk/libraries/neoforms/compare/1.6.1...1.6.2
