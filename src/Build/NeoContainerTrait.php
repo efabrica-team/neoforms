@@ -110,12 +110,18 @@ trait NeoContainerTrait
         return $control;
     }
 
-    public function row(?string $name = null): self
+    /**
+     * @return NeoForm
+     */
+    public function row(?string $name = null)
     {
         return $this->group($name, 'row');
     }
 
-    public function col(?string $col = null, ?string $name = null): self
+    /**
+     * @return NeoForm
+     */
+    public function col(?string $col = null, ?string $name = null)
     {
         return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
     }
