@@ -11,6 +11,7 @@ use Nette\Application\UI\Template;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\SelectBox;
+use Nette\HtmlStringable;
 use Nette\Localization\Translator;
 use Throwable;
 use Tracy\Debugger;
@@ -91,13 +92,23 @@ class NeoForm extends Form
     }
 
     /**
+     * @param string|true|HtmlStringable|null $label
+     *      true = same as name
+     *      null = no label
+     *      HtmlStringable = custom Html (Html::el())
+     *      string = custom label with default Html
      * @return NeoForm to fool the static analysis into seeing all ->add*() methods
      */
-    public function group(?string $name = null, ?string $class = null)
+    public function group(?string $name = null, ?string $class = null, $label = true)
     {
-        /** @var NeoForm $group */
-        $group = new ControlGroupBuilder($this, $class ?? 'c-form', $name);
-        return $group;
+        if ($name !== null) {
+            $group = $this->getGroup($name);
+        }
+        $group ??= $this->addGroup($name, false);
+        $builder = new ControlGroupBuilder($this, $group);
+        $builder->setClass($class)->setLabel($label === true ? $name : $label);
+        /** @var NeoForm $builder */
+        return $builder;
     }
 
     public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox

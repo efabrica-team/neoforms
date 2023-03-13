@@ -71,7 +71,7 @@ class NeoFormExtension extends MacroSet
     public function neoFormGroup(MacroNode $node, PhpWriter $writer): string
     {
         $this->validate($node);
-        return $writer->write('echo $this->global->neoFormRenderer->group(%node.word, %node.array);' . " /* line $node->startLine */;");
+        return $writer->write('echo $this->global->neoFormRenderer->group(%node.word);' . " /* line $node->startLine */;");
     }
 
     public function neoFormRowEnd(MacroNode $node, PhpWriter $writer): string

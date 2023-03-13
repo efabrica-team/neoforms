@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AbstractForm is now deprecated. Will be removed in 3.0. Upgrade info is inside the AbstractForm class.
 - Internal eFabrica-specific code was removed. It is moved to an internal package.
   - This includes: Choozer, chroma.latte, RteControl
+  
+### Fixed
+- Fixed behavior concerning ControlGroups
 
 ## [1.7.1] - 2023-02-23
 ### Fixed

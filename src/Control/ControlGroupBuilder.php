@@ -2,50 +2,70 @@
 
 namespace Efabrica\NeoForms\Control;
 
+use Efabrica\NeoForms\Build\DivTrait;
 use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\ControlGroup;
+use Nette\HtmlStringable;
 use Nette\Utils\Html;
 
 class ControlGroupBuilder
 {
+    use DivTrait;
+
     private NeoForm $form;
 
     private ControlGroup $group;
 
-    public function __construct(NeoForm $form, string $class, ?string $name)
+    public function __construct(NeoForm $form, ControlGroup $group)
     {
         $this->form = $form;
-        if (is_string($name) && !empty($name)) {
-            $this->group = $this->form->getGroup($name) ?? $this->form->addGroup($name, false);
-        } else {
-            $this->group = $this->form->addGroup(null, false);
-        }
-        $this->group->setOption('container', Html::el('div')->setAttribute('class', $class));
+        $this->group = $group;
     }
 
-    public function group(?string $name = null, ?string $class = null): self
+    /**
+     * @param string|true|HtmlStringable|null $label
+     * @return $this
+     */
+    public function setLabel($label): self
     {
-        $child = new self($this->form, $class ?? 'c-form', $name);
+        $this->group->setOption('label', $label);
+        return $this;
+    }
+
+    public function setContainer(HtmlStringable $container): self
+    {
+        $this->group->setOption('container', $container);
+        return $this;
+    }
+
+    public function setClass(?string $class): self
+    {
+        if ($class !== null) {
+            $this->setContainer(Html::el('div')->class($class));
+        }
+        return $this;
+    }
+
+    /**
+     * @param string|true|HtmlStringable|null $label
+     */
+    public function group(?string $name = null, ?string $class = null, $label = true): self
+    {
         $children = $this->group->getOption('children') ?? [];
-        if (is_array($children)) {
-            if ($name !== null) {
-                $children[$name] = $child->group;
-            } else {
-                $children[] = $child->group;
-            }
+        assert(is_array($children));
+
+        if ($name !== null) {
+            $childGroup = $children[$name] ??= $this->form->addGroup(null, false);
+        } else {
+            $childGroup = $children[] = $this->form->addGroup(null, false);
         }
+
+        $childBuilder = new self($this->form, $childGroup);
+        $childBuilder->setClass($class)->setLabel($label === true ? $name : $label);
+
         $this->group->setOption('children', $children);
-        return $child;
-    }
 
-    public function row(?string $name = null): self
-    {
-        return $this->group($name, 'row');
-    }
-
-    public function col(?string $col = null, ?string $name = null): self
-    {
-        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col);
+        return $childBuilder;
     }
 
     /**

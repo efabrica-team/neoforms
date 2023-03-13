@@ -11,6 +11,7 @@ use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
+use Nette\HtmlStringable;
 use Nette\Utils\Html;
 use Nette\Utils\Strings;
 use RuntimeException;
@@ -28,16 +29,11 @@ class NeoFormRenderer
     }
 
     /**
-     * @param scalar|true|null|mixed $name
+     * @param string|true|HtmlStringable|null $name
      */
     public function group(ControlGroup $group, $name = null): string
     {
-        $container = $group->getOption('container') ?? Html::el();
-        assert($container instanceof Html);
-        $label = $group->getOption('label', Html::el());
-        if (is_string($name) && $label === true) {
-            $label = $name;
-        }
+        $label = $group->getOption('label');
 
         $body = Html::el();
         $children = $group->getOption('children');
@@ -64,9 +60,14 @@ class NeoFormRenderer
             return '';
         }
 
-        return $container->addHtml(
-            $this->template->block('group', ['body' => $body, 'label' => $label, 'options' => $group->getOptions()])
-        )->toHtml();
+        $inside = Html::fromHtml($this->template->block('group', ['body' => $body, 'label' => $label, 'options' => $group->getOptions()]));
+
+        $container = $group->getOption('container');
+        if ($container instanceof Html) {
+            return $container->addHtml($inside)->toHtml();
+        }
+
+        return $this->template->block('groupContainer', ['inside' => $inside]);
     }
 
     /**
@@ -195,7 +196,14 @@ class NeoFormRenderer
     {
         $groupHtml = Html::el();
         foreach ($form->getGroups() as $key => $group) {
-            $groupHtml->addHtml($this->group($group, $key));
+            $label = null;
+            $optionLabel = $group->getOption('label');
+            if (is_string($optionLabel) || $optionLabel instanceof Html) {
+                $label = $optionLabel;
+            } elseif (is_string($key)) {
+                $label = $key;
+            }
+            $groupHtml->addHtml($this->group($group, $label));
         }
 
         $rest = $buttons = [];
