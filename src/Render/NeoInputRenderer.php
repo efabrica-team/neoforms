@@ -73,7 +73,7 @@ class NeoInputRenderer
 
         return $this->block('input', [
             'input' => Html::fromHtml($this->inputBody($el, $attrs, $options)),
-            'description' => $this->description($el),
+            'description' => Html::fromHtml($this->description($el)),
         ]);
     }
 
