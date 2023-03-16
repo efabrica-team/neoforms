@@ -3,6 +3,8 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\CodeEditor;
+use Efabrica\NeoForms\Control\MultiSelectBox;
+use Efabrica\NeoForms\Control\SelectBox;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
@@ -37,6 +39,18 @@ trait NeoContainerTrait
     {
         $this->options[$name] = $value;
         return $this;
+    }
+
+    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
+    {
+        return $this[$name] = (new SelectBox($label, $items))
+            ->setHtmlAttribute('size', $size > 1 ? $size : null);
+    }
+
+    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
+    {
+        return $this[$name] = (new MultiSelectBox($label, $items))
+            ->setHtmlAttribute('size', $size > 1 ? $size : null);
     }
 
     public function addToggleSwitch(string $name, ?string $label = null): ToggleSwitch
