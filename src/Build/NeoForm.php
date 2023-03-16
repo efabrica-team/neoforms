@@ -41,7 +41,7 @@ class NeoForm extends Form
     }
 
     /**
-     * @param scalar[]|scalar $redirectArgs
+     * @param array|scalar $redirectArgs
      */
     public function finish(?string $flashMessage = null, string $redirect = 'default', $redirectArgs = []): void
     {
