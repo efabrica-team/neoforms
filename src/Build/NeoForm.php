@@ -111,16 +111,6 @@ class NeoForm extends Form
         return $builder;
     }
 
-    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
-    {
-        return parent::addSelect($name, $label, $items, $size)->checkDefaultValue(false);
-    }
-
-    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
-    {
-        return parent::addMultiSelect($name, $label, $items, $size)->checkDefaultValue(false);
-    }
-
     public function addButton(string $name, $caption = null, ?string $icon = null): Button
     {
         return parent::addButton($name, $caption)->setOption('icon', $icon);

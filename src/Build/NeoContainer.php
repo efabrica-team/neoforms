@@ -21,16 +21,6 @@ class NeoContainer extends Container
         return $form;
     }
 
-    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
-    {
-        return parent::addSelect($name, $label, $items, $size)->checkDefaultValue(false);
-    }
-
-    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
-    {
-        return parent::addMultiSelect($name, $label, $items, $size)->checkDefaultValue(false);
-    }
-
     /**
      * @param string|true|HtmlStringable|null $label
      *      true = same as name

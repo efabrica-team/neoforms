@@ -44,13 +44,15 @@ trait NeoContainerTrait
     public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return $this[$name] = (new SelectBox($label, $items))
-            ->setHtmlAttribute('size', $size > 1 ? $size : null);
+            ->setHtmlAttribute('size', $size > 1 ? $size : null)
+            ->checkDefaultValue(false);
     }
 
     public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
-            ->setHtmlAttribute('size', $size > 1 ? $size : null);
+            ->setHtmlAttribute('size', $size > 1 ? $size : null)
+            ->checkDefaultValue(false);
     }
 
     public function addToggleSwitch(string $name, ?string $label = null): ToggleSwitch
