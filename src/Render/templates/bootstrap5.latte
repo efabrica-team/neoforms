@@ -103,15 +103,27 @@
             <option n:attr="selected: $selected === null || $selected === ''">{_$prompt}</option>
         {/if}
         {foreach $items as $optionValue => $optionLabel}
-            {var $isSelected = $optionValue === $selected}
-            {if is_array($selected)}
-                {var $isSelected = in_array($optionValue, $selected, true)}
+            {if is_array($optionLabel)}
+                <optgroup label="{$optionValue}">
+                    {foreach $optionLabel as $optionValue => $optionLabel}
+                        {include selectBoxOption}
+                    {/foreach}
+                </optgroup>
+            {else}
+                {include selectBoxOption}
             {/if}
-            <option n:attr="value: $optionValue, selected: $isSelected">
-                {_$optionLabel}
-            </option>
         {/foreach}
     </select>
+{/block}
+
+{block selectBoxOption}
+    {var $isSelected = $optionValue === $selected}
+    {if is_array($selected)}
+        {var $isSelected = in_array($optionValue, $selected, true)}
+    {/if}
+    <option n:attr="value: $optionValue, selected: $isSelected">
+        {_$optionLabel}
+    </option>
 {/block}
 
 {block checkbox}

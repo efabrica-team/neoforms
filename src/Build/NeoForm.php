@@ -9,8 +9,6 @@ use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
 use Nette\Forms\Controls\Button;
-use Nette\Forms\Controls\MultiSelectBox;
-use Nette\Forms\Controls\SelectBox;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
 use Throwable;
@@ -41,7 +39,7 @@ class NeoForm extends Form
     }
 
     /**
-     * @param scalar[]|scalar $redirectArgs
+     * @param array|scalar $redirectArgs
      */
     public function finish(?string $flashMessage = null, string $redirect = 'default', $redirectArgs = []): void
     {
@@ -109,16 +107,6 @@ class NeoForm extends Form
         $builder->setClass($class)->setLabel($label === true ? $name : $label);
         /** @var NeoForm $builder */
         return $builder;
-    }
-
-    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
-    {
-        return parent::addSelect($name, $label, $items, $size)->checkDefaultValue(false);
-    }
-
-    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
-    {
-        return parent::addMultiSelect($name, $label, $items, $size)->checkDefaultValue(false);
     }
 
     public function addButton(string $name, $caption = null, ?string $icon = null): Button
