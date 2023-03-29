@@ -104,6 +104,7 @@ class NeoInputRenderer
     public function selectBox($el, array $attrs, array $options): string
     {
         $prompt = $el instanceof SelectBox ? $el->getPrompt() : null;
+        /** @var \Efabrica\NeoForms\Control\SelectBox $el */
         return $this->block('selectBox', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,

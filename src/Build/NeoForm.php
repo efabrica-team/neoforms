@@ -9,8 +9,6 @@ use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
 use Nette\Forms\Controls\Button;
-use Nette\Forms\Controls\MultiSelectBox;
-use Nette\Forms\Controls\SelectBox;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
 use Throwable;

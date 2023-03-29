@@ -5,6 +5,10 @@ namespace Efabrica\NeoForms\Control;
 trait SelectBoxTrait
 {
     private array $itemTree = [];
+
+    /**
+     * @param string|object|null $label
+     */
     public function __construct($label = null, ?array $items = null)
     {
         if ($items !== null) {

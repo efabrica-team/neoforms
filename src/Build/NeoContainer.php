@@ -4,8 +4,6 @@ namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Nette\Forms\Container;
-use Nette\Forms\Controls\MultiSelectBox;
-use Nette\Forms\Controls\SelectBox;
 use Nette\HtmlStringable;
 
 class NeoContainer extends Container
