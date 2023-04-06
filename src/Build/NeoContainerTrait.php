@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Control\CancelButton;
 use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
@@ -126,5 +127,10 @@ trait NeoContainerTrait
 
         $this->addComponent($control, is_int($name) ? "$name" : $name);
         return $control;
+    }
+
+    public function addCancelButton(string $name = 'cancel', string $label = 'skeleton.form.cancel_button'): CancelButton
+    {
+        return $this[$name] = (new CancelButton($label));
     }
 }
