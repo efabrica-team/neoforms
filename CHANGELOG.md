@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## Added
+
+## [2.1.0] - 2023-04-18
+### Added
 - added mode JSON, LATTE and PLAIN_TEXT to CodeEditor
 
 ## [2.0.2] - 2023-03-29
@@ -139,7 +141,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/2.0.1...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/2.1.0...master
+[2.1.0]: https://git.efabrica.sk/libraries/neoforms/compare/2.0.2...2.1.0
+[2.0.2]: https://git.efabrica.sk/libraries/neoforms/compare/2.0.1...2.0.2
 [2.0.1]: https://git.efabrica.sk/libraries/neoforms/compare/2.0.0...2.0.1
 [2.0.0]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.1...2.0.0
 [1.7.1]: https://git.efabrica.sk/libraries/neoforms/compare/1.7.0...1.7.1
