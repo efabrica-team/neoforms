@@ -15,14 +15,16 @@ class CodeEditor extends TextArea
     public const MODE_HTML = 'ace/mode/html';
     public const MODE_CSS = 'ace/mode/css';
     public const MODE_PHP = 'ace/mode/php';
-
-    public const MODES = [self::MODE_JAVASCRIPT, self::MODE_HTML, self::MODE_CSS, self::MODE_PHP];
+    public const MODE_JSON = 'ace/mode/json';
+    public const MODE_LATTE = 'ace/mode/latte';
+    public const MODE_PLAIN_TEXT = 'ace/mode/plain_text';
+    public const MODES = [self::MODE_JAVASCRIPT, self::MODE_HTML, self::MODE_CSS, self::MODE_PHP, self::MODE_JSON, self::MODE_LATTE, self::MODE_PLAIN_TEXT];
 
     private string $mode;
 
     /**
-     * @param self::MODE_JAVASCRIPT|self::MODE_HTML|self::MODE_CSS|self::MODE_PHP $mode
-     * @param string|object                                                       $label
+     * @param self::MODE_* $mode
+     * @param string|object $label
      */
     public function __construct(string $mode, $label = null)
     {
