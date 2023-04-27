@@ -56,7 +56,7 @@ class NeoFormRenderer
             }
         }
 
-        if (Strings::trim($body->getText()) === '') {
+        if (count($body->getChildren()) === 0) {
             return '';
         }
 
