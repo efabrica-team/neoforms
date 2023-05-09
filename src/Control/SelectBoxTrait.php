@@ -20,6 +20,9 @@ trait SelectBoxTrait
     public function setItems(array $items, bool $useKeys = true): self
     {
         $this->itemTree = $items;
+        if (!$useKeys) {
+            $this->itemTree = array_combine($items, $items);
+        }
         return parent::setItems($items, $useKeys);
     }
 
