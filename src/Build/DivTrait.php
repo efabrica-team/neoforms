@@ -2,25 +2,17 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Efabrica\NeoForms\Control\ControlGroupBuilder;
+
 trait DivTrait
 {
-    /**
-     * @return NeoForm
-     */
-    public function row(?string $name = null)
+    public function row(?string $name = null): ControlGroupBuilder
     {
-        /** @var NeoForm $group */
-        $group = $this->group($name, 'row', null);
-        return $group;
+        return $this->group($name, 'row', null);
     }
 
-    /**
-     * @return NeoForm
-     */
-    public function col(?string $col = null, ?string $name = null)
+    public function col(?string $col = null, ?string $name = null): ControlGroupBuilder
     {
-        /** @var NeoForm $group */
-        $group = $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col, null);
-        return $group;
+        return $this->group($name, 'col' . (trim((string)$col) === '' ? '' : '-') . $col, null);
     }
 }

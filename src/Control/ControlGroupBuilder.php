@@ -8,6 +8,9 @@ use Nette\Forms\ControlGroup;
 use Nette\HtmlStringable;
 use Nette\Utils\Html;
 
+/**
+ * @mixin NeoForm
+ */
 class ControlGroupBuilder
 {
     use DivTrait;
