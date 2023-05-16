@@ -25,9 +25,8 @@ class NeoContainer extends Container
      *      null = no label
      *      HtmlStringable = custom Html (Html::el())
      *      string = custom label with default Html
-     * @return NeoForm to fool the static analysis into seeing all ->add*() methods
      */
-    public function group(?string $name = null, ?string $class = null, $label = true)
+    public function group(?string $name = null, ?string $class = null, $label = true): ControlGroupBuilder
     {
         if ($name !== null) {
             $childGroup = ($this->childGroups[$name] ??= $this->getForm()->addGroup(null, false));
@@ -36,7 +35,6 @@ class NeoContainer extends Container
         }
         $childBuilder = new ControlGroupBuilder($this->getForm(), $childGroup);
         $childBuilder->setClass($class)->setLabel($label === true ? $name : $label);
-        /** @var NeoForm $childBuilder */
         return $childBuilder;
     }
 }
