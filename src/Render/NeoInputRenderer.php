@@ -14,6 +14,7 @@ use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\RadioList;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
+use Nette\Forms\Controls\TextBase;
 use Nette\Forms\Controls\UploadControl;
 use Nette\Localization\Translator;
 use Nette\Utils\Html;
@@ -67,7 +68,7 @@ class NeoInputRenderer
 
         $attrs = $control->attrs;
         unset($attrs['data-nette-rules']);
-        if (is_string($attrs['placeholder'] ?? null)) {
+        if (!($el instanceof TextBase) && is_string($attrs['placeholder'] ?? null)) {
             $attrs['placeholder'] = $this->translator->translate($attrs['placeholder']);
         }
         $attrs += array_filter($options, 'is_scalar');
