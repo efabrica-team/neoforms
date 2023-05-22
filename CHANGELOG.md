@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- setOption('label') in ControlGroupBuilder modified form instead of group
 - doubled placeholder translation in inputs
 
 
