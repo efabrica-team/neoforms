@@ -21,14 +21,14 @@
 {/block}
 
 {block group}
-    {if $label instanceof Nette\HtmlStringable}
-        {$label}
-        {$body}
-    {elseif is_string($label)}
+    {if is_string($label)}
         <fieldset n:attr="$options['fieldset'] ?? []">
             <legend n:attr="$options['legend'] ?? []">{$label}</legend>
             {$body}
         </fieldset>
+    {elseif $label instanceof Nette\HtmlStringable}
+        {$label}
+        {$body}
     {else}
         {$body}
     {/if}

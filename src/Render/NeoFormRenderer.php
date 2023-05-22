@@ -33,8 +33,6 @@ class NeoFormRenderer
      */
     public function group(ControlGroup $group, $name = null): string
     {
-        $label = $group->getOption('label');
-
         $body = Html::el();
         $children = $group->getOption('children');
         if (is_iterable($children)) {
@@ -60,7 +58,11 @@ class NeoFormRenderer
             return '';
         }
 
-        $inside = Html::fromHtml($this->template->block('group', ['body' => $body, 'label' => $label, 'options' => $group->getOptions()]));
+        $inside = Html::fromHtml($this->template->block('group', [
+            'body' => $body,
+            'label' => $group->getOption('label'),
+            'options' => $group->getOptions(),
+        ]));
 
         $container = $group->getOption('container');
         if ($container instanceof Html) {
