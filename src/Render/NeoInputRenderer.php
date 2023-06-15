@@ -179,11 +179,11 @@ class NeoInputRenderer
         ]);
     }
 
-    public function textarea(BaseControl $el, array $attrs, array $options): string
+    public function textarea(TextArea $el, array $attrs, array $options): string
     {
         $blockName = $el instanceof CodeEditor ? 'codeEditor' : 'textarea';
         return $this->block($blockName, [
-            'value' => $el->getValue(),
+            'value' => Html::fromHtml(htmlspecialchars($el->getControl()->getText(), ENT_NOQUOTES, 'UTF-8')),
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
         ]);
