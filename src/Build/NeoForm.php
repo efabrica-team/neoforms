@@ -95,9 +95,8 @@ class NeoForm extends Form
      *      null = no label
      *      HtmlStringable = custom Html (Html::el())
      *      string = custom label with default Html
-     * @return NeoForm to fool the static analysis into seeing all ->add*() methods
      */
-    public function group(?string $name = null, ?string $class = null, $label = true)
+    public function group(?string $name = null, ?string $class = null, $label = true): ControlGroupBuilder
     {
         if ($name !== null) {
             $group = $this->getGroup($name);
@@ -105,7 +104,6 @@ class NeoForm extends Form
         $group ??= $this->addGroup($name, false);
         $builder = new ControlGroupBuilder($this, $group);
         $builder->setClass($class)->setLabel($label === true ? $name : $label);
-        /** @var NeoForm $builder */
         return $builder;
     }
 

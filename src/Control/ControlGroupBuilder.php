@@ -8,6 +8,9 @@ use Nette\Forms\ControlGroup;
 use Nette\HtmlStringable;
 use Nette\Utils\Html;
 
+/**
+ * @mixin NeoForm
+ */
 class ControlGroupBuilder
 {
     use DivTrait;
@@ -23,19 +26,16 @@ class ControlGroupBuilder
     }
 
     /**
-     * @param string|true|HtmlStringable|null $label
-     * @return $this
+     * @param string|bool|HtmlStringable|null $label
      */
     public function setLabel($label): self
     {
-        $this->group->setOption('label', $label);
-        return $this;
+        return $this->setOption('label', $label);
     }
 
     public function setContainer(HtmlStringable $container): self
     {
-        $this->group->setOption('container', $container);
-        return $this;
+        return $this->setOption('container', $container);
     }
 
     public function setClass(?string $class): self
@@ -43,6 +43,15 @@ class ControlGroupBuilder
         if ($class !== null) {
             $this->setContainer(Html::el('div')->class($class));
         }
+        return $this;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setOption(string $key, $value): self
+    {
+        $this->group->setOption($key, $value);
         return $this;
     }
 

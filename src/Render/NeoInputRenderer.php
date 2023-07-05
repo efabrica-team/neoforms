@@ -8,11 +8,13 @@ use Efabrica\NeoForms\Render\Input\CustomInputRenderer;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
+use Nette\Forms\Controls\CheckboxList;
 use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\RadioList;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
+use Nette\Forms\Controls\TextBase;
 use Nette\Forms\Controls\UploadControl;
 use Nette\Localization\Translator;
 use Nette\Utils\Html;
@@ -66,14 +68,14 @@ class NeoInputRenderer
 
         $attrs = $control->attrs;
         unset($attrs['data-nette-rules']);
-        if (is_string($attrs['placeholder'] ?? null)) {
+        if (!($el instanceof TextBase) && is_string($attrs['placeholder'] ?? null)) {
             $attrs['placeholder'] = $this->translator->translate($attrs['placeholder']);
         }
         $attrs += array_filter($options, 'is_scalar');
 
         return $this->block('input', [
             'input' => Html::fromHtml($this->inputBody($el, $attrs, $options)),
-            'description' => Html::fromHtml($this->description($el)),
+            'description' => Html::fromHtml($this->description($el, $options)),
         ]);
     }
 
@@ -82,7 +84,6 @@ class NeoInputRenderer
         return $this->block('inputText', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
-            'description' => $el->getOption('description'),
         ]);
     }
 
@@ -151,11 +152,38 @@ class NeoInputRenderer
         ]);
     }
 
+    public function checkboxList(CheckboxList $el, array $options): string
+    {
+        $inputAttrs = $labelAttrs = [];
+        foreach ($el->getItems() as $value => $label) {
+            $inputAttrs[$value] = (array)($el->getOptions()[$value]['input'] ?? [])
+                + ($options[$value]['input'] ?? [])
+                + ($el->getOptions()['input'] ?? [])
+                + ($options['input'] ?? [])
+                + $el->getControlPart($value)->attrs;
+            $inputAttrs[$value] = array_filter($inputAttrs[$value], 'is_scalar');
+
+            $labelAttrs[$value] = (array)($el->getOptions()[$value]['label'] ?? [])
+                + ($options[$value]['label'] ?? [])
+                + ($el->getOptions()['label'] ?? [])
+                + ($options['label'] ?? [])
+                + $el->getLabelPart($value)->attrs;
+            $labelAttrs[$value] = array_filter($labelAttrs[$value], 'is_scalar');
+        }
+        return $this->block('checkboxList', [
+            'items' => $el->getItems(),
+            'inputAttrs' => $inputAttrs,
+            'labelAttrs' => $labelAttrs,
+            'options' => $el->getOptions() + $options,
+            'attrs' => array_filter($el->getOptions() + $options, 'is_scalar'),
+        ]);
+    }
+
     public function textarea(BaseControl $el, array $attrs, array $options): string
     {
         $blockName = $el instanceof CodeEditor ? 'codeEditor' : 'textarea';
         return $this->block($blockName, [
-            'value' => $el->getValue(),
+            'value' => Html::fromHtml(htmlspecialchars($el->getControl()->getText(), ENT_NOQUOTES, 'UTF-8')),
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
         ]);
@@ -180,11 +208,12 @@ class NeoInputRenderer
         ]);
     }
 
-    public function description(BaseControl $el): string
+    public function description(BaseControl $el, array $options): string
     {
+        $o = $el->getOptions() + $options;
         return $this->block('description', [
             'el' => $el,
-            'description' => $el->getOption('description'),
+            'description' => Html::fromHtml($o['help'] ?? $o['description'] ?? ''),
         ]);
     }
 
@@ -193,7 +222,6 @@ class NeoInputRenderer
         return $this->block('upload', [
             'attrs' => $attrs,
             'options' => $el->getOptions() + $options,
-            'description' => $el->getOption('description'),
         ]);
     }
 
@@ -234,6 +262,9 @@ class NeoInputRenderer
         }
         if ($el instanceof RadioList) {
             return $this->radio($el, $attrs, $options);
+        }
+        if ($el instanceof CheckboxList) {
+            return $this->checkboxList($el, $options);
         }
 
         return $this->textInput($el, $attrs, $options);

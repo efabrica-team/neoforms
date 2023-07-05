@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE latte PUBLIC "-//LATTE//Latte plugin XML V0.0.1//EN" ".idea/intellij-latte-pro/xmlSources/Latte.dtd">
-<latte vendor="efabrica/grid" version="1">
+<latte vendor="efabrica/neoforms" version="1">
     <tags>
         <tag name="neoForm" type="PAIR">
             <arguments>

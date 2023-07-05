@@ -21,14 +21,14 @@
 {/block}
 
 {block group}
-    {if $label instanceof Nette\HtmlStringable}
-        {$label}
-        {$body}
-    {elseif is_string($label)}
+    {if is_string($label)}
         <fieldset n:attr="$options['fieldset'] ?? []">
             <legend n:attr="$options['legend'] ?? []">{$label}</legend>
             {$body}
         </fieldset>
+    {elseif $label instanceof Nette\HtmlStringable}
+        {$label}
+        {$body}
     {else}
         {$body}
     {/if}
@@ -131,11 +131,20 @@
     {do $inputAttrs['class'] ??= 'form-check-input'}
     {do $labelAttrs['class'] ??= 'form-check-label'}
     <div n:attr="$attrs">
-        <input class="" n:attr="$inputAttrs">
+        <input n:attr="$inputAttrs">
         <label n:attr="$labelAttrs">
             {_$caption}
             <span n:if="$info" class="text-primary font-weight-bold" data-bs-toggle="tooltip" title="{_$info}">ⓘ</span>
         </label>
+    </div>
+{/block}
+
+{block checkboxList}
+    {do $attrs['class'] ??= 'inline-group'}
+    <div n:attr="$attrs">
+        {foreach $items as $k => $v}
+            {include checkbox, inputAttrs => $inputAttrs[$k], 'labelAttrs' => $labelAttrs[$k], 'caption' => $v, 'info' => null}
+        {/foreach}
     </div>
 {/block}
 

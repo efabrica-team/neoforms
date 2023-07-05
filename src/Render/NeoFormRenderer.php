@@ -33,8 +33,6 @@ class NeoFormRenderer
      */
     public function group(ControlGroup $group, $name = null): string
     {
-        $label = $group->getOption('label');
-
         $body = Html::el();
         $children = $group->getOption('children');
         if (is_iterable($children)) {
@@ -52,19 +50,23 @@ class NeoFormRenderer
                     $body->addHtml($this->row($control));
                 }
             } elseif ($control instanceof Container) {
-                $body->addHtml($this->container($control, ['rest' => true]));
+                $body->addHtml($this->container($control, []));
             }
         }
 
-        if (Strings::trim($body->getText()) === '') {
+        if (trim($body->getHtml()) === '') {
             return '';
         }
 
-        $inside = Html::fromHtml($this->template->block('group', ['body' => $body, 'label' => $label, 'options' => $group->getOptions()]));
+        $inside = Html::fromHtml($this->template->block('group', [
+            'body' => $body,
+            'label' => $group->getOption('label'),
+            'options' => $group->getOptions(),
+        ]));
 
         $container = $group->getOption('container');
         if ($container instanceof Html) {
-            return $container->addHtml($inside)->toHtml();
+            return (clone $container)->addHtml($inside)->toHtml();
         }
 
         return $this->template->block('groupContainer', ['inside' => $inside]);
@@ -72,7 +74,7 @@ class NeoFormRenderer
 
     /**
      * @param BaseControl|Container $el
-     * @param array                 $options ['rest' => `if true, doesn't render controls that were already rendered`]
+     * @param array                 $options []
      * @return string
      */
     public function row($el, array $options = []): string
@@ -81,12 +83,10 @@ class NeoFormRenderer
             return $this->container($el, $options);
         }
 
-        if ($options['rest'] ?? false) {
-            /** @var bool $rendered */
-            $rendered = $el->getOption('rendered') ?? false;
-            if ($rendered) {
-                return '';
-            }
+        /** @var bool $rendered */
+        $rendered = $el->getOption('rendered') ?? false;
+        if ($rendered) {
+            return '';
         }
 
         if ($options['readonly'] ?? false) {
@@ -187,7 +187,7 @@ class NeoFormRenderer
             'inside' => $inside,
             'errors' => $form->getOwnErrors(),
             'options' => $options,
-            'renderRest' => $options['rest'] ?? true,
+            'renderRest' => true,
             'formErrors' => $options['formErrors'] ?? true,
         ]), $inside) ?? '';
     }
@@ -223,14 +223,13 @@ class NeoFormRenderer
                 $buttons[] = $component;
             }
         }
-        $rest = $this->template->block('formRest', [
+        return $this->template->block('formRest', [
             'renderer' => $this,
             'groups' => $groupHtml,
             'form' => $form,
             'rest' => $rest,
             'buttons' => $buttons,
         ]);
-        return $rest;
     }
 
     public function label(BaseControl $el, array $options = []): string
@@ -293,7 +292,7 @@ class NeoFormRenderer
         $rows = [];
         foreach ($el->getComponents() as $component) {
             if ($component instanceof BaseControl || $component instanceof Container) {
-                $rows[] = $this->row($component, ['rest' => ($options['rest'] ?? false)]);
+                $rows[] = $this->row($component, []);
             }
         }
         return implode("\n", $rows);
