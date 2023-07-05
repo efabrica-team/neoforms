@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [2.5.0] - 2023-07-05
 ### Added
 - added mode TWIG to CodeEditor
 
@@ -173,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/2.4.2...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/2.5.0...master
+[2.5.0]: https://git.efabrica.sk/libraries/neoforms/compare/2.4.2...2.5.0
 [2.4.2]: https://git.efabrica.sk/libraries/neoforms/compare/2.4.1...2.4.2
 [2.4.1]: https://git.efabrica.sk/libraries/neoforms/compare/2.4.0...2.4.1
 [2.4.0]: https://git.efabrica.sk/libraries/neoforms/compare/2.3.0...2.4.0
