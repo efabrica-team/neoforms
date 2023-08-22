@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms\Render;
 
+use Efabrica\NeoForms\Build\NeoForm;
 use Latte\Engine;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
@@ -20,6 +21,9 @@ class NeoFormNetteRenderer implements FormRenderer
 
     public function render(Form $form): string
     {
+        if (!$form instanceof NeoForm) {
+            throw new RuntimeException('form is not instance of NeoForm');
+        }
         if ($this->renderer instanceof NeoFormRenderer) {
             return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
         }

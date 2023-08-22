@@ -23,7 +23,10 @@ class NeoFormControl extends Control
     public function render(): void
     {
         assert($this->template instanceof Template);
-        $this->template->setFile(__DIR__ . '/../Render/templates/control.latte');
+        if ($this->template->getFile() === null) {
+            $this->form->render();
+            return;
+        }
         if ($this->onRender !== null) {
             ($this->onRender)($this->template);
         }
