@@ -1,17 +1,2 @@
-services:
-    neoFormNetteRenderer: Efabrica\NeoForms\Render\NeoFormNetteRenderer()
-    neoFormFactory: Efabrica\NeoForms\Build\NeoFormFactory()
-    neoFormRendererTemplate: Efabrica\NeoForms\Render\NeoFormRendererTemplate()
-    neoInputRenderer:
-        type: Efabrica\NeoForms\Render\NeoInputRenderer
-        create: Efabrica\NeoForms\Render\NeoInputRenderer()
-    neoFormRenderer:
-        type: Efabrica\NeoForms\Render\NeoFormRenderer
-        create: Efabrica\NeoForms\Render\NeoFormRenderer::obtainFromEngine(@nette.latteFactory)
-
-    nette.latteFactory:
-        setup:
-            - @neoFormRendererTemplate::setEngine(@self)
-            - addProvider('neoFormRenderer', Efabrica\NeoForms\Render\NeoFormRenderer())
-            - Efabrica\NeoForms\NeoFormExtension::install(@self::getCompiler())
-            - @neoFormNetteRenderer::init(@self)
+extensions:
+    neoForms: Efabrica\NeoForms\DI\NeoFormsCompilerExtension()

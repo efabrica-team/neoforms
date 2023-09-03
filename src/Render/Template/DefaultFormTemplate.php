@@ -23,9 +23,9 @@ use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 
 class DefaultFormTemplate
 {
-    public function form(NeoForm $form, Html $errors, Html $body, array $attrs): Html
+    public function form(NeoForm $form, Html $body, array $attrs): Html
     {
-        return Html::el('form', $attrs)->addHtml($errors . $body);
+        return (clone $form->getElementPrototype())->addAttributes($attrs)->addHtml($body);
     }
 
     public function formRow(Html $label, Html $input, Html $errors, array $attrs = []): Html
@@ -224,7 +224,7 @@ class DefaultFormTemplate
         return Html::fromText('(?)');
     }
 
-    public function section(string $caption, string $inside)
+    public function section(string $caption, string $inside): Html
     {
         return Html::el('fieldset')->addHtml(Html::el('legend', $caption))->addHtml($inside);
     }

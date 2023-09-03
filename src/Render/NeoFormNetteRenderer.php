@@ -10,13 +10,11 @@ use RuntimeException;
 
 class NeoFormNetteRenderer implements FormRenderer
 {
-    private ?NeoFormRenderer $renderer = null;
+    private NeoFormRenderer $renderer;
 
-    public function init(Engine $engine): void
+    public function __construct(NeoFormRenderer $renderer)
     {
-        $provider = $engine->getProviders()['neoFormRenderer'];
-        assert($provider instanceof NeoFormRenderer);
-        $this->renderer = $provider;
+        $this->renderer = $renderer;
     }
 
     public function render(Form $form): string
@@ -24,9 +22,6 @@ class NeoFormNetteRenderer implements FormRenderer
         if (!$form instanceof NeoForm) {
             throw new RuntimeException('form is not instance of NeoForm');
         }
-        if ($this->renderer instanceof NeoFormRenderer) {
-            return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
-        }
-        throw new RuntimeException('neonFormRenderer not set');
+        return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
     }
 }

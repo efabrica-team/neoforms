@@ -6,6 +6,9 @@ use Closure;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Template;
 
+/**
+ * @property-read Template $template
+ */
 class NeoFormControl extends Control
 {
     public NeoForm $form;
@@ -22,13 +25,12 @@ class NeoFormControl extends Control
 
     public function render(): void
     {
-        assert($this->template instanceof Template);
+        if ($this->onRender !== null) {
+            ($this->onRender)($this->template);
+        }
         if ($this->template->getFile() === null) {
             $this->form->render();
             return;
-        }
-        if ($this->onRender !== null) {
-            ($this->onRender)($this->template);
         }
         $this->template->render();
     }

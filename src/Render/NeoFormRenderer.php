@@ -29,17 +29,14 @@ class NeoFormRenderer
         $this->translator = $translator;
     }
 
-    /**
-     * @param string|true|HtmlStringable|null $name
-     */
-    public function group(ControlGroup $group, $name = null): string
+    public function formGroup(ControlGroup $group): Html
     {
         $body = Html::el();
         $children = $group->getOption('children');
         if (is_iterable($children)) {
-            foreach ($children as $key => $child) {
+            foreach ($children as $child) {
                 if ($child instanceof ControlGroup) {
-                    $body->addHtml($this->group($child, $key));
+                    $body->addHtml($this->formGroup($child));
                 }
             }
         }
@@ -48,7 +45,7 @@ class NeoFormRenderer
                 /** @var bool $rendered */
                 $rendered = $control->getOption('rendered') ?? false;
                 if ($rendered === false) {
-                    $body->addHtml($this->row($control));
+                    $body->addHtml($this->formRow($control));
                 }
             } elseif ($control instanceof Container) {
                 $body->addHtml($this->container($control, []));
@@ -56,10 +53,15 @@ class NeoFormRenderer
         }
 
         if (trim($body->getHtml()) === '') {
-            return '';
+            return Html::el();
         }
 
-        return $this->template->formGroup($group->getOption('label'), $body, $group->getOptions());
+        $label = $group->getOption('label');
+        if (is_string($label)) {
+            $label = $this->translator->translate($label);
+        }
+
+        return $this->template->formGroup($label, $body, $group->getOption('attrs') ?? []);
     }
 
     /**
@@ -67,10 +69,10 @@ class NeoFormRenderer
      * @param array                 $attrs []
      * @return string
      */
-    public function row($el, array $attrs = []): string
+    public function formRow($el, array $attrs = []): Html
     {
         if ($el instanceof Container) {
-            return $this->container($el, $attrs);
+            return $this->container($el);
         }
 
         /** @var bool $rendered */
@@ -87,14 +89,14 @@ class NeoFormRenderer
         }
 
         return $this->template->formRow(
-            Html::fromHtml($this->label($el, $attrs)),
-            Html::fromHtml($this->input($el, $inputAttrs)),
-            Html::fromHtml($this->errors($el)),
+            Html::fromHtml($this->formLabel($el, $attrs)),
+            Html::fromHtml($this->formInput($el, $inputAttrs)),
+            Html::fromHtml($this->formErrors($el)),
             $attrs
         );
     }
 
-    public function input(BaseControl $el, array $attrs = []): string
+    public function formInput(BaseControl $el, array $attrs = []): Html
     {
         /** @var Html $control */
         $control = $el->getControl();
@@ -108,16 +110,15 @@ class NeoFormRenderer
         }
 
         $description = $el->getOption('description');
-        $descriptionEl = Html::el();
-        if ($description instanceof HtmlStringable) {
-            $descriptionEl = $description->__toString();
-        } elseif (is_string($description)) {
+        if (is_string($description)) {
             $descriptionEl = $this->template->description($description);
+        } elseif ($description instanceof Html) {
+            $descriptionEl = $description;
         }
-        return $this->template->input($el, $attrs, $descriptionEl);
+        return $this->template->input($el, $attrs, $descriptionEl ?? Html::el());
     }
 
-    public function formStart(NeoForm $form, array $attrs = []): string
+    public function formStart(NeoForm $form, array $attrs = []): Html
     {
         $form->fireRenderEvents();
         /** @var BaseControl $control */
@@ -131,42 +132,34 @@ class NeoFormRenderer
             }
         }
         $showErrors = $attrs['formErrors'] ?? true;
-        return Strings::before(
+        return Html::fromHtml(Strings::before(
             $this->template->form(
                 $form,
-                $showErrors ? $this->template->formErrors($form->getOwnErrors()) : Html::el(),
-                Html::fromHtml('[__BODY__]'),
+                Html::fromHtml($showErrors ? $this->template->formErrors($form->getOwnErrors()) : Html::el())->addHtml('[__BODY__]'),
                 $attrs
             ),
             '[__BODY__]'
-        );
+        ));
     }
 
-    public function formEnd(NeoForm $form, array $options = []): string
+    public function formEnd(NeoForm $form, array $attrs = []): string
     {
-        return Strings::after(
+        return Html::fromHtml(Strings::after(
             $this->template->form(
                 $form,
-                Html::fromHtml('[__BODY__]'),
-                $this->formRest($form, $options),
-                $options
+                Html::fromHtml('[__BODY__]')->addHtml($this->formRest($form, $attrs)),
+                $attrs
             ),
             '[__BODY__]'
-        );
+        ));
     }
 
     public function formRest(Form $form, array $options = []): Html
     {
         $body = Html::el();
         foreach ($form->getGroups() as $key => $group) {
-            $label = null;
-            $optionLabel = $group->getOption('label');
-            if (is_string($optionLabel) || $optionLabel instanceof Html) {
-                $label = $optionLabel;
-            } elseif (is_string($key)) {
-                $label = $key;
-            }
-            $body->addHtml($this->group($group, $label));
+            $group->setOption('label', $group->getOption('label') ?? $key);
+            $body->addHtml($this->formGroup($group));
         }
 
         $buttons = [];
@@ -181,23 +174,27 @@ class NeoFormRenderer
                 continue;
             }
             if (!$component instanceof Button) {
-                $body->addHtml($this->row($component));
+                $body->addHtml($this->formRow($component));
             } elseif ($options['buttons'] ?? true) {
-                $buttons[] = $component;
+                $buttons[] = $this->formRow($component);
             }
         }
+        bdump($body);
         return $this->template->formRest($body, $buttons);
     }
 
-    public function label(BaseControl $el, array $attrs = []): string
+    public function formLabel(BaseControl $el, array $attrs = []): Html
     {
         if ($el instanceof Button || $el instanceof HiddenField || $el instanceof Checkbox) {
-            return '';
+            return Html::el();
+        }
+        if (is_string($el->getOption('info'))) {
+            $el->setOption('info', $this->translator->translate($el->getOption('info')));
         }
         return $this->template->formLabel($el, $attrs);
     }
 
-    public function errors($el): string
+    public function formErrors($el): Html
     {
         if ($el instanceof BaseControl) {
             return $this->template->rowErrors($el->getErrors());
@@ -208,29 +205,29 @@ class NeoFormRenderer
         throw new RuntimeException(get_class($el) . ' is not supported in NeoFormRenderer for rendering errors');
     }
 
-    public function sectionStart(string $caption): string
+    public function sectionStart(string $caption): Html
     {
         $sep = '[__BODY__]';
         $caption = $this->translator->translate($caption);
-        return Strings::before($this->template->section($caption, $sep), $sep) ?? '';
+        return Html::fromHtml(Strings::before($this->template->section($caption, $sep), $sep) ?? '');
     }
 
-    public function sectionEnd(string $caption): string
+    public function sectionEnd(string $caption): Html
     {
         $sep = '[__BODY__]';
         $caption = $this->translator->translate($caption);
-        return Strings::after($this->template->section($caption, $sep), $sep) ?? '';
+        return Html::fromHtml(Strings::after($this->template->section($caption, $sep), $sep) ?? '');
     }
 
-    public function container(Container $el, array $options): string
+    public function container(Container $el): Html
     {
-        $rows = [];
+        $rows = Html::el();
         foreach ($el->getComponents() as $component) {
             if ($component instanceof BaseControl || $component instanceof Container) {
-                $rows[] = $this->row($component, []);
+                $rows->addHtml($this->formRow($component));
             }
         }
-        return implode("\n", $rows);
+        return $rows;
     }
 
     public static function obtainFromEngine(Engine $engine): self
