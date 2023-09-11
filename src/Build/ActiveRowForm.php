@@ -26,7 +26,7 @@ abstract class ActiveRowForm extends FormDefinition
      */
     protected function initFormData(ActiveRow $row): array
     {
-        return [];
+        return $row->toArray();
     }
 
     protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row = null): void

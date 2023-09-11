@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
@@ -24,6 +25,8 @@ class NeoForm extends Form
 
     private bool $readonly = false;
 
+    private ?NeoFormTemplate $template = null;
+
     /**
      * @return $this
      */
@@ -36,6 +39,17 @@ class NeoForm extends Form
     public function isReadonly(): bool
     {
         return $this->readonly;
+    }
+
+    public function getTemplate(): ?NeoFormTemplate
+    {
+        return $this->template;
+    }
+
+    public function setTemplate(?NeoFormTemplate $template): self
+    {
+        $this->template = $template;
+        return $this;
     }
 
     /**

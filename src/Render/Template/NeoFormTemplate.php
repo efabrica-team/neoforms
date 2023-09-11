@@ -3,6 +3,10 @@
 namespace Efabrica\NeoForms\Render\Template;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\FormCollection;
+use Efabrica\NeoForms\Render\NeoFormRenderer;
+use Nette\ComponentModel\IComponent;
+use Nette\Forms\Container;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
@@ -14,18 +18,22 @@ use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\RadioList;
 use Nette\Forms\Controls\SelectBox;
 use Nette\Forms\Controls\TextArea;
+use Nette\Forms\Controls\TextBase;
 use Nette\Forms\Controls\TextInput;
 use Nette\Forms\Controls\UploadControl;
 use Nette\HtmlStringable;
-use Nette\Localization\Translator;
 use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 
-class DefaultFormTemplate
+class NeoFormTemplate
 {
-    public function form(NeoForm $form, Html $body, array $attrs): Html
+    public function form(NeoForm $form, Html $errors, string $divider, Html $body, array $attrs): Html
     {
-        return (clone $form->getElementPrototype())->addAttributes($attrs)->addHtml($body);
+        return (clone $form->getElementPrototype())->addAttributes($attrs)
+            ->addHtml($errors)
+            ->addHtml($divider)
+            ->addHtml($body)
+        ;
     }
 
     public function formRow(Html $label, Html $input, Html $errors, array $attrs = []): Html
@@ -34,7 +42,7 @@ class DefaultFormTemplate
     }
 
     /**
-     * @param string|HtmlStringable $label
+     * @param string|HtmlStringable|null $label
      */
     public function formGroup($label, Html $body, array $attrs): Html
     {
@@ -85,6 +93,9 @@ class DefaultFormTemplate
     public function formLabel(BaseControl $control, array $attrs): Html
     {
         $el = $control->getLabel();
+        if (!$el instanceof Html) {
+            return Html::el();
+        }
         if ($control->isRequired()) {
             $el->class('required', true);
         }
@@ -141,8 +152,8 @@ class DefaultFormTemplate
         if ($control instanceof TextInput) {
             return $this->textInput($control, $attrs);
         }
+        /** @var TextBase $control */
         return $control->getControl();
-
     }
 
     protected function checkbox(Checkbox $control, array $attrs): Html
@@ -182,6 +193,7 @@ class DefaultFormTemplate
 
     protected function upload(UploadControl $control, array $attrs): Html
     {
+        /** @var TextBase $control */
         return $control->getControl()->addAttributes($attrs);
     }
 
@@ -206,26 +218,71 @@ class DefaultFormTemplate
         if ($value === null) {
             return Html::fromText('—');
         }
-        if ($control instanceof TextArea) {
-            return Html::el('pre', $control->getValue());
+        if ($control instanceof TextArea && is_string($value)) {
+            return Html::el('pre', $value);
         }
         if ($control instanceof Checkbox || is_bool($value)) {
-            return Html::fromText($value ? '✓' : '✕');
+            return Html::fromText((is_scalar($value) && (bool)$value) ? '✓' : '✕');
         }
         if ($control instanceof ChoiceControl) {
-            return Html::fromText($control->getSelectedItem());
+            $selectedItem = $control->getSelectedItem();
+            if (is_scalar($selectedItem)) {
+                return Html::fromText((string)$selectedItem);
+            }
         }
         if ($control instanceof MultiChoiceControl) {
             return Html::fromText(implode(', ', $control->getSelectedItems()));
         }
-        if ($control instanceof TextInput || is_string($value)) {
+        if (is_string($value)) {
             return Html::fromText($value);
         }
         return Html::fromText('(?)');
     }
 
-    public function section(string $caption, string $inside): Html
+    public function formCollection(FormCollection $collection, NeoFormRenderer $renderer): Html
     {
-        return Html::el('fieldset')->addHtml(Html::el('legend', $caption))->addHtml($inside);
+        $el = Html::el('div')->class('form-collection');
+        $el->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()));
+        $items = Html::el();
+        foreach ($collection->getItems() as $component) {
+            $items->addHtml($renderer->formCollectionItem($collection, $component));
+        }
+        return Html::el()
+            ->addHtml(Html::el('label', $collection->getLabel()))
+            ->addHtml($el
+                ->addHtml($items)
+                ->addHtml(
+                    Html::el('div')->class('form-collection-actions')
+                        ->addHtml(
+                            Html::el('a')->href('javascript:')
+                                ->class('form-collection-add', true)
+                                ->addHtml('+')
+                        )
+                )
+            )
+        ;
+    }
+
+    /**
+     * @param (BaseControl|Container)&IComponent $component
+     */
+    public function formCollectionItem(IComponent $component, NeoFormRenderer $renderer, FormCollection $collection): Html
+    {
+        return Html::el('div')
+            ->class('form-collection-item')
+            ->addHtml(
+                Html::el('div')->class('form-collection-item-form')
+                    ->addHtml($renderer->formRow($component))
+            )
+            ->addHtml(
+                Html::el('div')->class('form-collection-item-actions')
+                    ->addHtml(
+                        Html::el('a')->href('javascript:')
+                            ->class('form-collection-item-remove', true)
+                            ->class('btn btn-danger', true)
+                            ->addHtml('-')
+                    )
+            )
+        ;
     }
 }

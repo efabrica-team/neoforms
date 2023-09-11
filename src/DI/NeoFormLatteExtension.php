@@ -2,23 +2,22 @@
 
 namespace Efabrica\NeoForms\DI;
 
-use Efabrica\NeoForms\DI\Node\FormNode;
-use Efabrica\NeoForms\Render\NeoFormRenderer;
+use Efabrica\NeoForms\DI\Node\NeoFormNode;
+use Efabrica\NeoForms\DI\Node\NeoFormUnpairedNode;
 use Latte\Extension;
 
 class NeoFormLatteExtension extends Extension
 {
-    private NeoFormRenderer $renderer;
-
-    public function __construct(NeoFormRenderer $renderer)
-    {
-        $this->renderer = $renderer;
-    }
-
     public function getTags(): array
     {
         return [
-            'neoForm' => [FormNode::class, 'create'],
+            'neoForm' => [NeoFormNode::class, 'create'],
+            'formRow' => [NeoFormUnpairedNode::class, 'createFormRow'],
+            'formGroup' => [NeoFormUnpairedNode::class, 'createFormGroup'],
+            'formInput' => [NeoFormUnpairedNode::class, 'createFormInput'],
+            'formLabel' => [NeoFormUnpairedNode::class, 'createFormLabel'],
+            'formErrors' => [NeoFormUnpairedNode::class, 'createFormErrors'],
+            'formRest' => [NeoFormUnpairedNode::class, 'createFormRest'],
         ];
     }
 }

@@ -5,6 +5,8 @@ namespace Efabrica\NeoForms\Control;
 use Closure;
 use Efabrica\NeoForms\Build\NeoContainer;
 use Nette\ComponentModel\IComponent;
+use Nette\Forms\Container;
+use Nette\Forms\Controls\BaseControl;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Traversable;
@@ -12,16 +14,24 @@ use Traversable;
 class FormCollection extends NeoContainer
 {
     public const PROTOTYPE = '__prototype__';
+
     private string $label;
+
     /**
-     * @var Closure(NeoContainer): void
+     * @var Closure(NeoContainer): (void|mixed)
      */
     private Closure $formFactory;
+
     private NeoContainer $prototype;
 
     private ?string $componentTemplate = null;
+
     private ?string $collectionTemplate = null;
 
+    /**
+     * @param string                               $label
+     * @param callable(NeoContainer): (void|mixed) $formFactory
+     */
     public function __construct(string $label, callable $formFactory)
     {
         $this->label = $label;
@@ -32,7 +42,27 @@ class FormCollection extends NeoContainer
 
     public function getLabel(): string
     {
-        return $this->label;
+        return $this->getForm()->getTranslator()->translate($this->label);
+    }
+
+    public function getComponentTemplate(): ?string
+    {
+        return $this->componentTemplate;
+    }
+
+    public function setComponentTemplate(?string $componentTemplate): void
+    {
+        $this->componentTemplate = $componentTemplate;
+    }
+
+    public function getCollectionTemplate(): ?string
+    {
+        return $this->collectionTemplate;
+    }
+
+    public function setCollectionTemplate(?string $collectionTemplate): void
+    {
+        $this->collectionTemplate = $collectionTemplate;
     }
 
     public function getPrototype(): NeoContainer
@@ -46,12 +76,15 @@ class FormCollection extends NeoContainer
      */
     public function setValues($data, bool $erase = false): self
     {
+        /** @var mixed $data */
         if ($data instanceof Traversable) {
             $values = iterator_to_array($data);
         } elseif (is_object($data) || is_array($data) || $data === null) {
-            $values = (array) $data;
+            $values = (array)$data;
         } else {
-            throw new InvalidArgumentException(sprintf('First parameter must be iterable, %s given.', gettype($data)));
+            throw new InvalidArgumentException(sprintf('First parameter must be iterable, %s given.',
+                is_object($data) ? get_class($data) : gettype($data)
+            ));
         }
         $components = iterator_to_array($this->getComponents());
         foreach ($values as $key => $_) {
@@ -62,7 +95,7 @@ class FormCollection extends NeoContainer
         }
         foreach ($components as $key => $_) {
             if (!isset($values[$key])) {
-                $this->removeComponent($this->getComponent($key));
+                $this->removeComponent($this->getComponent((string)$key));
             }
         }
 
@@ -76,5 +109,20 @@ class FormCollection extends NeoContainer
         $values = parent::getUntrustedValues($returnType, $controls);
         $this->addComponent($this->prototype, self::PROTOTYPE);
         return $values;
+    }
+
+    /**
+     * @return (BaseControl|Container)[]
+     */
+    public function getItems(): iterable
+    {
+        foreach ($this->getComponents() as $component) {
+            if ($component === $this->prototype) {
+                continue;
+            }
+            if ($component instanceof BaseControl || $component instanceof Container) {
+                yield $component;
+            }
+        }
     }
 }

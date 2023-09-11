@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\CodeEditor;
+use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
 use Efabrica\NeoForms\Control\StaticTags;
@@ -112,6 +113,13 @@ trait NeoContainerTrait
         ?string $label = null
     ): CodeEditor {
         $component = new CodeEditor($mode, $label);
+        $this->addComponent($component, $name);
+        return $component;
+    }
+
+    public function addCollection(string $name, string $label, callable $factory): FormCollection
+    {
+        $component = new FormCollection($label, $factory);
         $this->addComponent($component, $name);
         return $component;
     }
