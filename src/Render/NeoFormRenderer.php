@@ -6,6 +6,9 @@ use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Latte\Engine;
+use Nette\Application\UI\TemplateFactory;
+use Nette\Bridges\ApplicationLatte\LatteFactory;
+use Nette\Bridges\ApplicationLatte\Template;
 use Nette\ComponentModel\Component;
 use Nette\ComponentModel\IComponent;
 use Nette\Forms\Container;
@@ -27,13 +30,11 @@ class NeoFormRenderer
     public NeoFormTemplate $defaultTemplate;
 
     private Translator $translator;
-    private Engine $engine;
 
-    public function __construct(Engine $engine, NeoFormTemplate $template, Translator $translator)
+    public function __construct(NeoFormTemplate $template, Translator $translator)
     {
         $this->defaultTemplate = $template;
         $this->translator = $translator;
-        $this->engine = $engine;
     }
 
     protected function template(?Form $form): NeoFormTemplate
@@ -112,9 +113,6 @@ class NeoFormRenderer
 
     public function formInput(BaseControl $el, array $attrs = []): Html
     {
-        /** @var Html $control */
-        $control = $el->getControl();
-
         if ($attrs['readonly'] ?? (bool)$el->getOption('readonly')) {
             return $this->template($el->getForm())->readonly($el);
         }
@@ -239,18 +237,19 @@ class NeoFormRenderer
         return $rows;
     }
 
-    public static function obtainFromEngine(Engine $engine): self
+    protected function renderTemplate(NeoForm $form, string $template, array $args = []): Html
     {
-        $self = $engine->getProviders()['neoFormRenderer'];
-        assert($self instanceof self);
-        return $self;
+        $presenter = $form->getPresenter();
+        $latte = $presenter->getTemplateFactory()->createTemplate($presenter, Template::class);
+        assert($latte instanceof Template);
+        return Html::fromHtml($latte->renderToString($template, $args));
     }
 
-    protected function formCollection(FormCollection $collection): Html
+    public function formCollection(FormCollection $collection): Html
     {
         $collectionTemplate = $collection->getCollectionTemplate();
         if ($collectionTemplate !== null) {
-            return Html::fromHtml($this->engine->renderToString($collectionTemplate, ['collection' => $collection]));
+            return $this->renderTemplate($collection->getForm(), $collectionTemplate, ['collection' => $collection]);
         }
         return $this->template($collection->getForm())->formCollection($collection, $this);
     }
@@ -259,7 +258,7 @@ class NeoFormRenderer
     {
         $componentTemplate = $collection->getComponentTemplate();
         if ($componentTemplate !== null) {
-            return Html::fromHtml($this->engine->renderToString($componentTemplate, ['collection' => $collection, 'item' => $item]));
+            return $this->renderTemplate($collection->getForm(), $componentTemplate, ['collection' => $collection, 'item' => $item]);
         }
         if (!$item instanceof BaseControl && !$item instanceof Container) {
             throw new RuntimeException('Unsupported collection item type ' . get_class($item));

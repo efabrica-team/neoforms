@@ -243,7 +243,7 @@ class NeoFormTemplate
     {
         $el = Html::el('div')->class('form-collection');
         $el->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()));
-        $items = Html::el();
+        $items = Html::el('div')->class('form-collection-items');
         foreach ($collection->getItems() as $component) {
             $items->addHtml($renderer->formCollectionItem($collection, $component));
         }

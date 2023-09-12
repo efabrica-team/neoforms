@@ -16,12 +16,14 @@ class NeoFormUnpairedNode extends StatementNode
     private ArrayNode $attrs;
 
     private string $function;
+    private string $args;
 
     private function __construct(ExpressionNode $control, ArrayNode $attrs, string $function)
     {
         $this->control = $control;
         $this->attrs = $attrs;
         $this->function = $function;
+        $this->args = '%0.node, %1.node';
     }
 
     public static function create(Tag $tag, string $function): self
@@ -54,7 +56,9 @@ class NeoFormUnpairedNode extends StatementNode
 
     public static function createFormGroup(Tag $tag): self
     {
-        return self::create($tag, 'formGroup');
+        $ret = self::create($tag, 'formGroup');
+        $ret->args = '$form, %0.node';
+        return $ret;
     }
 
     public static function createFormRest(Tag $tag): self
@@ -65,7 +69,7 @@ class NeoFormUnpairedNode extends StatementNode
     public function print(PrintContext $context): string
     {
         return $context->format(
-            "echo \$this->global->neoFormRenderer->{$this->function}(%0.node, %1.node) %2.line;",
+            "echo \$this->global->neoFormRenderer->{$this->function}({$this->args}) %2.line;",
             $this->control,
             $this->attrs,
             $this->position

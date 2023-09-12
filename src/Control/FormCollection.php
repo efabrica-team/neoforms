@@ -70,6 +70,13 @@ class FormCollection extends NeoContainer
         return $this->prototype;
     }
 
+    public function validate(?array $controls = null): void
+    {
+        $this->removeComponent($this->prototype);
+        parent::validate($controls);
+        $this->addComponent($this->prototype, self::PROTOTYPE);
+    }
+
     /**
      * @param iterable|object $data
      * @return $this
@@ -94,7 +101,7 @@ class FormCollection extends NeoContainer
             unset($components[$key]);
         }
         foreach ($components as $key => $_) {
-            if (!isset($values[$key])) {
+            if (!isset($values[$key]) && $key !== self::PROTOTYPE) {
                 $this->removeComponent($this->getComponent((string)$key));
             }
         }

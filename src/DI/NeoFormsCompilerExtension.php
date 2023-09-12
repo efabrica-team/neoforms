@@ -7,6 +7,7 @@ use Efabrica\NeoForms\Render\NeoFormNetteRenderer;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Latte\Engine;
+use Nette\Bridges\ApplicationLatte\LatteFactory;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\FactoryDefinition;
 use Nette\DI\Definitions\Statement;
@@ -17,7 +18,11 @@ class NeoFormsCompilerExtension extends CompilerExtension
     {
         $di = $this->getContainerBuilder();
 
-        $di->addDefinition($this->prefix('formNetteRenderer'))
+        $di->addDefinition($this->prefix('renderer'))
+            ->setFactory(NeoFormRenderer::class)
+        ;
+
+        $di->addDefinition($this->prefix('netteRenderer'))
             ->setCreator(NeoFormNetteRenderer::class)
         ;
 
@@ -29,22 +34,17 @@ class NeoFormsCompilerExtension extends CompilerExtension
         $latteFactory = $di->getDefinition('nette.latteFactory');
         $latteEngine = $latteFactory->getResultDefinition();
 
-        $di->addDefinition($this->prefix('formTemplate'))
+        $di->addDefinition($this->prefix('template'))
             ->setFactory(NeoFormTemplate::class)
         ;
 
-        $latteEngine->addSetup('addProvider', ['neoFormRenderer', new Statement(NeoFormRenderer::class, ['@self'])]);
+        $latteEngine->addSetup('addProvider', ['neoFormRenderer', '@'.$this->prefix('renderer')]);
         if (Engine::VERSION_ID >= 30000) {
             $di->addDefinition($this->prefix('latteExtension'))
                 ->setFactory(NeoFormLatteExtension::class);
             $latteEngine->addSetup('addExtension', ['@' . $this->prefix('latteExtension')]);
-        }
-        if (Engine::VERSION_ID < 30000) {
+        } else {
             $latteEngine->addSetup(NeoFormMacroSet::class . '::install(?->getCompiler())', ['@self']);
         }
-
-        $di->addDefinition($this->prefix('formRenderer'))
-            ->setFactory(NeoFormRenderer::class . '::obtainFromEngine', ['@' . Engine::class])
-        ;
     }
 }
