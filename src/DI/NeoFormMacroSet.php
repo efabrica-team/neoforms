@@ -48,7 +48,7 @@ class NeoFormMacroSet extends MacroSet
                 : '$this->global->uiControl[%node.word]') . ';'
             . 'if ($form instanceof ' . NeoFormControl::class . ') $form = $form->form;'
             . '$ʟ_formGen = $this->global->neoFormRenderer->form($this->global->formsStack[] = $form, %node.array);'
-            . '$ʟ_formGen->current();'
+            . '$ʟ_formGen->current();ob_start();'
             . " /* line $node->startLine */;"
         );
     }
