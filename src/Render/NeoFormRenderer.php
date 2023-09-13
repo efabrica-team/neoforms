@@ -126,6 +126,10 @@ class NeoFormRenderer
             $inputAttrs['readonly'] = $attrs['readonly'];
         }
 
+        if ($el instanceof HiddenField) {
+            return $this->template($el->getForm())->formInput($el, $inputAttrs, Html::el());
+        }
+
         return $this->template($el->getForm())->formRow(
             Html::fromHtml($this->formLabel($el, $attrs)),
             Html::fromHtml($this->formInput($el, $inputAttrs)),
@@ -150,7 +154,7 @@ class NeoFormRenderer
         } elseif ($description instanceof Html) {
             $descriptionEl = $description;
         }
-        return $this->template($el->getForm())->input($el, $attrs, $descriptionEl ?? Html::el());
+        return $this->template($el->getForm())->formInput($el, $attrs, $descriptionEl ?? Html::el());
     }
 
     public function formRest(NeoForm $form, array $options = []): Html

@@ -13,7 +13,7 @@ use Traversable;
 
 class FormCollection extends NeoContainer
 {
-    public const PROTOTYPE = '__prototype__';
+    private static int $prototypeIndex = 0;
 
     private string $label;
 
@@ -38,7 +38,8 @@ class FormCollection extends NeoContainer
     {
         $this->label = $label;
         $this->formFactory = Closure::fromCallable($formFactory);
-        $this->prototype = $this->addContainer(self::PROTOTYPE);
+        $prototypeName = '__prototype' . ++self::$prototypeIndex . '__';
+        $this->prototype = $this->addContainer($prototypeName);
         $this->formFactory->__invoke($this->prototype);
     }
 
@@ -86,7 +87,7 @@ class FormCollection extends NeoContainer
         $this->updateChildren();
         $this->removeComponent($this->prototype);
         parent::validate($controls);
-        $this->addComponent($this->prototype, self::PROTOTYPE);
+        $this->addComponent($this->prototype, $this->prototype->getName());
     }
 
     public function updateChildren(): void
@@ -113,7 +114,7 @@ class FormCollection extends NeoContainer
             unset($components[$key]);
         }
         foreach ($components as $key => $_) {
-            if (!isset($values[$key]) && $key !== self::PROTOTYPE) {
+            if (!isset($values[$key]) && $_ !== $this->prototype) {
                 $this->removeComponent($this->getComponent((string)$key));
             }
         }
@@ -123,7 +124,7 @@ class FormCollection extends NeoContainer
     {
         $this->removeComponent($this->prototype);
         $values = parent::getUntrustedValues($returnType, $controls);
-        $this->addComponent($this->prototype, self::PROTOTYPE);
+        $this->addComponent($this->prototype, $this->prototype->getName());
         return $values;
     }
 

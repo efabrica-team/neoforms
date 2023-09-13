@@ -113,7 +113,7 @@ class NeoFormTemplate
         return Html::el('div')->class('form-text')->setHtml($description);
     }
 
-    public function input(BaseControl $control, array $attrs, Html $description): Html
+    public function formInput(BaseControl $control, array $attrs, Html $description): Html
     {
         $attrs += array_filter($control->getOptions(), 'is_scalar');
         return Html::el()->addHtml($this->control($control, $attrs) . $description);
@@ -244,7 +244,6 @@ class NeoFormTemplate
     public function formCollection(FormCollection $collection, NeoFormRenderer $renderer): Html
     {
         $el = Html::el('div')->class('form-collection');
-        $el->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()));
         $items = Html::el('div')->class('form-collection-items');
         foreach ($collection->getItems() as $item) {
             $items->addHtml($renderer->formCollectionItem($collection, $item));
@@ -258,6 +257,8 @@ class NeoFormTemplate
                         ->addHtml(
                             Html::el('a')->href('javascript:')
                                 ->class('form-collection-add', true)
+                                ->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()))
+                                ->setAttribute('data-prototype-name', $collection->getPrototype()->getName())
                                 ->addHtml('+')
                         )
                 ));
