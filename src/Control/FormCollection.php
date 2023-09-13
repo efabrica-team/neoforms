@@ -5,10 +5,14 @@ namespace Efabrica\NeoForms\Control;
 use Closure;
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Render\NeoFormRenderer;
+use Nette\Bridges\ApplicationLatte\Template;
+use Nette\Forms\Control;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
+use Nette\Utils\Html;
 use Traversable;
 
 class FormCollection extends NeoContainer
@@ -22,13 +26,15 @@ class FormCollection extends NeoContainer
      */
     private Closure $formFactory;
 
-    private NeoContainer $prototype;
+    private FormCollectionItem $prototype;
 
     private ?string $componentTemplate = null;
 
     private ?string $collectionTemplate = null;
 
     private ?bool $simple = null;
+
+    private ?array $httpData = null;
 
     /**
      * @param string                               $label
@@ -38,9 +44,14 @@ class FormCollection extends NeoContainer
     {
         $this->label = $label;
         $this->formFactory = Closure::fromCallable($formFactory);
-        $prototypeName = '__prototype' . ++self::$prototypeIndex . '__';
-        $this->prototype = $this->addContainer($prototypeName);
+        $this->prototype = new FormCollectionItem(true);
+        $this->addComponent($this->prototype, '__prototype' . ++self::$prototypeIndex . '__');
         $this->formFactory->__invoke($this->prototype);
+    }
+
+    public function getDiff(array $previousData): FormCollectionDiff
+    {
+        return new FormCollectionDiff($previousData, $this->getHttpData());
     }
 
     public function getLabel(): string
@@ -75,6 +86,12 @@ class FormCollection extends NeoContainer
 
     protected function getHttpData(): ?array
     {
+        if ($this->httpData !== null) {
+            return $this->httpData;
+        }
+        if (!$this->getForm()->isSubmitted()) {
+            return null;
+        }
         $httpData = $this->getForm()->getHttpData();
         foreach (explode(Form::NameSeparator, $this->lookupPath(NeoForm::class)) as $path) {
             $httpData = $httpData[$path] ?? null;
@@ -92,7 +109,7 @@ class FormCollection extends NeoContainer
 
     public function updateChildren(): void
     {
-        $data = $this->getHttpData();
+        $data = $this->getHttpData() ?? $this->getValues();
         /** @var mixed $data */
         if ($data instanceof Traversable) {
             $values = iterator_to_array($data);
@@ -107,7 +124,7 @@ class FormCollection extends NeoContainer
         $components = iterator_to_array($this->getComponents());
         foreach ($values as $key => $childValues) {
             if (!isset($components[$key])) {
-                $child = $this->addContainer($key);
+                $child = $this->addComponent(new FormCollectionItem(), $key);
                 $this->formFactory->__invoke($child);
                 $child->setValues($childValues);
             }
@@ -129,7 +146,7 @@ class FormCollection extends NeoContainer
     }
 
     /**
-     * @return NeoContainer[]
+     * @return FormCollectionItem[]
      */
     public function getItems(): iterable
     {
@@ -137,7 +154,7 @@ class FormCollection extends NeoContainer
             if ($component === $this->prototype) {
                 continue;
             }
-            if ($component instanceof NeoContainer) {
+            if ($component instanceof FormCollectionItem) {
                 yield $component;
             }
         }
@@ -159,5 +176,77 @@ class FormCollection extends NeoContainer
     public function forceSimple(?bool $simple): void
     {
         $this->simple = $simple;
+    }
+
+    protected function renderTemplate(string $path, array $params)
+    {
+        return $this->getForm()->getPresenter()->getTemplateFactory()
+            ->createTemplate($this->getForm()->getPresenter(), Template::class)
+            ->renderToString($path, $params)
+        ;
+    }
+
+    public function getHtml(NeoFormRenderer $renderer): Html
+    {
+        $collectionTemplate = $this->getCollectionTemplate();
+        $addButton = $this->getAddButtonHtml($renderer);
+        if ($collectionTemplate !== null) {
+            return $this->renderTemplate($collectionTemplate, ['collection' => $this, 'addBtn' => $addButton]);
+        }
+        $el = Html::el('div')->class('form-collection');
+        $items = Html::el('div')->class('form-collection-items');
+        foreach ($this->getItems() as $item) {
+            $items->addHtml($this->getItemHtml($renderer, $item));
+        }
+        return Html::el()
+            ->addHtml(Html::el('label', $this->getLabel()))
+            ->addHtml($el->addHtml($items)->addHtml($addButton))
+        ;
+    }
+
+    public function getItemHtml(NeoFormRenderer $renderer, FormCollectionItem $item): Html
+    {
+        $componentTemplate = $this->getComponentTemplate();
+        if ($componentTemplate !== null) {
+            return $this->renderTemplate($componentTemplate, ['collection' => $this, 'item' => $item]);
+        }
+        $simple = $this->isSimple();
+        return Html::el('div')
+            ->class('form-collection-item')
+            ->class('form-collection-item-simple', $simple)
+            ->class('form-collection-item-multi', !$simple)
+            ->addHtml(
+                Html::el('div')->class('form-collection-item-form')
+                    ->addHtml($renderer->container($item))
+            )
+            ->addHtml(
+                $this->getRemoveButtonHtml()
+            )
+        ;
+    }
+
+    public function getAddButtonHtml(NeoFormRenderer $renderer): Html
+    {
+        return Html::el('div')->class('form-collection-actions')
+            ->addHtml(
+                Html::el('a')->href('javascript:')
+                    ->class('form-collection-add', true)
+                    ->setAttribute('data-proto', $this->getItemHtml($renderer, $this->prototype))
+                    ->setAttribute('data-proto-name', $this->prototype->getName())
+                    ->addHtml('+')
+            )
+        ;
+    }
+
+    public function getRemoveButtonHtml(): Html
+    {
+        return Html::el('div')->class('form-collection-item-actions')
+            ->addHtml(
+                Html::el('a')->href('javascript:')
+                    ->class('form-collection-item-remove', true)
+                    ->class('btn btn-danger', true)
+                    ->addHtml('-')
+            )
+        ;
     }
 }

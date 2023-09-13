@@ -29,11 +29,12 @@ class NeoFormTemplate
 {
     public function form(NeoFormRenderer $renderer, NeoForm $form, Html $errors, array $attrs): Generator
     {
+        $renderRest = $attrs['rest'] ?? true;
         return (clone $form->getElementPrototype())
             ->addAttributes($attrs)
             ->addHtml($errors)
             ->addHtml(yield)
-            ->addHtml($renderer->formRest($form))
+            ->addHtml($renderRest ? $renderer->formRest($form) : '')
         ;
     }
 
@@ -239,51 +240,5 @@ class NeoFormTemplate
             return Html::fromText($value);
         }
         return Html::fromText('(?)');
-    }
-
-    public function formCollection(FormCollection $collection, NeoFormRenderer $renderer): Html
-    {
-        $el = Html::el('div')->class('form-collection');
-        $items = Html::el('div')->class('form-collection-items');
-        foreach ($collection->getItems() as $item) {
-            $items->addHtml($renderer->formCollectionItem($collection, $item));
-        }
-        return Html::el()
-            ->addHtml(Html::el('label', $collection->getLabel()))
-            ->addHtml($el
-                ->addHtml($items)
-                ->addHtml(
-                    Html::el('div')->class('form-collection-actions')
-                        ->addHtml(
-                            Html::el('a')->href('javascript:')
-                                ->class('form-collection-add', true)
-                                ->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()))
-                                ->setAttribute('data-prototype-name', $collection->getPrototype()->getName())
-                                ->addHtml('+')
-                        )
-                ));
-    }
-
-    public function formCollectionItem(NeoContainer $item, NeoFormRenderer $renderer, FormCollection $collection): Html
-    {
-        $simple = $collection->isSimple();
-        return Html::el('div')
-            ->class('form-collection-item')
-            ->class('form-collection-item-simple', $simple)
-            ->class('form-collection-item-multi', !$simple)
-            ->addHtml(
-                Html::el('div')->class('form-collection-item-form')
-                    ->addHtml($renderer->container($item))
-            )
-            ->addHtml(
-                Html::el('div')->class('form-collection-item-actions')
-                    ->addHtml(
-                        Html::el('a')->href('javascript:')
-                            ->class('form-collection-item-remove', true)
-                            ->class('btn btn-danger', true)
-                            ->addHtml('-')
-                    )
-            )
-        ;
     }
 }

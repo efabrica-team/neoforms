@@ -7,6 +7,7 @@ use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
 use Efabrica\NeoForms\Control\StaticTags;
+use Efabrica\NeoForms\Control\SubmitButton;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
@@ -120,6 +121,13 @@ trait NeoContainerTrait
     public function addCollection(string $name, string $label, callable $factory): FormCollection
     {
         $component = new FormCollection($label, $factory);
+        $this->addComponent($component, $name);
+        return $component;
+    }
+
+    public function addSubmit(string $name, $caption = null): SubmitButton
+    {
+        $component = new SubmitButton($caption);
         $this->addComponent($component, $name);
         return $component;
     }

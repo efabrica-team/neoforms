@@ -15,6 +15,7 @@ use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\HiddenField;
+use Nette\Forms\Controls\SubmitButton;
 use Nette\Forms\Form;
 use Nette\Localization\Translator;
 use Nette\Utils\Html;
@@ -22,8 +23,6 @@ use RuntimeException;
 
 class NeoFormRenderer
 {
-    public const FORM_BODY_DIVIDER = 'divider';
-
     public NeoFormTemplate $defaultTemplate;
 
     private Translator $translator;
@@ -42,25 +41,21 @@ class NeoFormRenderer
     public function form(NeoForm $form, array $attrs = []): Generator
     {
         $form->fireRenderEvents();
+
+        $readonly = $attrs['readonly'] ?? $form->isReadonly();
         /** @var BaseControl $control */
-        foreach ($form->getControls() as $control) {
+        foreach ($form->getComponents(true, BaseControl::class) as $control) {
             $control->setOption('rendered', false);
-        }
-        if ($attrs['readonly'] ?? $form->isReadonly()) {
-            foreach ($form->getComponents(true) as $control) {
-                assert($control instanceof BaseControl);
+            if ($readonly) {
                 $control->setOption('readonly', $control->getOption('readonly') ?? true);
             }
         }
+
         $showErrors = $attrs['formErrors'] ?? true;
+        $formErrors = $showErrors ? $this->template($form)->formErrors($form->getOwnErrors()) : Html::el();
         unset($attrs['formErrors']);
 
-        $generator = $this->template($form)->form(
-            $this,
-            $form,
-            $showErrors ? $this->template($form)->formErrors($form->getOwnErrors()) : Html::el(),
-            $attrs
-        );
+        $generator = $this->template($form)->form($this, $form, $formErrors, $attrs);
         $generator->send(yield);
         return $generator->getReturn();
     }
@@ -148,6 +143,11 @@ class NeoFormRenderer
             $attrs['placeholder'] = $this->translator->translate($attrs['placeholder']);
         }
 
+        /** Hotfix as SubmitButton does not have the correct type */
+        if ($el instanceof SubmitButton && !$el instanceof \Efabrica\NeoForms\Control\SubmitButton) {
+            $el->setOption('type', null);
+        }
+
         $description = $el->getOption('description');
         if (is_string($description)) {
             $descriptionEl = $this->template($el->getForm())->description($description);
@@ -209,8 +209,8 @@ class NeoFormRenderer
 
     public function container(Container $el): Html
     {
-        if ($el instanceof FormCollection) {
-            return $this->formCollection($el);
+        if ($el instanceof NeoContainer) {
+            return $el->getHtml($this);
         }
         $rows = Html::el();
         foreach ($el->getComponents() as $component) {
@@ -219,31 +219,5 @@ class NeoFormRenderer
             }
         }
         return $rows;
-    }
-
-    protected function renderTemplate(NeoForm $form, string $template, array $args = []): Html
-    {
-        $presenter = $form->getPresenter();
-        $latte = $presenter->getTemplateFactory()->createTemplate($presenter, Template::class);
-        assert($latte instanceof Template);
-        return Html::fromHtml($latte->renderToString($template, $args));
-    }
-
-    public function formCollection(FormCollection $collection): Html
-    {
-        $collectionTemplate = $collection->getCollectionTemplate();
-        if ($collectionTemplate !== null) {
-            return $this->renderTemplate($collection->getForm(), $collectionTemplate, ['collection' => $collection]);
-        }
-        return $this->template($collection->getForm())->formCollection($collection, $this);
-    }
-
-    public function formCollectionItem(FormCollection $collection, NeoContainer $item): Html
-    {
-        $componentTemplate = $collection->getComponentTemplate();
-        if ($componentTemplate !== null) {
-            return $this->renderTemplate($collection->getForm(), $componentTemplate, ['collection' => $collection, 'item' => $item]);
-        }
-        return $this->template($collection->getForm())->formCollectionItem($item, $this, $collection);
     }
 }
