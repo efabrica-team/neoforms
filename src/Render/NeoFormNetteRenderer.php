@@ -5,7 +5,6 @@ namespace Efabrica\NeoForms\Render;
 use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
-use Nette\Utils\Strings;
 use RuntimeException;
 
 class NeoFormNetteRenderer implements FormRenderer

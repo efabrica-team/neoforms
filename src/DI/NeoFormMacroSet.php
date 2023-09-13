@@ -10,6 +10,7 @@ use Latte\MacroNode;
 use Latte\Macros\MacroSet;
 use Latte\PhpWriter;
 use Nette\Utils\ArrayHash;
+use Nette\Utils\Html;
 
 if (Engine::VERSION_ID >= 30000) {
     class_alias(ArrayHash::class, MacroSet::class);
@@ -46,14 +47,16 @@ class NeoFormMacroSet extends MacroSet
                 ? 'is_object($ʟ_tmp = %node.word) ? $ʟ_tmp : $this->global->uiControl[$ʟ_tmp]'
                 : '$this->global->uiControl[%node.word]') . ';'
             . 'if ($form instanceof ' . NeoFormControl::class . ') $form = $form->form;'
-            . 'echo $this->global->neoFormRenderer->formStart($this->global->formsStack[] = $form, %node.array);'
+            . '$ʟ_formGen = $this->global->neoFormRenderer->form($this->global->formsStack[] = $form, %node.array);'
+            . '$ʟ_formGen->current();'
             . " /* line $node->startLine */;"
         );
     }
 
     public function neoFormEnd(MacroNode $node, PhpWriter $writer): string
     {
-        return $writer->write('echo $this->global->neoFormRenderer->formEnd(array_pop($this->global->formsStack), %node.array);');
+        return $writer->write('$ʟ_formGen->send(' . Html::class . '::fromHtml(ob_get_clean()));'
+            . 'echo $ʟ_formGen->getReturn();' . "/* line $node->startLine */;");
     }
 
     public function neoFormRow(MacroNode $node, PhpWriter $writer): string

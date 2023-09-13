@@ -2,11 +2,11 @@
 
 namespace Efabrica\NeoForms\Render\Template;
 
+use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
-use Nette\ComponentModel\IComponent;
-use Nette\Forms\Container;
+use Generator;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
@@ -27,12 +27,13 @@ use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 
 class NeoFormTemplate
 {
-    public function form(NeoForm $form, Html $errors, string $divider, Html $body, array $attrs): Html
+    public function form(NeoFormRenderer $renderer, NeoForm $form, Html $errors, array $attrs): Generator
     {
-        return (clone $form->getElementPrototype())->addAttributes($attrs)
+        return (clone $form->getElementPrototype())
+            ->addAttributes($attrs)
             ->addHtml($errors)
-            ->addHtml($divider)
-            ->addHtml($body)
+            ->addHtml(yield)
+            ->addHtml($renderer->formRest($form))
         ;
     }
 
@@ -244,8 +245,8 @@ class NeoFormTemplate
         $el = Html::el('div')->class('form-collection');
         $el->setAttribute('data-prototype', $renderer->formCollectionItem($collection, $collection->getPrototype()));
         $items = Html::el('div')->class('form-collection-items');
-        foreach ($collection->getItems() as $component) {
-            $items->addHtml($renderer->formCollectionItem($collection, $component));
+        foreach ($collection->getItems() as $item) {
+            $items->addHtml($renderer->formCollectionItem($collection, $item));
         }
         return Html::el()
             ->addHtml(Html::el('label', $collection->getLabel()))
@@ -258,21 +259,19 @@ class NeoFormTemplate
                                 ->class('form-collection-add', true)
                                 ->addHtml('+')
                         )
-                )
-            )
-        ;
+                ));
     }
 
-    /**
-     * @param (BaseControl|Container)&IComponent $component
-     */
-    public function formCollectionItem(IComponent $component, NeoFormRenderer $renderer, FormCollection $collection): Html
+    public function formCollectionItem(NeoContainer $item, NeoFormRenderer $renderer, FormCollection $collection): Html
     {
+        $simple = $collection->isSimple();
         return Html::el('div')
             ->class('form-collection-item')
+            ->class('form-collection-item-simple', $simple)
+            ->class('form-collection-item-multi', !$simple)
             ->addHtml(
                 Html::el('div')->class('form-collection-item-form')
-                    ->addHtml($renderer->formRow($component))
+                    ->addHtml($renderer->container($item))
             )
             ->addHtml(
                 Html::el('div')->class('form-collection-item-actions')

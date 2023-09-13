@@ -4,9 +4,9 @@ namespace Efabrica\NeoForms\Control;
 
 use Closure;
 use Efabrica\NeoForms\Build\NeoContainer;
-use Nette\ComponentModel\IComponent;
-use Nette\Forms\Container;
+use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Traversable;
@@ -27,6 +27,8 @@ class FormCollection extends NeoContainer
     private ?string $componentTemplate = null;
 
     private ?string $collectionTemplate = null;
+
+    private ?bool $simple = null;
 
     /**
      * @param string                               $label
@@ -70,33 +72,43 @@ class FormCollection extends NeoContainer
         return $this->prototype;
     }
 
+    protected function getHttpData(): ?array
+    {
+        $httpData = $this->getForm()->getHttpData();
+        foreach (explode(Form::NameSeparator, $this->lookupPath(NeoForm::class)) as $path) {
+            $httpData = $httpData[$path] ?? null;
+        }
+        return $httpData;
+    }
+
     public function validate(?array $controls = null): void
     {
+        $this->updateChildren();
         $this->removeComponent($this->prototype);
         parent::validate($controls);
         $this->addComponent($this->prototype, self::PROTOTYPE);
     }
 
-    /**
-     * @param iterable|object $data
-     * @return $this
-     */
-    public function setValues($data, bool $erase = false): self
+    public function updateChildren(): void
     {
+        $data = $this->getHttpData();
         /** @var mixed $data */
         if ($data instanceof Traversable) {
             $values = iterator_to_array($data);
         } elseif (is_object($data) || is_array($data) || $data === null) {
             $values = (array)$data;
         } else {
-            throw new InvalidArgumentException(sprintf('First parameter must be iterable, %s given.',
+            throw new InvalidArgumentException(sprintf(
+                'First parameter must be iterable, %s given.',
                 is_object($data) ? get_class($data) : gettype($data)
             ));
         }
         $components = iterator_to_array($this->getComponents());
-        foreach ($values as $key => $_) {
+        foreach ($values as $key => $childValues) {
             if (!isset($components[$key])) {
-                $this->formFactory->__invoke($this->addContainer($key));
+                $child = $this->addContainer($key);
+                $this->formFactory->__invoke($child);
+                $child->setValues($childValues);
             }
             unset($components[$key]);
         }
@@ -105,9 +117,6 @@ class FormCollection extends NeoContainer
                 $this->removeComponent($this->getComponent((string)$key));
             }
         }
-
-        parent::setValues($data, $erase);
-        return $this;
     }
 
     public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null)
@@ -119,7 +128,7 @@ class FormCollection extends NeoContainer
     }
 
     /**
-     * @return (BaseControl|Container)[]
+     * @return NeoContainer[]
      */
     public function getItems(): iterable
     {
@@ -127,9 +136,27 @@ class FormCollection extends NeoContainer
             if ($component === $this->prototype) {
                 continue;
             }
-            if ($component instanceof BaseControl || $component instanceof Container) {
+            if ($component instanceof NeoContainer) {
                 yield $component;
             }
         }
+    }
+
+    public function isSimple(): bool
+    {
+        if ($this->simple !== null) {
+            return $this->simple;
+        }
+        foreach ($this->prototype->getComponents() as $input) {
+            if ($input instanceof BaseControl && $input->getCaption() !== null && $input->getCaption() !== '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function forceSimple(?bool $simple): void
+    {
+        $this->simple = $simple;
     }
 }

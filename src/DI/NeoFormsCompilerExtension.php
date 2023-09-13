@@ -7,10 +7,8 @@ use Efabrica\NeoForms\Render\NeoFormNetteRenderer;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Latte\Engine;
-use Nette\Bridges\ApplicationLatte\LatteFactory;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\FactoryDefinition;
-use Nette\DI\Definitions\Statement;
 
 class NeoFormsCompilerExtension extends CompilerExtension
 {
@@ -38,7 +36,7 @@ class NeoFormsCompilerExtension extends CompilerExtension
             ->setFactory(NeoFormTemplate::class)
         ;
 
-        $latteEngine->addSetup('addProvider', ['neoFormRenderer', '@'.$this->prefix('renderer')]);
+        $latteEngine->addSetup('addProvider', ['neoFormRenderer', '@' . $this->prefix('renderer')]);
         if (Engine::VERSION_ID >= 30000) {
             $di->addDefinition($this->prefix('latteExtension'))
                 ->setFactory(NeoFormLatteExtension::class);

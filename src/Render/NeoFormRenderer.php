@@ -2,15 +2,13 @@
 
 namespace Efabrica\NeoForms\Render;
 
+use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
-use Latte\Engine;
-use Nette\Application\UI\TemplateFactory;
-use Nette\Bridges\ApplicationLatte\LatteFactory;
+use Generator;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\ComponentModel\Component;
-use Nette\ComponentModel\IComponent;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
@@ -20,13 +18,12 @@ use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
 use Nette\Localization\Translator;
 use Nette\Utils\Html;
-use Nette\Utils\Random;
-use Nette\Utils\Strings;
 use RuntimeException;
 
 class NeoFormRenderer
 {
     public const FORM_BODY_DIVIDER = 'divider';
+
     public NeoFormTemplate $defaultTemplate;
 
     private Translator $translator;
@@ -40,6 +37,32 @@ class NeoFormRenderer
     protected function template(?Form $form): NeoFormTemplate
     {
         return ($form instanceof NeoForm ? $form->getTemplate() : null) ?? $this->defaultTemplate;
+    }
+
+    public function form(NeoForm $form, array $attrs = []): Generator
+    {
+        $form->fireRenderEvents();
+        /** @var BaseControl $control */
+        foreach ($form->getControls() as $control) {
+            $control->setOption('rendered', false);
+        }
+        if ($attrs['readonly'] ?? $form->isReadonly()) {
+            foreach ($form->getComponents(true) as $control) {
+                assert($control instanceof BaseControl);
+                $control->setOption('readonly', $control->getOption('readonly') ?? true);
+            }
+        }
+        $showErrors = $attrs['formErrors'] ?? true;
+        unset($attrs['formErrors']);
+
+        $generator = $this->template($form)->form(
+            $this,
+            $form,
+            $showErrors ? $this->template($form)->formErrors($form->getOwnErrors()) : Html::el(),
+            $attrs
+        );
+        $generator->send(yield);
+        return $generator->getReturn();
     }
 
     public function formGroup(NeoForm $form, ControlGroup $group): Html
@@ -130,49 +153,6 @@ class NeoFormRenderer
         return $this->template($el->getForm())->input($el, $attrs, $descriptionEl ?? Html::el());
     }
 
-    public function form(NeoForm $form, array $attrs = []): Html
-    {
-        $form->fireRenderEvents();
-        /** @var BaseControl $control */
-        foreach ($form->getControls() as $control) {
-            $control->setOption('rendered', false);
-        }
-        if ($attrs['readonly'] ?? $form->isReadonly()) {
-            foreach ($form->getComponents(true) as $control) {
-                assert($control instanceof BaseControl);
-                $control->setOption('readonly', $control->getOption('readonly') ?? true);
-            }
-        }
-        $showErrors = $attrs['formErrors'] ?? true;
-        $divider = $attrs[self::FORM_BODY_DIVIDER] ?? '';
-        unset($attrs[self::FORM_BODY_DIVIDER], $attrs['formErrors']);
-        return $this->template($form)->form(
-            $form,
-            $showErrors ? $this->template($form)->formErrors($form->getOwnErrors()) : Html::el(),
-            is_string($divider) ? $divider : '',
-            $this->formRest($form, $attrs),
-            $attrs
-        );
-    }
-
-    public function formStart(NeoForm $form, array $attrs = []): Html
-    {
-        $attrs[self::FORM_BODY_DIVIDER] = $divider = '[___DIVIDER' . uniqid() . '___]';
-        $template = $this->form($form, $attrs);
-        $form->setOption('__formEnd', Strings::after($template, $divider) ?: '');
-        return Html::fromHtml(Strings::before($template, $divider) ?: '');
-    }
-
-    public function formEnd(NeoForm $form): Html
-    {
-        $formEnd = $form->getOption('formEnd');
-        if (is_string($formEnd)) {
-            $form->setOption('__formEnd', null);
-            return Html::fromHtml($formEnd);
-        }
-        return Html::el();
-    }
-
     public function formRest(NeoForm $form, array $options = []): Html
     {
         $body = Html::el();
@@ -203,7 +183,7 @@ class NeoFormRenderer
 
     public function formLabel(BaseControl $el, array $attrs = []): Html
     {
-        if ($el instanceof Button || $el instanceof HiddenField || $el instanceof Checkbox) {
+        if ($el instanceof Button || $el instanceof HiddenField || $el instanceof Checkbox || $el->getCaption() === null || $el->getCaption() === '') {
             return Html::el();
         }
         if (is_string($el->getOption('info'))) {
@@ -254,14 +234,11 @@ class NeoFormRenderer
         return $this->template($collection->getForm())->formCollection($collection, $this);
     }
 
-    public function formCollectionItem(FormCollection $collection, IComponent $item): Html
+    public function formCollectionItem(FormCollection $collection, NeoContainer $item): Html
     {
         $componentTemplate = $collection->getComponentTemplate();
         if ($componentTemplate !== null) {
             return $this->renderTemplate($collection->getForm(), $componentTemplate, ['collection' => $collection, 'item' => $item]);
-        }
-        if (!$item instanceof BaseControl && !$item instanceof Container) {
-            throw new RuntimeException('Unsupported collection item type ' . get_class($item));
         }
         return $this->template($collection->getForm())->formCollectionItem($item, $this, $collection);
     }

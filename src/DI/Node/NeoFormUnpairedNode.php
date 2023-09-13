@@ -16,6 +16,7 @@ class NeoFormUnpairedNode extends StatementNode
     private ArrayNode $attrs;
 
     private string $function;
+
     private string $args;
 
     private function __construct(ExpressionNode $control, ArrayNode $attrs, string $function)
