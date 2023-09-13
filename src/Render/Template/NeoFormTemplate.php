@@ -115,6 +115,7 @@ class NeoFormTemplate
 
     public function input(BaseControl $control, array $attrs, Html $description): Html
     {
+        $attrs += array_filter($control->getOptions(), 'is_scalar');
         return Html::el()->addHtml($this->control($control, $attrs) . $description);
     }
 
