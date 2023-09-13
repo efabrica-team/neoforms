@@ -21,6 +21,8 @@ class NeoFormNetteRenderer implements FormRenderer
         if (!$form instanceof NeoForm) {
             throw new RuntimeException('form is not instance of NeoForm');
         }
-        return $this->renderer->form($form);
+        $rendered = $this->renderer->form($form);
+        iterator_to_array($rendered);
+        return $rendered->getReturn();
     }
 }
