@@ -25,8 +25,6 @@ includes:
 # Documentation
 
 <!-- TOC -->
-* [Installation](#installation)
-* [Documentation](#documentation)
   * [Using ActiveRowForm](#using-activerowform)
       * [Presenter](#presenter)
       * [Using component in latte (simple rendering)](#using-component-in-latte-simple-rendering)
@@ -50,7 +48,7 @@ includes:
   * [Custom Template](#custom-template)
 <!-- TOC -->
 
-## Using ActiveRowForm
+### Using ActiveRowForm
 
 ```php
 use Efabrica\NeoForms\Build\NeoForm;
@@ -65,71 +63,38 @@ class CategoryForm extends ActiveRowForm
     private NeoFormFactory $formFactory;
     private CategoryRepository $repository;
 
-    /** No parent constructor */
+    // There is no parent constructor
     public function __construct(NeoFormFactory $formFactory, CategoryRepository $repository) {
         $this->formFactory = $formFactory;
         $this->repository = $repository;
     }
 
     /**
-     * This method is yours, it is not overridden, but needs to be implemented. 
-     * You can have any arguments that you wish. They do not have to be nullable.
-     * $row argument is optional.
+     * NeoFormControl is attached to presenter and used in template.
+     * 
+     * @param ActiveRow|null $row Optional ActiveRow parameter to fill the form with data
+     * @return NeoFormControl
      */
     public function create(?ActiveRow $row = null): NeoFormControl
     {
         $form = $this->formFactory->create();
         
-        $form->addText('name', 'dictionary.app.adminmodule.form.categoryform.name')
-            ->setHtmlAttribute('placeholder', 'dictionary.app.adminmodule.form.categoryform.enter_category_name')
-            ->setRequired('dictionary.app.adminmodule.form.categoryform.name_is_required_to_fill')
-        ;
-        $form->addText('description', 'dictionary.app.adminmodule.form.categoryform.description')
-            ->setHtmlAttribute('placeholder', 'dictionary.app.adminmodule.form.categoryform.type_category_description')
-            ->setRequired('dictionary.app.adminmodule.form.categoryform.description_is_required_to_fill')
-        ;
-        // You can use $this->translate(...) if needed, but most of the things are already translated in render
-        $form->addSubmit('save', 'dictionary.app.adminmodule.form.categoryform.default.' . ($row === null ? 'edit' : 'create'));
+        $form->addText('name', 'Category Name')
+            ->setHtmlAttribute('placeholder', 'Enter category name')
+            ->setRequired('Name is required to fill');
+        
+        $form->addText('description', 'Category Description')
+            ->setHtmlAttribute('placeholder', 'Type category description')
+            ->setRequired('Description is required to fill');
+        
+        $form->addSubmit('save', ($row === null ? 'Edit' : 'Create') . ' Category');
         
         return $this->control($form, $row);
-    }
-
-    protected function initFormData(ActiveRow $row): array
-    {
-        return ['name' => $row->name, 'description' => $row->description];
-    }
-
-    // optional, called before onCreate and onUpdate
-    protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row): void
-    {
-        $category = $this->repository->insertOrUpdate($row, $values);
-        $form->finish('Category ' . $category->name . ' saved.');
-    }
-
-    // optional, called if $row is null
-    protected function onCreate(NeoForm $form, array $values): void
-    {
-        $category = $this->repository->insert($values);
-        $form->finish('Category ' . $category->name . ' created.', 'detail', $row->id);
-    }
-
-    // optional, called if $row is not null
-    protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
-    {
-        $this->repository->update($row, $values);
-        $form->finish('Category updated.', 'detail', $row->id);
-    }
-
-    // can be empty and not implemented
-    protected function template(Template $template): void
-    {
-        $template->setFile(__DIR__ . '/templates/default.latte'); // only if you want custom layout
-        $template->metaKeys = $this->metaKeys ??= $this->metaKeyRepository->findAll()->order('sorting ASC');
     }
 }
 ```
 
-#### Presenter
+### Component Usage in Presenter
 
 ```php
 class CategoryPresenter extends AdminPresenter 
@@ -146,95 +111,61 @@ class CategoryPresenter extends AdminPresenter
     {
         $row = $this->repository->findOneById($id);
         if (!$row instanceof \Nette\Database\Table\ActiveRow) {
-            throw new \Nette\Application\BadRequestException();
+            throw BadRequestException();
         }
         $this->addComponent($this->form->create($row), 'categoryForm');
     }
 }
 ```
 
-#### Using component in latte (simple rendering)
+### Component Usage in Latte Templates
+
+#### Simple Rendering
 
 ```latte
 {* create.latte *}
 {block content}
-{* You can wrap it in your internal business template: *}
-<div class="c-card">
-    <div class="body-wrapper">
-        <div class="body">
-            {control categoryForm}
-        </div>
-    </div>
-</div>
-```
-
-#### Using component in latte (custom HTML structure around it)
-
-```latte
-{* create.latte *}
-{block content}
-{* You can wrap it in your internal business template: *}
-<div class="c-card">
-    <div class="body">
-        {neoForm categoryForm}
-        {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
-        {formRow $form['bodytext']}
-        {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
-        {formRow $form['time_identifier']}
-        <div class="row">
-            <div class="col-5">{formRow $form['is_pinned']}</div>
-            <div class="col-4">{formRow $form['is_highlight']}</div>
-            <div class="col-3">{formRow $form['is_published']}</div>
-        </div>
-        {formRow $form['tags']}
-        {* save button and every other unrendered input gets automatically
-        rendered on the end of form, because it wasn't rendered yet *}
-        {/neoForm}
-    </div>
-</div>
-```
-
-#### Using component in latte (stand-alone HTML template for form)
-
-```latte
-{* categoryForm.latte *}
-{neoForm categoryForm}
-{formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
-{formRow $form['bodytext']}
-{formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
-{formRow $form['time_identifier']}
-<div class="row">
-    <div class="col-5">{formRow $form['is_pinned']}</div>
-    <div class="col-4">{formRow $form['is_highlight']}</div>
-    <div class="col-3">{formRow $form['is_published']}</div>
-</div>
-{formRow $form['tags']}
-{* save button and every other unrendered input gets automatically
-rendered on the end of form, because it wasn't rendered yet *}
-{/neoForm}
-```
-
-```php
-class CategoryForm extends \Efabrica\NeoForms\Build\ActiveRowForm {
-    // ... 
-    protected function template(\Nette\Application\UI\Template $template) : void{
-        $template->setFile(__DIR__.'/templates/categoryForm.latte');
-        $template->someVariable = new SomeValue();
-    }
-}
-```
-
-```latte
-{* create.latte remains the same: *}
-{block content}
-<div class="c-card">
-    <div class="body">
+<div class="category-card">
+    <div class="category-form-wrapper">
         {control categoryForm}
     </div>
 </div>
 ```
 
-## {formGroup} example
+#### Custom HTML Structure inside the `<form>` tag
+
+```latte
+{* create.latte *}
+{block content}
+<div class="category-card">
+    <div class="category-form-wrapper">
+        {neoForm categoryForm}
+            {formRow $form['name'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
+            {formRow $form['description']}
+            <img src="whatever.png" alt="whatever" />
+            <div class="row">
+              <div class="col">{formRow $form['is_pinned']}</div>
+              <div class="col">{formRow $form['is_highlight']}</div>
+              <div class="col">{formRow $form['is_published']}</div>
+            </div>
+            {formRow $form['save'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
+        {/neoForm}
+    </div>
+</div>
+```
+
+#### Stand-alone HTML Template for Form
+
+```latte
+{* categoryForm.latte *}
+{neoForm categoryForm}
+    {formRow $form['name'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
+    {formRow $form['description']}
+    {formRow $form['save'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
+{/neoForm}
+```
+
+### Grouping Form Elements
 
 ```php
 /** @var \Efabrica\NeoForms\Build\NeoForm $form */
@@ -251,7 +182,7 @@ $checkboxes->addCheckbox('verified', 'Verified');
 {neoForm categoryForm}
 <div class="row">
     <div class="col-6">
-        {formGroup $form->getGroup('names')} {* renders id & icon*}
+        {formGroup $form->getGroup('names')} {* renders id & icon *}
     </div>
     <div class="col-6">
         {formGroup $form->getGroup('checkboxes')} {* renders enabled & verified *}
@@ -260,36 +191,20 @@ $checkboxes->addCheckbox('verified', 'Verified');
 {/neoForm}
 ```
 
-## .row .col grid layout in PHP
+### .row .col Grid Layout in PHP
 
 ```php
 /** @var \Efabrica\NeoForms\Build\NeoForm $form */
-$row1 = $form->row(); // returns row instnace
-$col1 = $row1->col('6'); // returns new col instance, class="col-6"
+$row1 = $form->row(); // returns a row instance
+$col1 = $row1->col('6'); // returns a new col instance, class="col-6"
 $col1->addText('a');
 $col1->addTextArea('b');
-$col2 = $row1->col('6'); // returns new different col instance
+$col2 = $row1->col('6'); // returns a new different col instance
 $col2->addCheckbox('c');
 
 $a = $form->row('main');
 $b = $form->row('main');
 assert($a === $b); // true, it's the same instance
-
-```
-
-`{control categoryForm}` then renders something like this:
-
-```latte
-
-<div class="row">
-    <div class="col-6">
-        {formRow $form['a']}
-        {formRow $form['b']}
-    </div>
-    <div class="col-6">
-        {formRow $form['c']}
-    </div>
-</div>
 ```
 
 ------
