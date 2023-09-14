@@ -1,8 +1,14 @@
 ![NeoForms](./src/.img/logo.png)
 
-NeoForms is a better way to write and render forms in Nette Framework. It gives you conventions (so that everyone writes forms the same way), 
-takes great patterns from Symfony Forms (to give you better way to write complex HTML markup), 
-allows you to style components through a .latte template file and also gives you a read-only mode.
+NeoForms are the very much needed medicine for Nette\Forms. 
+- Gives you an easier way to write your own renderer templates
+- Gives you conventions to collaborate with your team more efficiently
+- Gives you a way to render form fields individually with the `{formRow}`, 
+`{formLabel}` and `{formInput}` tags that you could be used to from Symfony.
+- Gives you a way to render rows and columns when building the form in PHP
+- Gives you a `readonly` mode to render a form for people who can't edit it by rendering regular text instead of inputs. (Say goodbye to grayed-out disabled fields!)
+- Gives you FormCollection for pre-styled AJAX-less Multiplier with built-in diff calculator
+
 
 # Installation
 
@@ -19,28 +25,29 @@ includes:
 # Documentation
 
 <!-- TOC -->
+* [Installation](#installation)
+* [Documentation](#documentation)
   * [Using ActiveRowForm](#using-activerowform)
       * [Presenter](#presenter)
-      * [Using component in latte (simple rendering)](#using-component-in-latte--simple-rendering-)
-      * [Using component in latte (custom HTML structure around it)](#using-component-in-latte--custom-html-structure-around-it-)
-      * [Using component in latte (stand-alone HTML template for form)](#using-component-in-latte--stand-alone-html-template-for-form-)
+      * [Using component in latte (simple rendering)](#using-component-in-latte-simple-rendering)
+      * [Using component in latte (custom HTML structure around it)](#using-component-in-latte-custom-html-structure-around-it)
+      * [Using component in latte (stand-alone HTML template for form)](#using-component-in-latte-stand-alone-html-template-for-form)
   * [{formGroup} example](#formgroup-example)
   * [.row .col grid layout in PHP](#row-col-grid-layout-in-php)
-  * [Latte Tags (API)](#latte-tags--api-)
+  * [Latte Tags (API) Documentation](#latte-tags-api-documentation)
     * [`{neoForm}`](#neoform)
     * [`{formRow}`](#formrow)
     * [`{formGroup}`](#formgroup)
-    * [`{formRowGroup}`](#formrowgroup)
     * [`{formLabel}`](#formlabel)
     * [`{formInput}`](#forminput)
-    * [`{formSection}`](#formsection)
-  * [Control Options](#control-options)
+  * [Applying Attributes](#applying-attributes)
     * [`"icon"`](#icon)
     * [`"description"`](#description)
     * [`"info"`](#info)
     * [`"readonly"`](#readonly)
     * [`"class"`](#class)
-    * [`"input"`](#input)
+    * [`"input"` and `"label"`](#input-and-label)
+  * [Custom Template](#custom-template)
 <!-- TOC -->
 
 ## Using ActiveRowForm
@@ -170,18 +177,18 @@ class CategoryPresenter extends AdminPresenter
 <div class="c-card">
     <div class="body">
         {neoForm categoryForm}
-            {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
-            {formRow $form['bodytext']}
-            {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
-            {formRow $form['time_identifier']}
-            <div class="row">
-                <div class="col-5">{formRow $form['is_pinned']}</div>
-                <div class="col-4">{formRow $form['is_highlight']}</div>
-                <div class="col-3">{formRow $form['is_published']}</div>
-            </div>
-            {formRow $form['tags']}
-            {* save button and every other unrendered input gets automatically
-            rendered on the end of form, because it wasn't rendered yet *}
+        {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
+        {formRow $form['bodytext']}
+        {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
+        {formRow $form['time_identifier']}
+        <div class="row">
+            <div class="col-5">{formRow $form['is_pinned']}</div>
+            <div class="col-4">{formRow $form['is_highlight']}</div>
+            <div class="col-3">{formRow $form['is_published']}</div>
+        </div>
+        {formRow $form['tags']}
+        {* save button and every other unrendered input gets automatically
+        rendered on the end of form, because it wasn't rendered yet *}
         {/neoForm}
     </div>
 </div>
@@ -192,18 +199,18 @@ class CategoryPresenter extends AdminPresenter
 ```latte
 {* categoryForm.latte *}
 {neoForm categoryForm}
-    {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
-    {formRow $form['bodytext']}
-    {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
-    {formRow $form['time_identifier']}
-    <div class="row">
-        <div class="col-5">{formRow $form['is_pinned']}</div>
-        <div class="col-4">{formRow $form['is_highlight']}</div>
-        <div class="col-3">{formRow $form['is_published']}</div>
-    </div>
-    {formRow $form['tags']}
-    {* save button and every other unrendered input gets automatically
-    rendered on the end of form, because it wasn't rendered yet *}
+{formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
+{formRow $form['bodytext']}
+{formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
+{formRow $form['time_identifier']}
+<div class="row">
+    <div class="col-5">{formRow $form['is_pinned']}</div>
+    <div class="col-4">{formRow $form['is_highlight']}</div>
+    <div class="col-3">{formRow $form['is_published']}</div>
+</div>
+{formRow $form['tags']}
+{* save button and every other unrendered input gets automatically
+rendered on the end of form, because it wasn't rendered yet *}
 {/neoForm}
 ```
 
@@ -287,70 +294,74 @@ assert($a === $b); // true, it's the same instance
 
 ------
 
-## Latte Tags (API)
+## Latte Tags (API) Documentation
 
 ### `{neoForm}`
 
-Renders the `<form>` tag. Also renders all the unrendered inputs in the end of the form.
+The `{neoForm}` tag is used to render the `<form>` element in your HTML. It can also render all the unrendered inputs at the end of the
+form. The argument for this tag is the name of the control without quotes.
 
-Argument is the name of the control without quotes.
+> To render an entire form without specifying any sub-elements, use the following syntax:
+>
+>```html
+>{neoForm topicForm}{/neoForm}
+><!-- This is equivalent to {control topicForm} -->
+>```
 
-To render an entire form without specifying any sub-elements write:
-
-```html
-{neoForm topicForm}{/neoForm}
-<!-- same as {control topicForm} -->
-```
-
-If you do not wish to render certain form fields, use `rest => false` to not render rest of the form:
-
-```html
-{neoForm topicForm, rest => false}
-{/neoForm}
-<!-- similar to {form topicform}{/form} -->
-```
-
-This would render an empty `<form>`, similar to if you used empty `{form}` tag.
+> If you want to exclude certain form fields from rendering, you can use `rest => false` like this:
+>
+>```html
+>{neoForm topicForm, rest => false}
+>{/neoForm}
+><!-- This is similar to {form topicform}{/form} -->
+>```
+>
+>This will render an empty `<form>`, similar to using an empty `{form}` tag.
 
 ---
 
 ### `{formRow}`
 
-Renders `{formLabel}` and `{formInput}` inside a `{formRowGroup}`. Accepts options.
+The `{formRow}` tag is used to render a form label and form input inside a wrapping group. It accepts various options. The argument for this
+tag is a `BaseControl` instance (e.g., `$form['title']`).
 
-Argument is the `BaseControl` instance (ex. `$form['title']`)
+Here are some examples of how to use `{formRow}`:
 
-The first argument can be any instance of `BaseControl`.
+> ```latte
+>{formRow $form['title'], class => 'mt-3'}
+>```
+>
+>This renders a form row with a custom class, resulting in `<div class="mt-3">...</div>`.
 
-```html
-{formRow $form['title'], class => 'mt-3'}
+> ```latte
+>{formRow $form['title'], '+class' => 'mt-3'}
+>```
+>
+>If you are using a Bootstrap template, this will render a form group with a class, resulting in `<div class="form-group mt-3">...</div>`.
+>
 
-renders this:
-<div class="group mt-3">...</div>
-```
+You can also add attributes to the input or label elements using options:
 
-```html
-{formRow $form['title'], input => [data-tooltip => 'HA!']}
+> ```html
+>{formRow $form['title'], input => [data-tooltip => 'HA!']}
+>```
+>
+>This renders a form row with an input element that has a `data-tooltip` attribute.
 
-renders this:
-<div class="group">...<input ... data-tooltip="HA!"></div>
-```
-
-```html
-{formRow $form['title'], label => [data-toggle => 'modal']}
-
-renders this:
-<div class="group">...<label for="..." data-toggle="modal">...</label></div>
-```
-
-If you want to change the layout of content inside the formRow, see `{formRowGroup}` below
+> ```html
+>{formRow $form['title'], label => [data-toggle => 'modal']}
+>```
+>
+>This renders a form row with a label element that has a `data-toggle` attribute.
 
 ---
 
 ### `{formGroup}`
 
-Accepts `ControlGroup` as required argument.
-Renders all controls in the group. Uses `{formRow}` internally.
+The `{formGroup}` tag accepts a `ControlGroup` as a required argument and renders all controls in the group. It internally uses `{formRow}`
+to handle rendering.
+
+Example usage:
 
 ```latte
 {formGroup $form->getGroup('main')}
@@ -358,111 +369,236 @@ Renders all controls in the group. Uses `{formRow}` internally.
 
 ---
 
-### `{formRowGroup}`
-
-Simply said, renders `<div class='group'>`.
-
-Use this tag to alter the inside of `div.group`. Example:
-
-```html
-{formRowGroup $form['title']}
-{formLabel $form['title']}
-{formErrors $form['title']}
-<div class="recaptcha"></div> {* instead of input *}
-{/formRowGroup}
-```
-
----
-
 ### `{formLabel}`
 
-Renders the `<label>`. Argument is `BaseControl` instance.
+The `{formLabel}` tag is used to render a `<label>` element. The argument is a `BaseControl` instance.
 
-```html
-{formLabel $form['title'], class => 'text-large', data-yes="no"}
-=
-<label ... class="text-large" data-yes="no">{$caption}</label>
-```
+Example usage:
 
-If the form element is hidden field or checkbox, the label is an empty HTML string.
+> ```html
+>{formLabel $form['title'], class => 'text-large', data-yes="no"}
+>```
+>
+>This renders a label element with a custom class and data attributes.
+>
+If the form element is a hidden field or checkbox, the label is rendered as an empty HTML string.
 
 ---
 
 ### `{formInput}`
 
-Renders the `<input>`, `<textarea>` `<button>` or whatever is the vital part of the form row.
+The `{formInput}` tag is used to render an `<input>`, `<textarea>`, `<button>`, or any other essential part of a form row. The argument is
+a `BaseControl` instance.
 
-Argument is `BaseControl` instance.
+Example usage:
 
-```html
-{formInput $form['category'], data-select2 => true}
-=
-<input ... data-select2>
-```
+> ```html
+>{formInput $form['category'], data-select2 => true}
+>```
+>
+>This renders an input element with an empty `data-select2` attribute.
 
-------
+---
 
-## Control Options
+## Applying Attributes
 
-You can set control options through `->setOption()` on `BaseControl` instances. This is the recommended approach.
-
-For example:
-`->addText('title', 'Title')->setOption('info', 'Shown on homepage')`.
-
-Or also through latte `{formRow}` parameters. This is the less tested approach.
-
-Example: `{formRow $form['title'], info => "Shown on homepage"`
+Attributes can be applied to form elements using options. Here are some commonly used attributes:
 
 ### `"icon"`
 
-`string`. Works on buttons.
-`->addSubmit(...)->setOption('icon', 'fa fa-home')` adds `<i class="fa fa-home"></i>` into the button, before the text.
-
-You can modify the template and alter how the icon is added. In our company, we internally extend the template and use Google Material Icons instead.
+The `"icon"` attribute, when applied to buttons, adds an icon before the text. For example:
 
 ```php
 $form->addSubmit('save', 'Save')->setOption('icon', 'fa fa-save');
 ```
 
+You can customize how the icon is added in your template.
+
 ### `"description"`
-`string`. Adds gray helper text under input. Works on every traditional input/row.
+
+The `"description"` attribute adds gray helper text under input elements. For example:
+
 ```php
 $form->addPassword('password', 'Password')->setOption('description', 'At least 8 characters.');
 ```
 
 ### `"info"`
-`string`. Adds a blue info circle tooltip next to the label. Works on every traditional input.
+
+The `"info"` attribute adds a blue info circle tooltip next to the label. For example:
+
 ```php
 $form->addText('title', 'Title')->setOption('info', 'This appears on homepage');
 ```
 
 ### `"readonly"`
-`bool`. If set to true, value is not modifiable and will not be submitted. It is rendered as a badge instead.
+
+The `"readonly"` attribute, when set to true, makes the value non-modifiable and not submitted. It is rendered as a badge. Examples:
 
 ```php
 $form->addText('title', 'Title')->setOption('readonly', true);
+// or
+{formRow $form['title'], readonly => true}
+// or
+$form->setReadonly(true); // to make the entire form readonly
+// or
+{neoForm yourForm, readonly => true} // to make the entire form readonly
 ```
 
-```php
-$form->addText('title', 'Title')->setOption('readonly', fn(TextInput $el) => strtoupper($el->getValue()));
-```
+You can also provide a callback function for dynamic readonly behavior.
+
 ### `"class"`
-`string`. You can set class, or any other HTML attribute and it will be applied to the row/input/label.
+
+The `"class"` attribute allows you to override a class or any other HTML attribute to the row/input/label. For example:
 
 ```php
-$form->addText('title', 'Title')->setOption('class', 'form-control-lg');
+$form->addText('title', 'Title')->setOption('class', 'form-control form-control-lg');
 ```
 
-### `"input"`
-`array`. You can apply this to the `{formRow}` tag to pass html attributes to input.
+> If you want to keep the classes from your template, use `+class` instead:
+>
+>```php
+>$form->addText('title', 'Title')->setOption('+class', 'form-control-lg');
+>```
+>
+>This also works:
+>
+>```latte
+>{formRow $form['title'], input => ['+class' => 'form-control-lg']}`
+>```
+
+> If you want to force remove a class from your template, use false instead:
+>
+>```php
+>$form->addText('title', 'Title')->setOption('class', false);
+>```
+
+### `"input"` and `"label"`
+
+You can apply these attributes to the `{formRow}` tag to pass HTML attributes to the input and label elements, respectively. Example:
 
 ```latte
 {formRow $form['title'], 'input' => ['class' => 'special']}
-```
-
-### `"label"`
-`array`. You can apply this to the `{formRow}` tag to pass html attributes to input.
-
-```latte
 {formRow $form['title'], 'label' => ['class' => 'special']}
 ```
+
+---
+
+## Custom Template
+
+To create your own extended template for rendering forms, you can follow our examples. Below is a step-by-step guide on how to create your
+custom extended template using Bootstrap 4 as an example:
+
+**Step 1: Create a New PHP Class**
+
+Create a new PHP class for your extended template by extending the base template class. In this example, we'll call
+it `Bootstrap5FormTemplate`. Make sure to place this class in an appropriate namespace, just like in the provided code.
+
+```php
+namespace Your\Namespace\Here;
+
+use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
+// ... Import other necessary classes here ...
+
+class Bootstrap4FormTemplate extends NeoFormTemplate
+{
+    // Your template implementation goes here
+}
+```
+
+**Step 2: Customize Form Elements**
+
+Override the methods in your extended template class to customize the rendering of form elements according to your preferred Bootstrap 4
+styling. For example, you can define how text inputs, buttons, checkboxes, and other form elements should be rendered with Bootstrap
+classes.
+
+Here's an example of customizing the rendering of text inputs:
+
+```php
+protected function textInput(TextInput $control, array $attrs): Html
+{
+    $el = $control->getControl();
+    $el->class ??= 'form-control'; // Add Bootstrap class, if no class was specified through ->setHtmlAttribute()
+    return $this->applyAttrs($el, $attrs);
+}
+```
+
+**Step 3: Customize Form Labels**
+
+You can also customize how form labels are rendered. In Bootstrap, you may want to add the `col-form-label` class for proper alignment.
+Override the `formLabel` method to achieve this:
+
+```php
+public function formLabel(BaseControl $control, array $attrs): Html
+{
+    $el = $control->getLabel();
+    $el->class ??= 'col-form-label'; // Add Bootstrap class
+    $el->class('required', $control->isRequired())->class('text-danger', $errors !== []);
+    $this->addInfo($control, $el);
+
+    foreach ($errors as $error) {
+        $el->addHtml(
+            Html::el('span')->class('c-button -icon -error -tooltip js-form-tooltip-error')
+                ->setAttribute('data-bs-toggle', 'tooltip')
+                ->title($control->translate($error))
+                ->addHtml(Html::el('i', 'warning')->class('material-icons-round'))
+        );
+    }
+    // Customize label rendering as needed
+    return $this->applyAttrs($el, $attrs);
+}
+```
+
+**Step 4: Customize Buttons**
+
+For buttons, you can add Bootstrap classes and icons if desired. Customize the rendering of buttons like this:
+
+```php
+protected function button(Button $control, array $attrs): Html
+{
+    $el = $control->getControl();
+    $el->class ??= 'btn btn-primary'; // Add Bootstrap 4 classes
+    $icon = $control->getOption('icon');
+    if (is_string($icon) && trim($icon) !== '') {
+        $el->insert(0, Html::el('i')->class("fa fa-$icon")); // Add an icon if available
+    }
+    // Customize button rendering as needed
+    return $this->applyAttrs($el, $attrs);
+}
+```
+
+**Step 5: Customize Other Form Elements**
+
+Repeat similar customization for other form elements like checkboxes, radio buttons, select boxes, etc., based on your desired styling.
+
+**Step 6: Implement Additional Styling**
+
+If your template requires additional styling for specific elements or form groups, you can do so in your extended template class.
+
+**Step 7: Apply Your Custom Template**
+To use your custom template, you need to instantiate it and set it as the template for your forms when rendering. For example:
+
+```php
+use Your\Namespace\Here\BootstrapFormTemplate;
+use Efabrica\NeoForms\Build\NeoForm;
+
+// Instantiate your custom template
+$template = new Bootstrap4FormTemplate();
+
+// Create a NeoForm instance and set the custom template
+$form = new NeoForm();
+$form->setTemplate($template);
+
+// Render your form
+echo $form;
+```
+
+> If you want to use your custom template for all forms, you can set it as the default template by rewiring your auto-wiring :)
+>
+>```neon
+># config.neon
+>services:
+>    neoForms.template: Your\Namespace\Here\Bootstrap4FormTemplate()
+>```
+
+By following these steps, you can create your own extended template for rendering forms in a way that aligns with Bootstrap 4 or any other
+custom styling you prefer. Customize the template methods according to your specific styling needs.
