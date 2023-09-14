@@ -2,27 +2,35 @@
 
 namespace Efabrica\NeoForms\Control;
 
+use Generator;
+
 class FormCollectionDiff
 {
     private array $previousData;
     private array $newData;
 
-    public function __construct(array $previousData, array $newData)
+    public function __construct(array $httpData)
     {
-        $this->previousData = $previousData;
-        $this->newData = $newData;
+        $this->previousData = json_decode($httpData[FormCollection::ORIGINAL_DATA], true, 512, JSON_THROW_ON_ERROR);
+        unset($httpData[FormCollection::ORIGINAL_DATA]);
+        $this->newData = $httpData;
     }
 
-    public function getAdded(): iterable
+    public function isModified(): bool
+    {
+        return $this->getAdded()->valid() || $this->getDeleted()->valid() || $this->getModified()->valid();
+    }
+
+    public function getAdded(): Generator
     {
         foreach ($this->newData as $value) {
             if (!isset($value[FormCollectionItem::UNIQID])) {
-                yield $value;
+                yield self::cleanArray($value);
             }
         }
     }
 
-    public function getDeleted(): iterable
+    public function getDeleted(): Generator
     {
         foreach ($this->previousData as $value) {
             if (!isset($value[FormCollectionItem::UNIQID])) {
@@ -37,15 +45,15 @@ class FormCollectionDiff
                 }
             }
             if (!$found) {
-                yield $value;
+                yield self::cleanArray($value);
             }
         }
     }
 
     /**
-     * @return FormCollectionItemDiff[]
+     * @return FormCollectionItemDiff[]&Generator
      */
-    public function getModified(): iterable
+    public function getModified(): Generator
     {
         foreach ($this->previousData as $previousValue) {
             if (!isset($previousValue[FormCollectionItem::UNIQID])) {
@@ -85,5 +93,18 @@ class FormCollectionDiff
             }
         }
         return true;
+    }
+
+    public static function cleanArray(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = self::cleanArray($value);
+            }
+            if ($key === FormCollection::ORIGINAL_DATA || $key === FormCollectionItem::UNIQID) {
+                unset($array[$key]);
+            }
+        }
+        return $array;
     }
 }

@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\FormCollection;
+use Efabrica\NeoForms\Control\FormCollectionItem;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
 use Efabrica\NeoForms\Control\StaticTags;
@@ -12,6 +13,7 @@ use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
+use Nette\Forms\Container;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 
@@ -47,14 +49,16 @@ trait NeoContainerTrait
     {
         return $this[$name] = (new SelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
-            ->checkDefaultValue(false);
+            ->checkDefaultValue(false)
+        ;
     }
 
     public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
-            ->checkDefaultValue(false);
+            ->checkDefaultValue(false)
+        ;
     }
 
     public function addToggleSwitch(string $name, ?string $label = null): ToggleSwitch
@@ -118,13 +122,6 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addCollection(string $name, string $label, callable $factory): FormCollection
-    {
-        $component = new FormCollection($label, $factory);
-        $this->addComponent($component, $name);
-        return $component;
-    }
-
     public function addSubmit(string $name, $caption = null): SubmitButton
     {
         $component = new SubmitButton($caption);
@@ -132,9 +129,9 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addContainer($name): NeoContainer
+    public function addContainer($name, ?NeoContainer $container = null): NeoContainer
     {
-        $control = new NeoContainer();
+        $control = $container ?? new NeoContainer();
         $control->currentGroup = $this->currentGroup;
         if ($this->currentGroup !== null) {
             $this->currentGroup->add($control);
@@ -142,5 +139,15 @@ trait NeoContainerTrait
 
         $this->addComponent($control, is_int($name) ? "$name" : $name);
         return $control;
+    }
+
+    /**
+     * @param callable(FormCollectionItem): (void|mixed) $factory
+     */
+    public function addCollection(string $name, string $label, callable $factory): FormCollection
+    {
+        $container = new FormCollection($label, $factory);
+        $this->addContainer($name, $container);
+        return $container;
     }
 }

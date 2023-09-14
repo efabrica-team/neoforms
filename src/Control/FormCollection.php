@@ -9,6 +9,7 @@ use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Forms\Control;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
@@ -19,6 +20,8 @@ class FormCollection extends NeoContainer
 {
     private static int $prototypeIndex = 0;
 
+    public const ORIGINAL_DATA = '__neoFC_originalData__';
+
     private string $label;
 
     /**
@@ -26,11 +29,11 @@ class FormCollection extends NeoContainer
      */
     private Closure $formFactory;
 
-    private FormCollectionItem $prototype;
+    protected FormCollectionItem $prototype;
 
-    private ?string $componentTemplate = null;
+    protected ?string $componentTemplate = null;
 
-    private ?string $collectionTemplate = null;
+    protected ?string $collectionTemplate = null;
 
     private ?bool $simple = null;
 
@@ -38,20 +41,19 @@ class FormCollection extends NeoContainer
 
     /**
      * @param string                               $label
-     * @param callable(NeoContainer): (void|mixed) $formFactory
+     * @param callable(FormCollectionItem): (void|mixed) $formFactory
      */
     public function __construct(string $label, callable $formFactory)
     {
         $this->label = $label;
         $this->formFactory = Closure::fromCallable($formFactory);
-        $this->prototype = new FormCollectionItem(true);
-        $this->addComponent($this->prototype, '__prototype' . ++self::$prototypeIndex . '__');
+        $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
         $this->formFactory->__invoke($this->prototype);
     }
 
-    public function getDiff(array $previousData): FormCollectionDiff
+    public function getDiff(): FormCollectionDiff
     {
-        return new FormCollectionDiff($previousData, $this->getHttpData());
+        return new FormCollectionDiff($this->getHttpData());
     }
 
     public function getLabel(): string
@@ -101,15 +103,21 @@ class FormCollection extends NeoContainer
 
     public function validate(?array $controls = null): void
     {
-        $this->updateChildren();
+        $this->updateChildren($this->getHttpData());
         $this->removeComponent($this->prototype);
         parent::validate($controls);
         $this->addComponent($this->prototype, $this->prototype->getName());
     }
 
-    public function updateChildren(): void
+    public function setValues($data, bool $erase = false)
     {
-        $data = $this->getHttpData() ?? $this->getValues();
+        $this->updateChildren($data);
+        return parent::setValues($data, $erase);
+    }
+
+    public function updateChildren($data = null): void
+    {
+        $data ??= [];
         /** @var mixed $data */
         if ($data instanceof Traversable) {
             $values = iterator_to_array($data);
@@ -123,8 +131,11 @@ class FormCollection extends NeoContainer
         }
         $components = iterator_to_array($this->getComponents());
         foreach ($values as $key => $childValues) {
+            if ($key === self::ORIGINAL_DATA) {
+                continue;
+            }
             if (!isset($components[$key])) {
-                $child = $this->addComponent(new FormCollectionItem(), $key);
+                $child = $this->addCollectionItem($key);
                 $this->formFactory->__invoke($child);
                 $child->setValues($childValues);
             }
@@ -193,15 +204,19 @@ class FormCollection extends NeoContainer
         if ($collectionTemplate !== null) {
             return $this->renderTemplate($collectionTemplate, ['collection' => $this, 'addBtn' => $addButton]);
         }
-        $el = Html::el('div')->class('form-collection');
-        $items = Html::el('div')->class('form-collection-items');
+        $collDiv = Html::el('div')->class('form-collection');
+        $itemsDiv = Html::el('div')->class('form-collection-items');
         foreach ($this->getItems() as $item) {
-            $items->addHtml($this->getItemHtml($renderer, $item));
+            $itemsDiv->addHtml($this->getItemHtml($renderer, $item));
         }
-        return Html::el()
-            ->addHtml(Html::el('label', $this->getLabel()))
-            ->addHtml($el->addHtml($items)->addHtml($addButton))
+        $originalData = $this->addHidden(self::ORIGINAL_DATA, json_encode($this->getValues(), JSON_THROW_ON_ERROR));
+        $el = Html::el()
+            ->addHtml($this->getLabelHtml())
+            ->addHtml($collDiv->addHtml($itemsDiv)->addHtml($addButton))
+            ->addHtml($originalData->getControl())
         ;
+        $this->removeComponent($originalData);
+        return $el;
     }
 
     public function getItemHtml(NeoFormRenderer $renderer, FormCollectionItem $item): Html
@@ -210,11 +225,11 @@ class FormCollection extends NeoContainer
         if ($componentTemplate !== null) {
             return $this->renderTemplate($componentTemplate, ['collection' => $this, 'item' => $item]);
         }
-        $simple = $this->isSimple();
+        $isSimple = $this->isSimple();
         return Html::el('div')
             ->class('form-collection-item')
-            ->class('form-collection-item-simple', $simple)
-            ->class('form-collection-item-multi', !$simple)
+            ->class('form-collection-item-simple', $isSimple)
+            ->class('form-collection-item-multi', !$isSimple)
             ->addHtml(
                 Html::el('div')->class('form-collection-item-form')
                     ->addHtml($renderer->container($item))
@@ -248,5 +263,20 @@ class FormCollection extends NeoContainer
                     ->addHtml('-')
             )
         ;
+    }
+
+    public function getLabelHtml(): Html
+    {
+        return Html::el('label', $this->getLabel());
+    }
+
+    /**
+     * @param int|string $key
+     */
+    protected function addCollectionItem($key, bool $prototype = false): FormCollectionItem
+    {
+        $item = new FormCollectionItem($prototype);
+        $this->addContainer($key, $item);
+        return $item;
     }
 }
