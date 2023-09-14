@@ -22,7 +22,7 @@ class NeoFormNode extends FormNode
             . '$ʟ_formGen->current(); %1.line;'
             . 'ob_start();'
             . '%3.node;'
-            . '$ʟ_formGen->send(' . Html::class . '::fromHtml(ob_get_clean()));'
+            . '$ʟ_formGen->send(' . Html::class . '::fromHtml(ob_get_clean() ?: ""));'
             . 'echo $ʟ_formGen->getReturn(); array_pop($this->global->formsStack); %4.line;'
             . "\n\n",
             $this->name,

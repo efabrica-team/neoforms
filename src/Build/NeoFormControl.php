@@ -11,6 +11,7 @@ use Nette\Application\UI\Template;
  */
 class NeoFormControl extends Control
 {
+    /** @readonly */
     public NeoForm $form;
 
     /** @var Closure|null fn(Template $template): void */
@@ -32,6 +33,7 @@ class NeoFormControl extends Control
             $this->form->render();
             return;
         }
+        $this->template->form = $this->form;
         $this->template->render();
     }
 

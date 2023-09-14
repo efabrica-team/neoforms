@@ -30,17 +30,14 @@ class NeoFormTemplate
     public function form(NeoFormRenderer $renderer, NeoForm $form, Html $errors, array $attrs): Generator
     {
         $renderRest = $attrs['rest'] ?? true;
-        return (clone $form->getElementPrototype())
-            ->addAttributes($attrs)
-            ->addHtml($errors)
-            ->addHtml(yield)
-            ->addHtml($renderRest ? $renderer->formRest($form) : '')
-        ;
+        $el = clone $form->getElementPrototype();
+        $el->addHtml($errors)->addHtml(yield)->addHtml($renderRest ? $renderer->formRest($form) : '');
+        return $this->applyAttrs($el, $attrs);
     }
 
-    public function formRow(Html $label, Html $input, Html $errors, array $attrs = []): Html
+    public function formRow(Html $label, Html $input, Html $errors, array $attrs): Html
     {
-        return Html::el('div', $attrs)->addHtml($label . $input . $errors);
+        return $this->applyAttrs(Html::el('div')->addHtml($label . $input . $errors), $attrs);
     }
 
     /**
@@ -52,16 +49,16 @@ class NeoFormTemplate
         unset($attrs['legend']);
 
         if ($label !== null) {
-            $el = Html::el('fieldset', $attrs);
+            $el = Html::el('fieldset');
             if (is_string($label)) {
-                $el->addHtml(Html::el('legend', $legendAttrs)->addHtml($label));
+                $el->addHtml($this->applyAttrs(Html::el('legend')->addHtml($label), $legendAttrs));
             } else {
                 $el->addHtml($label);
             }
         } else {
             $el = Html::el();
         }
-        return $el->addHtml($body);
+        return $this->applyAttrs($el->addHtml($body), $attrs);
     }
 
     public function formRest(Html $body, array $buttons): Html
@@ -98,15 +95,13 @@ class NeoFormTemplate
         if (!$el instanceof Html) {
             return Html::el();
         }
-        if ($control->isRequired()) {
-            $el->class('required', true);
-        }
+        $el->class('required', $control->isRequired());
         $info = $control->getOption('info');
         if (is_string($info) && trim($info) !== '') {
             $el->addHtml(Html::el('br'));
             $el->addHtml(Html::el('small', $info));
         }
-        return $el;
+        return $this->applyAttrs($el, $attrs);
     }
 
     public function description(string $description): Html
@@ -116,8 +111,10 @@ class NeoFormTemplate
 
     public function formInput(BaseControl $control, array $attrs, Html $description): Html
     {
-        $attrs += array_filter($control->getOptions(), 'is_scalar');
-        return Html::el()->addHtml($this->control($control, $attrs) . $description);
+        return Html::el()
+            ->addHtml($this->control($control, $attrs))
+            ->addHtml($description)
+        ;
     }
 
     protected function control(BaseControl $control, array $attrs): Html
@@ -161,58 +158,58 @@ class NeoFormTemplate
 
     protected function checkbox(Checkbox $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function datepicker(AbstractDateTimePicker $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function select(SelectBox $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function multiSelect(MultiSelectBox $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function button(Button $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function textarea(TextArea $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function hidden(HiddenField $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function upload(UploadControl $control, array $attrs): Html
     {
         /** @var TextBase $control */
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function radio(RadioList $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function checkboxList(CheckboxList $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     protected function textInput(TextInput $control, array $attrs): Html
     {
-        return $control->getControl()->addAttributes($attrs);
+        return $this->applyAttrs($control->getControl(), $attrs);
     }
 
     public function readonly(BaseControl $control): Html
@@ -240,5 +237,22 @@ class NeoFormTemplate
             return Html::fromText($value);
         }
         return Html::fromText('(?)');
+    }
+
+    public function applyAttrs(Html $el, array $attrs): Html
+    {
+        foreach ($attrs as $key => $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
+            if ($key[0] === '+') {
+                $el->appendAttribute(substr($key, 1), $value);
+            } elseif ($value === false) {
+                $el->removeAttribute($key);
+            } else {
+                $el->setAttribute($key, $value);
+            }
+        }
+        return $el;
     }
 }

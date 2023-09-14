@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Latte 3 support (Latte 2 still supported)
 - ActiveRowForm->initFormData() now defaults to `$row->toArray()` instead of `[]`
-- 
+- Complete engine rewrite - renderer now uses Nette\Utils\Html and Control's prototypes instead of a latte blocks
+- FormCollection (Pre-styled AJAX-less Multiplier)
 ### Removed
-- formRowGroup tag
+- formRowGroup tag (BC Break)
+- formSection tag (BC Break)
 
 
 ## [2.4.2] - 2023-06-19

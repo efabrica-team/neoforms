@@ -170,18 +170,18 @@ class CategoryPresenter extends AdminPresenter
 <div class="c-card">
     <div class="body">
         {neoForm categoryForm}
-        {formRow $form['title'], data-joke => 123}
-        {formRow $form['bodytext']}
-        {formRow $form['published_at'], input => [class => 'reverse']}
-        {formRow $form['time_identifier']}
-        <div class="row">
-            <div class="col-5">{formRow $form['is_pinned']}</div>
-            <div class="col-4">{formRow $form['is_highlight']}</div>
-            <div class="col-3">{formRow $form['is_published']}</div>
-        </div>
-        {formRow $form['tags']}
-        {* save button and every other unrendered input gets automatically
-        rendered on the end of form, because it wasn't rendered yet *}
+            {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
+            {formRow $form['bodytext']}
+            {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
+            {formRow $form['time_identifier']}
+            <div class="row">
+                <div class="col-5">{formRow $form['is_pinned']}</div>
+                <div class="col-4">{formRow $form['is_highlight']}</div>
+                <div class="col-3">{formRow $form['is_published']}</div>
+            </div>
+            {formRow $form['tags']}
+            {* save button and every other unrendered input gets automatically
+            rendered on the end of form, because it wasn't rendered yet *}
         {/neoForm}
     </div>
 </div>
@@ -192,9 +192,9 @@ class CategoryPresenter extends AdminPresenter
 ```latte
 {* categoryForm.latte *}
 {neoForm categoryForm}
-    {formRow $form['title'], data-joke => 123}
+    {formRow $form['title'], data-joke => 123} {* adds [data-joke="123"] to the wrapping div *}
     {formRow $form['bodytext']}
-    {formRow $form['published_at'], input => [class => 'reverse']}
+    {formRow $form['published_at'], input => [class => 'reverse']} {* sets input's class to 'reverse' *}
     {formRow $form['time_identifier']}
     <div class="row">
         <div class="col-5">{formRow $form['is_pinned']}</div>
@@ -310,7 +310,7 @@ If you do not wish to render certain form fields, use `rest => false` to not ren
 <!-- similar to {form topicform}{/form} -->
 ```
 
-This would render an empty `<form>`, similar to if you used the `{form}` tag.
+This would render an empty `<form>`, similar to if you used empty `{form}` tag.
 
 ---
 
@@ -381,7 +381,7 @@ Renders the `<label>`. Argument is `BaseControl` instance.
 ```html
 {formLabel $form['title'], class => 'text-large', data-yes="no"}
 =
-<label ... class="c-form-element text-large" data-yes="no">{$caption}</label>
+<label ... class="text-large" data-yes="no">{$caption}</label>
 ```
 
 If the form element is hidden field or checkbox, the label is an empty HTML string.
@@ -400,26 +400,6 @@ Argument is `BaseControl` instance.
 <input ... data-select2>
 ```
 
----
-
-### `{formSection}`
-
-Creates a `<fieldset>` with first argument being the caption that is optionally translated.
-
-This is visual only, has no deeper functionality.
-
-Argument is `string`.
-
-```html
-{if !empty($form->getGroup('Options')->getControls())}
-{formSection "Options"}
-{foreach $form->getGroup('Options')->getControls() as $option}
-{formRow $option}
-{/foreach}
-{/formSection}
-{/if}
-```
-
 ------
 
 ## Control Options
@@ -427,7 +407,7 @@ Argument is `string`.
 You can set control options through `->setOption()` on `BaseControl` instances. This is the recommended approach.
 
 For example:
-`->addText('title', 'Title')->setOption('info', 'Shown on homepage')`
+`->addText('title', 'Title')->setOption('info', 'Shown on homepage')`.
 
 Or also through latte `{formRow}` parameters. This is the less tested approach.
 

@@ -55,7 +55,7 @@ class NeoFormMacroSet extends MacroSet
 
     public function neoFormEnd(MacroNode $node, PhpWriter $writer): string
     {
-        return $writer->write('$ʟ_formGen->send(' . Html::class . '::fromHtml(ob_get_clean()));'
+        return $writer->write('$ʟ_formGen->send(' . Html::class . '::fromHtml(ob_get_clean() ?: ""));'
             . 'echo $ʟ_formGen->getReturn();' . "/* line $node->startLine */;");
     }
 
