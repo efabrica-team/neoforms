@@ -119,6 +119,7 @@ class NeoFormTemplate
 
     protected function control(BaseControl $control, array $attrs): Html
     {
+        $attrs += $control->getOptions();
         if ($control instanceof Checkbox) {
             return $this->checkbox($control, $attrs);
         }
