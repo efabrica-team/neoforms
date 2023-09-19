@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - formRowGroup tag (BC Break)
 - formSection tag (BC Break)
 
+## [2.5.0] - 2023-07-05
+### Added
+- added mode TWIG to CodeEditor
 
 ## [2.4.2] - 2023-06-19
 ### Fixed
