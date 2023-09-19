@@ -1,3 +1,1 @@
 parameters:
-    ignoreErrors:
-        - '/Comparison operation ".+" between \d+ and 30000 is always \w+/'

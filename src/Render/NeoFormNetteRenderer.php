@@ -23,6 +23,8 @@ class NeoFormNetteRenderer implements FormRenderer
         }
         $rendered = $this->renderer->form($form);
         iterator_to_array($rendered);
-        return $rendered->getReturn();
+        $return = $rendered->getReturn();
+        assert(is_string($return));
+        return $return;
     }
 }
