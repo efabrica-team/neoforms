@@ -13,7 +13,6 @@ use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
-use Nette\Forms\Container;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 

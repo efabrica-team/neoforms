@@ -9,7 +9,9 @@ use Nette\Utils\ArrayHash;
 class FormCollectionItem extends NeoContainer
 {
     const UNIQID = '__neoFC_uniqId__';
+
     private ?HiddenField $uniqId = null;
+
     public function __construct(bool $prototype = false)
     {
         if (!$prototype) {

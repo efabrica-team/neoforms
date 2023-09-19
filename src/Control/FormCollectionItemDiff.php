@@ -5,7 +5,9 @@ namespace Efabrica\NeoForms\Control;
 class FormCollectionItemDiff
 {
     private array $oldRow;
+
     private array $newRow;
+
     private array $diff = [];
 
     public function __construct(array $oldRow, array $newRow)
@@ -28,7 +30,7 @@ class FormCollectionItemDiff
             }
             if (isset($newValue[FormCollection::ORIGINAL_DATA])) {
                 $inDiff = new FormCollectionDiff($newValue);
-                if ($inDiff->isModified()) {
+                if ($inDiff->isNotEmpty()) {
                     $this->diff[$key] = $inDiff;
                 }
                 continue;

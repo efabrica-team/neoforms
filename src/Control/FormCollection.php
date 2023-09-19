@@ -7,9 +7,7 @@ use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Nette\Bridges\ApplicationLatte\Template;
-use Nette\Forms\Control;
 use Nette\Forms\Controls\BaseControl;
-use Nette\Forms\Controls\HiddenField;
 use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
@@ -18,9 +16,9 @@ use Traversable;
 
 class FormCollection extends NeoContainer
 {
-    private static int $prototypeIndex = 0;
-
     public const ORIGINAL_DATA = '__neoFC_originalData__';
+
+    private static int $prototypeIndex = 0;
 
     private string $label;
 

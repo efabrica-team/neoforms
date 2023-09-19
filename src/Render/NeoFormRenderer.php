@@ -4,10 +4,8 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
-use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Generator;
-use Nette\Bridges\ApplicationLatte\Template;
 use Nette\ComponentModel\Component;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
@@ -187,12 +185,20 @@ class NeoFormRenderer
 
     public function formLabel(BaseControl $el, array $attrs = []): Html
     {
-        if ($el instanceof Button || $el instanceof HiddenField || $el instanceof Checkbox || $el->getCaption() === null || $el->getCaption() === '') {
+        if ($el instanceof Button || $el instanceof HiddenField || $el instanceof Checkbox) {
             return Html::el();
         }
+
+        /** @var string|null $caption */
+        $caption = $el->getCaption();
+        if ($caption === null || $caption === '') {
+            return Html::el();
+        }
+
         if (is_string($el->getOption('info'))) {
             $el->setOption('info', $this->translator->translate($el->getOption('info')));
         }
+
         return $this->template($el->getForm())->formLabel($el, $attrs);
     }
 

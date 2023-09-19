@@ -7,6 +7,7 @@ use Generator;
 class FormCollectionDiff
 {
     private array $previousData;
+
     private array $newData;
 
     public function __construct(array $httpData)
@@ -16,7 +17,7 @@ class FormCollectionDiff
         $this->newData = $httpData;
     }
 
-    public function isModified(): bool
+    public function isNotEmpty(): bool
     {
         return $this->getAdded()->valid() || $this->getDeleted()->valid() || $this->getModified()->valid();
     }
