@@ -5,6 +5,7 @@ namespace Efabrica\NeoForms\Render;
 use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
+use Nette\HtmlStringable;
 use RuntimeException;
 
 class NeoFormNetteRenderer implements FormRenderer
@@ -24,7 +25,9 @@ class NeoFormNetteRenderer implements FormRenderer
         $rendered = $this->renderer->form($form);
         iterator_to_array($rendered);
         $return = $rendered->getReturn();
-        assert(is_string($return));
+        if (!is_string($return) && !$return instanceof HtmlStringable) {
+            throw new RuntimeException('form renderer must return string or HtmlStringable');
+        }
         return $return;
     }
 }
