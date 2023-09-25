@@ -59,10 +59,19 @@ class NeoFormTemplate
         return $this->applyAttrs($el->addHtml($body), $attrs);
     }
 
-    public function formRest(Html $body, array $buttons): Html
+    /**
+     * @param Html   $body
+     * @param Html[] $groups
+     * @param array  $buttons
+     * @return Html
+     */
+    public function formRest(Html $body, array $groups, array $buttons): Html
     {
         $el = Html::el();
         $el->addHtml($body);
+        foreach ($groups as $group) {
+            $el->addHtml($group);
+        }
         foreach ($buttons as $button) {
             $el->addHtml($button);
         }

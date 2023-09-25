@@ -14,6 +14,7 @@ class FormCollectionItem extends NeoContainer
 
     public function __construct(bool $prototype = false)
     {
+        $this->setSingleRender(true);
         if (!$prototype) {
             $this->uniqId = $this->addHidden(self::UNIQID, uniqid());
         }

@@ -8,7 +8,7 @@ NeoForms are the very much needed medicine for Nette\Forms.
 - Gives you a way to render rows and columns when building the form in PHP
 - Gives you a `readonly` mode to render a form for people who can't edit it by rendering regular text instead of inputs. (Say goodbye to grayed-out disabled fields!)
 - Gives you FormCollection for pre-styled AJAX-less Multiplier with built-in diff calculator
-
+- ControlGroup inside of a ControlGroup (tree structure)
 
 # Installation
 
@@ -395,6 +395,53 @@ You can apply these attributes to the `{formRow}` tag to pass HTML attributes to
 {formRow $form['title'], 'input' => ['class' => 'special']}
 {formRow $form['title'], 'label' => ['class' => 'special']}
 ```
+
+---
+
+## FormCollection
+
+### Usage:
+```php
+use Efabrica\NeoForms\Build\NeoContainer;
+// Create a new collection called "sources"
+$form->addCollection('sources', 'Sources', function (NeoContainer $container) {
+    // Add some fields to the collection
+    $container->addText('bookTitle', 'Book Title');
+    $container->addInteger('Year', 'Year');
+    // Add another collection for authors
+    $container->addCollection('authors', 'Authors', function (NeoContainer $container) {
+        $container->addText('author', 'Author');
+    });
+});
+```
+
+You render the form as any other control in the form. (`{formRow}` or automatically)
+
+Processing
+```php
+protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
+{
+    // To process the form, you can get the new state of the collection like this:
+    $sources = $values['sources'];
+    
+    // If you want to use the Diff API, you can do something like this:
+    $diff = $form['sources']->getDiff();
+    foreach($diff->getAdded() as $newRow) {
+        $this->sourceRepository->insert($newRow);
+    }
+    foreach($diff->getRemoved() as $removedRow) {
+        $this->sourceRepository->delete($removedRow);
+    }
+    foreach($diff->getModified() as $updatedRow) {
+        $row = $this->sourceRepository->findOneBy($updatedRow->oldRow());
+        $row->update($updatedRow->diff());
+    }
+}
+```
+
+You don't have to use the Diff API. If you for example only use a simple collection of single text inputs, 
+you might find it easier to just persist the new array of values.
+
 
 ---
 

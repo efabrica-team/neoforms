@@ -6,6 +6,7 @@ use Closure;
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
+use JsonException;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Form;
@@ -38,15 +39,17 @@ class FormCollection extends NeoContainer
     private ?array $httpData = null;
 
     /**
-     * @param string                               $label
+     * @param string                                     $label
      * @param callable(FormCollectionItem): (void|mixed) $formFactory
      */
     public function __construct(string $label, callable $formFactory)
     {
+        $this->setSingleRender(true);
         $this->label = $label;
         $this->formFactory = Closure::fromCallable($formFactory);
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
         $this->formFactory->__invoke($this->prototype);
+        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->name);
     }
 
     public function getDiff(): FormCollectionDiff
@@ -146,14 +149,6 @@ class FormCollection extends NeoContainer
         }
     }
 
-    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null)
-    {
-        $this->removeComponent($this->prototype);
-        $values = parent::getUntrustedValues($returnType, $controls);
-        $this->addComponent($this->prototype, $this->prototype->getName());
-        return $values;
-    }
-
     /**
      * @return FormCollectionItem[]
      */
@@ -195,6 +190,9 @@ class FormCollection extends NeoContainer
         ;
     }
 
+    /**
+     * @throws JsonException
+     */
     public function getHtml(NeoFormRenderer $renderer): Html
     {
         $collectionTemplate = $this->getCollectionTemplate();
@@ -207,7 +205,7 @@ class FormCollection extends NeoContainer
         foreach ($this->getItems() as $item) {
             $itemsDiv->addHtml($this->getItemHtml($renderer, $item));
         }
-        $originalData = $this->addHidden(self::ORIGINAL_DATA, json_encode($this->getValues(), JSON_THROW_ON_ERROR));
+        $originalData = $this->addHidden(self::ORIGINAL_DATA, json_encode($this->getUntrustedValues('array'), JSON_THROW_ON_ERROR));
         $el = Html::el()
             ->addHtml($this->getLabelHtml())
             ->addHtml($collDiv->addHtml($itemsDiv)->addHtml($addButton))
@@ -276,5 +274,13 @@ class FormCollection extends NeoContainer
         $item = new FormCollectionItem($prototype);
         $this->addContainer($key, $item);
         return $item;
+    }
+
+    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null)
+    {
+        $this->removeComponent($this->prototype);
+        $values = parent::getUntrustedValues($returnType, $controls);
+        $this->addComponent($this->prototype, $this->prototype->name);
+        return $values;
     }
 }

@@ -7,7 +7,9 @@ use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Generator;
 use Nette\ComponentModel\Component;
+use Nette\ComponentModel\IComponent;
 use Nette\Forms\Container;
+use Nette\Forms\Control;
 use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
@@ -69,15 +71,11 @@ class NeoFormRenderer
                 }
             }
         }
-        foreach ($group->getControls() as $control) {
-            if ($control instanceof BaseControl) {
-                /** @var bool $rendered */
-                $rendered = $control->getOption('rendered') ?? false;
-                if ($rendered === false) {
+        foreach ($this->getGroupControls($group) as $control) {
+            if ($control instanceof BaseControl || $control instanceof Container) {
+                if (!$this->isRendered($control)) {
                     $body->addHtml($this->formRow($control));
                 }
-            } elseif ($control instanceof Container) {
-                $body->addHtml($this->container($control));
             }
         }
 
@@ -106,9 +104,7 @@ class NeoFormRenderer
             return $this->container($el);
         }
 
-        /** @var bool $rendered */
-        $rendered = $el->getOption('rendered') ?? false;
-        if ($rendered) {
+        if ($this->isRendered($el)) {
             return Html::el();
         }
 
@@ -157,30 +153,27 @@ class NeoFormRenderer
 
     public function formRest(NeoForm $form, array $options = []): Html
     {
-        $body = Html::el();
+        $groups = [];
         foreach ($form->getGroups() as $key => $group) {
             $group->setOption('label', $group->getOption('label') ?? $key);
-            $body->addHtml($this->formGroup($form, $group));
+            $groups[$key] = $this->formGroup($form, $group);
         }
 
         $buttons = [];
+        $body = Html::el();
         foreach ($form->getComponents() as $component) {
-            if ($component instanceof BaseControl) {
-                /** @var bool $rendered */
-                $rendered = $component->getOption('rendered') ?? false;
-                if ($rendered) {
-                    continue;
-                }
-            } elseif (!$component instanceof Container) {
+            if ($this->isRendered($component)) {
                 continue;
             }
             if (!$component instanceof Button) {
-                $body->addHtml($this->formRow($component));
+                if ($component instanceof BaseControl || $component instanceof Container) {
+                    $body->addHtml($this->formRow($component));
+                }
             } elseif ($options['buttons'] ?? true) {
                 $buttons[] = $this->formRow($component);
             }
         }
-        return $this->template($form)->formRest($body, $buttons);
+        return $this->template($form)->formRest($body, $groups, $buttons);
     }
 
     public function formLabel(BaseControl $el, array $attrs = []): Html
@@ -215,6 +208,9 @@ class NeoFormRenderer
 
     public function container(Container $el): Html
     {
+        if ($this->isRendered($el)) {
+            return Html::el();
+        }
         if ($el instanceof NeoContainer) {
             return $el->getHtml($this);
         }
@@ -225,5 +221,55 @@ class NeoFormRenderer
             }
         }
         return $rows;
+    }
+
+    /**
+     * @param ControlGroup $group
+     * @return iterable<Control|Container>
+     */
+    public function getGroupControls(ControlGroup $group): iterable
+    {
+        $children = [];
+        foreach ($group->getControls() as $control) {
+            if (!$control instanceof BaseControl) {
+                $children[] = $control;
+                continue;
+            }
+            $container = $this->findContainer($control);
+            if ($container === null) {
+                $children[] = $control;
+            } elseif (!in_array($container, $children, true)) {
+                $children[] = $container;
+            }
+        }
+        return $children;
+    }
+
+    public function findContainer(BaseControl $control): ?NeoContainer
+    {
+        $parent = $control;
+        $container = null;
+        while ($parent !== null) {
+            $parent = $parent->getParent();
+            if ($parent instanceof NeoContainer && $parent->isSingleRender()) {
+                $container = $parent;
+            }
+        }
+        return $container;
+    }
+
+    /**
+     * @param BaseControl|Container $control
+     */
+    private function isRendered($control): bool
+    {
+        if ($control instanceof BaseControl) {
+            return $control->getOption('rendered') === true;
+        }
+        if ($control instanceof NeoContainer && $control->isSingleRender()) {
+            $first = $control->getComponents()->current();
+            return $this->isRendered($first);
+        }
+        return false;
     }
 }

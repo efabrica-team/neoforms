@@ -9,18 +9,16 @@ use Nette\Forms\Controls\BaseControl;
 use Nette\HtmlStringable;
 use Nette\Utils\Html;
 
+/**
+ * @method NeoForm getForm()
+ */
 class NeoContainer extends Container
 {
     use NeoContainerTrait;
 
     private array $childGroups = [];
 
-    public function getForm(bool $throw = true): NeoForm
-    {
-        $form = $this->lookup(NeoForm::class, $throw);
-        assert($form instanceof NeoForm);
-        return $form;
-    }
+    private bool $singleRender = false;
 
     /**
      * @param string|true|HtmlStringable|null $label
@@ -50,5 +48,16 @@ class NeoContainer extends Container
             }
         }
         return $rows;
+    }
+
+    public function isSingleRender(): bool
+    {
+        return $this->singleRender;
+    }
+
+    public function setSingleRender(bool $singleRender): self
+    {
+        $this->singleRender = $singleRender;
+        return $this;
     }
 }

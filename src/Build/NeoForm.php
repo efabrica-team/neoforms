@@ -3,12 +3,14 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Control\NeoControlGroup;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
+use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\Button;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
@@ -26,6 +28,8 @@ class NeoForm extends Form
     private bool $readonly = false;
 
     private ?NeoFormTemplate $template = null;
+
+    private static array $excludedKeys = [];
 
     /**
      * @return $this
@@ -101,6 +105,39 @@ class NeoForm extends Form
                 $template->$key = $value;
             }
         });
+    }
+
+    public function getValues($returnType = null, ?array $controls = null)
+    {
+        $values = parent::getValues($returnType, $controls);
+        self::removeExcludedKeys($values, self::$excludedKeys);
+        return $values;
+    }
+
+    public static function addExcludedKeys(string ...$keys): void
+    {
+        foreach ($keys as $key) {
+            self::$excludedKeys[$key] = $key;
+        }
+    }
+
+    /**
+     * @param array|object $values
+     * @return void
+     */
+    public static function removeExcludedKeys(&$values): void
+    {
+        foreach ($values as $key => &$value) {
+            if (is_object($value) || is_array($value)) {
+                self::removeExcludedKeys($value);
+            } elseif (isset(self::$excludedKeys[$key])) {
+                if (is_object($values)) {
+                    unset($values->$key);
+                } else {
+                    unset($values[$key]);
+                }
+            }
+        }
     }
 
     /**
