@@ -38,6 +38,8 @@ class FormCollection extends NeoContainer
 
     private ?array $httpData = null;
 
+    private int $requiredCount = 0;
+
     /**
      * @param string                                     $label
      * @param callable(FormCollectionItem): (void|mixed) $formFactory
@@ -107,7 +109,7 @@ class FormCollection extends NeoContainer
         $this->updateChildren($this->getHttpData());
         $this->removeComponent($this->prototype);
         parent::validate($controls);
-        $this->addComponent($this->prototype, $this->prototype->getName());
+        $this->addComponent($this->prototype, $this->prototype->name);
     }
 
     public function setValues($data, bool $erase = false)
@@ -200,7 +202,11 @@ class FormCollection extends NeoContainer
         if ($collectionTemplate !== null) {
             return $this->renderTemplate($collectionTemplate, ['collection' => $this, 'addBtn' => $addButton]);
         }
-        $collDiv = Html::el('div')->class('form-collection');
+        $collDiv = Html::el('div')->class('form-collection')
+            ->setAttribute('data-proto', $this->getItemHtml($renderer, $this->prototype))
+            ->setAttribute('data-proto-name', $this->prototype->getName())
+            ->setAttribute('data-required-count', $this->requiredCount)
+        ;
         $itemsDiv = Html::el('div')->class('form-collection-items');
         foreach ($this->getItems() as $item) {
             $itemsDiv->addHtml($this->getItemHtml($renderer, $item));
@@ -242,8 +248,6 @@ class FormCollection extends NeoContainer
             ->addHtml(
                 Html::el('a')->href('javascript:')
                     ->class('form-collection-add', true)
-                    ->setAttribute('data-proto', $this->getItemHtml($renderer, $this->prototype))
-                    ->setAttribute('data-proto-name', $this->prototype->getName())
                     ->addHtml('+')
             )
         ;
@@ -282,5 +286,10 @@ class FormCollection extends NeoContainer
         $values = parent::getUntrustedValues($returnType, $controls);
         $this->addComponent($this->prototype, $this->prototype->name);
         return $values;
+    }
+
+    public function setRequiredCount(int $count = 0): void
+    {
+        $this->requiredCount = $count;
     }
 }
