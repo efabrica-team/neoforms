@@ -6,8 +6,12 @@ use Closure;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Template;
 
+/**
+ * @property-read Template $template
+ */
 class NeoFormControl extends Control
 {
+    /** @readonly */
     public NeoForm $form;
 
     /** @var Closure|null fn(Template $template): void */
@@ -22,11 +26,14 @@ class NeoFormControl extends Control
 
     public function render(): void
     {
-        assert($this->template instanceof Template);
-        $this->template->setFile(__DIR__ . '/../Render/templates/control.latte');
         if ($this->onRender !== null) {
             ($this->onRender)($this->template);
         }
+        if ($this->template->getFile() === null) {
+            $this->form->render();
+            return;
+        }
+        $this->template->form = $this->form;
         $this->template->render();
     }
 

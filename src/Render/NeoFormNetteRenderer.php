@@ -2,27 +2,32 @@
 
 namespace Efabrica\NeoForms\Render;
 
-use Latte\Engine;
+use Efabrica\NeoForms\Build\NeoForm;
 use Nette\Forms\Form;
 use Nette\Forms\FormRenderer;
+use Nette\HtmlStringable;
 use RuntimeException;
 
 class NeoFormNetteRenderer implements FormRenderer
 {
-    private ?NeoFormRenderer $renderer = null;
+    private NeoFormRenderer $renderer;
 
-    public function init(Engine $engine): void
+    public function __construct(NeoFormRenderer $renderer)
     {
-        $provider = $engine->getProviders()['neoFormRenderer'];
-        assert($provider instanceof NeoFormRenderer);
-        $this->renderer = $provider;
+        $this->renderer = $renderer;
     }
 
     public function render(Form $form): string
     {
-        if ($this->renderer instanceof NeoFormRenderer) {
-            return $this->renderer->formStart($form) . $this->renderer->formEnd($form);
+        if (!$form instanceof NeoForm) {
+            throw new RuntimeException('form is not instance of NeoForm');
         }
-        throw new RuntimeException('neonFormRenderer not set');
+        $rendered = $this->renderer->form($form);
+        iterator_to_array($rendered);
+        $return = $rendered->getReturn();
+        if (!is_string($return) && !$return instanceof HtmlStringable) {
+            throw new RuntimeException('form renderer must return string or HtmlStringable');
+        }
+        return $return;
     }
 }

@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
@@ -24,6 +25,10 @@ class NeoForm extends Form
 
     private bool $readonly = false;
 
+    private ?NeoFormTemplate $template = null;
+
+    private static array $excludedKeys = [];
+
     /**
      * @return $this
      */
@@ -36,6 +41,17 @@ class NeoForm extends Form
     public function isReadonly(): bool
     {
         return $this->readonly;
+    }
+
+    public function getTemplate(): ?NeoFormTemplate
+    {
+        return $this->template;
+    }
+
+    public function setTemplate(?NeoFormTemplate $template): self
+    {
+        $this->template = $template;
+        return $this;
     }
 
     /**
@@ -87,6 +103,35 @@ class NeoForm extends Form
                 $template->$key = $value;
             }
         });
+    }
+
+    public function getValues($returnType = null, ?array $controls = null)
+    {
+        $values = parent::getValues($returnType, $controls);
+        self::removeExcludedKeys($values);
+        return $values;
+    }
+
+    public static function addExcludedKeys(string ...$keys): void
+    {
+        foreach ($keys as $key) {
+            self::$excludedKeys[$key] = $key;
+        }
+    }
+
+    public static function removeExcludedKeys(iterable &$values): void
+    {
+        foreach ($values as $key => &$value) {
+            if (is_object($value) || is_array($value)) {
+                self::removeExcludedKeys($value);
+            } elseif (isset(self::$excludedKeys[$key])) {
+                if (is_object($values)) {
+                    unset($values->$key);
+                } else {
+                    unset($values[$key]);
+                }
+            }
+        }
     }
 
     /**
