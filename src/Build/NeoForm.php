@@ -3,14 +3,12 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
-use Efabrica\NeoForms\Control\NeoControlGroup;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
-use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\Button;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
@@ -110,7 +108,7 @@ class NeoForm extends Form
     public function getValues($returnType = null, ?array $controls = null)
     {
         $values = parent::getValues($returnType, $controls);
-        self::removeExcludedKeys($values, self::$excludedKeys);
+        self::removeExcludedKeys($values);
         return $values;
     }
 
@@ -121,11 +119,7 @@ class NeoForm extends Form
         }
     }
 
-    /**
-     * @param array|object $values
-     * @return void
-     */
-    public static function removeExcludedKeys(&$values): void
+    public static function removeExcludedKeys(iterable &$values): void
     {
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {

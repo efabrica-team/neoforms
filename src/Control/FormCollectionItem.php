@@ -8,7 +8,7 @@ use Nette\Utils\ArrayHash;
 
 class FormCollectionItem extends NeoContainer
 {
-    const UNIQID = '__neoFC_uniqId__';
+    public const UNIQID = '__neoFC_uniqId__';
 
     private ?HiddenField $uniqId = null;
 
@@ -18,11 +18,6 @@ class FormCollectionItem extends NeoContainer
         if (!$prototype) {
             $this->uniqId = $this->addHidden(self::UNIQID, uniqid());
         }
-    }
-
-    public function getUniqid(): ?string
-    {
-        return $this->uniqId ? $this->uniqId->getValue() : null;
     }
 
     public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null)

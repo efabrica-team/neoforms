@@ -87,7 +87,8 @@ class CategoryForm extends ActiveRowForm
             ->setHtmlAttribute('placeholder', 'Type category description')
             ->setRequired('Description is required to fill');
         
-        $form->addSubmit('save', ($row === null ? 'Edit' : 'Create') . ' Category');
+        $form->addSubmit('save', ($row === null ? 'Edit' : 'Create') . ' Category')
+            ->setIcon('save');
         
         return $this->control($form, $row);
     }

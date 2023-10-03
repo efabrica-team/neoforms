@@ -8,11 +8,14 @@ use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use JsonException;
 use Nette\Bridges\ApplicationLatte\Template;
+use Nette\Bridges\ApplicationLatte\TemplateFactory;
+use Nette\ComponentModel\IComponent;
 use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
+use RuntimeException;
 use Traversable;
 
 class FormCollection extends NeoContainer
@@ -24,7 +27,7 @@ class FormCollection extends NeoContainer
     private string $label;
 
     /**
-     * @var Closure(NeoContainer): (void|mixed)
+     * @var Closure(FormCollectionItem): (void|mixed)
      */
     private Closure $formFactory;
 
@@ -56,12 +59,20 @@ class FormCollection extends NeoContainer
 
     public function getDiff(): FormCollectionDiff
     {
-        return new FormCollectionDiff($this->getHttpData());
+        $httpData = $this->getHttpData();
+        if ($httpData === null) {
+            throw new RuntimeException('FormCollection::getDiff() called before form is submitted.');
+        }
+        return new FormCollectionDiff($httpData);
     }
 
     public function getLabel(): string
     {
-        return $this->getForm()->getTranslator()->translate($this->label);
+        $translator = $this->getForm()->getTranslator();
+        if ($translator === null) {
+            return $this->label;
+        }
+        return $translator->translate($this->label);
     }
 
     public function getComponentTemplate(): ?string
@@ -94,13 +105,18 @@ class FormCollection extends NeoContainer
         if ($this->httpData !== null) {
             return $this->httpData;
         }
-        if (!$this->getForm()->isSubmitted()) {
+        if ($this->getForm()->isSubmitted() === false) {
             return null;
         }
+
+        /** @var array $httpData */
         $httpData = $this->getForm()->getHttpData();
-        foreach (explode(Form::NameSeparator, $this->lookupPath(NeoForm::class)) as $path) {
+        /** @var string $lookupPath */
+        $lookupPath = $this->lookupPath(NeoForm::class);
+        foreach (explode(IComponent::NameSeparator, $lookupPath) as $path) {
             $httpData = $httpData[$path] ?? null;
         }
+
         return $httpData;
     }
 
@@ -114,11 +130,15 @@ class FormCollection extends NeoContainer
 
     public function setValues($data, bool $erase = false)
     {
-        $this->updateChildren($data);
+        /** @var mixed $data */
+        if ($data === null || is_iterable($data)) {
+            $this->updateChildren($data);
+        }
+        /** @var array|object $data */
         return parent::setValues($data, $erase);
     }
 
-    public function updateChildren($data = null): void
+    public function updateChildren(?iterable $data = null): void
     {
         $data ??= [];
         /** @var mixed $data */
@@ -184,12 +204,14 @@ class FormCollection extends NeoContainer
         $this->simple = $simple;
     }
 
-    protected function renderTemplate(string $path, array $params)
+    protected function renderTemplate(string $path, array $params): Html
     {
-        return $this->getForm()->getPresenter()->getTemplateFactory()
-            ->createTemplate($this->getForm()->getPresenter(), Template::class)
-            ->renderToString($path, $params)
-        ;
+        $presenter = $this->getForm()->getPresenter();
+        $templateFactory = $presenter->getTemplateFactory();
+        assert($templateFactory instanceof TemplateFactory);
+        $template = $templateFactory->createTemplate($presenter, Template::class);
+        assert($template instanceof Template);
+        return Html::fromHtml($template->renderToString($path, $params));
     }
 
     /**

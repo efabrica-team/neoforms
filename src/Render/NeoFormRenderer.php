@@ -258,10 +258,7 @@ class NeoFormRenderer
         return $container;
     }
 
-    /**
-     * @param BaseControl|Container $control
-     */
-    private function isRendered($control): bool
+    private function isRendered(IComponent $control): bool
     {
         if ($control instanceof BaseControl) {
             return $control->getOption('rendered') === true;

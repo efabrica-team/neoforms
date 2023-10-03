@@ -6,13 +6,15 @@ use Generator;
 
 class FormCollectionDiff
 {
-    private array $previousData;
+    private array $originalData;
 
     private array $newData;
 
     public function __construct(array $httpData)
     {
-        $this->previousData = json_decode($httpData[FormCollection::ORIGINAL_DATA], true, 512, JSON_THROW_ON_ERROR);
+        $originalData = json_decode($httpData[FormCollection::ORIGINAL_DATA], true) ?: [];
+        assert(is_array($originalData));
+        $this->originalData = $originalData;
         unset($httpData[FormCollection::ORIGINAL_DATA]);
         $this->newData = $httpData;
     }
@@ -33,7 +35,7 @@ class FormCollectionDiff
 
     public function getDeleted(): Generator
     {
-        foreach ($this->previousData as $value) {
+        foreach ($this->originalData as $value) {
             if (!isset($value[FormCollectionItem::UNIQID])) {
                 continue;
             }
@@ -52,11 +54,11 @@ class FormCollectionDiff
     }
 
     /**
-     * @return FormCollectionItemDiff[]&Generator
+     * @return Generator<FormCollectionItemDiff>
      */
     public function getModified(): Generator
     {
-        foreach ($this->previousData as $previousValue) {
+        foreach ($this->originalData as $previousValue) {
             if (!isset($previousValue[FormCollectionItem::UNIQID])) {
                 continue;
             }

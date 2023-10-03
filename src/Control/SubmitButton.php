@@ -10,7 +10,7 @@ class SubmitButton extends \Nette\Forms\Controls\SubmitButton
         $this->setOption('type', 'submit');
     }
 
-    public function setIcon(string $icon): self
+    public function setIcon(?string $icon): self
     {
         $this->setOption('icon', $icon);
         return $this;
@@ -18,6 +18,7 @@ class SubmitButton extends \Nette\Forms\Controls\SubmitButton
 
     public function getIcon(): ?string
     {
-        return $this->getOption('icon');
+        $icon = $this->getOption('icon');
+        return is_string($icon) ? $icon : null;
     }
 }
