@@ -11,7 +11,6 @@ use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Bridges\ApplicationLatte\TemplateFactory;
 use Nette\ComponentModel\IComponent;
 use Nette\Forms\Controls\BaseControl;
-use Nette\Forms\Form;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
