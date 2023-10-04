@@ -119,7 +119,11 @@ class NeoForm extends Form
         }
     }
 
-    public static function removeExcludedKeys(iterable &$values): void
+    /**
+     * @param iterable|object $values
+     * @return void
+     */
+    public static function removeExcludedKeys(&$values): void
     {
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {

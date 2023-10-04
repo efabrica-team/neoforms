@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Render\Template;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Generator;
 use Nette\Forms\Controls\BaseControl;
