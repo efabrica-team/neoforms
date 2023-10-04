@@ -1,5 +1,9 @@
 ![NeoForms](./src/.img/logo.png)
 
+![Packagist Version](https://img.shields.io/packagist/v/efabrica/neoforms)
+![Packagist Downloads](https://img.shields.io/packagist/dt/efabrica/neoforms)
+
+
 NeoForms are the very much needed medicine for Nette\Forms. 
 - Gives you an easier way to write your own renderer templates
 - Gives you conventions to collaborate with your team more efficiently
