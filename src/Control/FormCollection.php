@@ -6,6 +6,7 @@ use Closure;
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
+use Generator;
 use JsonException;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Bridges\ApplicationLatte\TemplateFactory;
@@ -94,7 +95,7 @@ class FormCollection extends NeoContainer
         $this->collectionTemplate = $collectionTemplate;
     }
 
-    public function getPrototype(): NeoContainer
+    public function getPrototype(): FormCollectionItem
     {
         return $this->prototype;
     }
@@ -171,9 +172,9 @@ class FormCollection extends NeoContainer
     }
 
     /**
-     * @return FormCollectionItem[]
+     * @return Generator<FormCollectionItem>
      */
-    public function getItems(): iterable
+    public function getItems(): Generator
     {
         foreach ($this->getComponents() as $component) {
             if ($component === $this->prototype) {

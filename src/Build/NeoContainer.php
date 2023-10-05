@@ -10,7 +10,7 @@ use Nette\HtmlStringable;
 use Nette\Utils\Html;
 
 /**
- * @method NeoForm getForm()
+ * @method NeoForm getForm(bool $throw = true)
  */
 class NeoContainer extends Container
 {

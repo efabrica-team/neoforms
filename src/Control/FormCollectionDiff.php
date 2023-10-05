@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Control;
 
 use Generator;
+use InvalidArgumentException;
 
 class FormCollectionDiff
 {
@@ -12,7 +13,11 @@ class FormCollectionDiff
 
     public function __construct(array $httpData)
     {
-        $originalData = json_decode($httpData[FormCollection::ORIGINAL_DATA], true) ?: [];
+        $originalData = $httpData[FormCollection::ORIGINAL_DATA] ?? null;
+        if (!is_string($originalData)) {
+            throw new InvalidArgumentException('Missing or incorrect original data for FormCollection');
+        }
+        $originalData = json_decode($originalData, true, 512, JSON_THROW_ON_ERROR) ?: [];
         assert(is_array($originalData));
         $this->originalData = $originalData;
         unset($httpData[FormCollection::ORIGINAL_DATA]);
@@ -75,7 +80,7 @@ class FormCollectionDiff
         }
     }
 
-    public function areArraysRecursivelyEqual(array $a, array $b): bool
+    protected function areArraysRecursivelyEqual(array $a, array $b): bool
     {
         if (count($a) !== count($b)) {
             return false;

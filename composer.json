@@ -18,6 +18,11 @@
             "Efabrica\\NeoForms\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Efabrica\\NeoForms\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Richard Popelis",
@@ -29,6 +34,7 @@
         "radekdostal/nette-datetimepicker": "^3.1",
         "tracy/tracy": "^2.9",
         "nette/database": "^3.1",
-        "jetbrains/phpstorm-attributes": "^1.0"
+        "jetbrains/phpstorm-attributes": "^1.0",
+        "phpunit/phpunit": "^10.3"
     }
 }

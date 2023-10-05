@@ -67,7 +67,7 @@ class FormCollectionItemDiff
      * @param mixed $oldValue
      * @return bool
      */
-    public function notEqual($newValue, $oldValue): bool
+    private function notEqual($newValue, $oldValue): bool
     {
         $newValue = is_scalar($newValue) ? (string)$newValue : $newValue;
         $oldValue = is_scalar($oldValue) ? (string)$oldValue : $oldValue;
