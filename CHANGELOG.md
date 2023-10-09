@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - FormCollection removeExcludedKeys() iterable typehint
 - FormCollectionItem uniqId
+- ToggleSwitch render fix
 
 
 ## [3.0.0] - 2023-10-03

@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Render\Template;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Generator;
 use Nette\Forms\Controls\BaseControl;
@@ -127,6 +128,9 @@ class NeoFormTemplate
     protected function control(BaseControl $control, array $attrs): Html
     {
         $attrs += $control->getOptions();
+        if ($control instanceof ToggleSwitch) {
+            return $this->toggleSwitch($control, $attrs + $control->getOptions());
+        }
         if ($control instanceof Checkbox) {
             return $this->checkbox($control, $attrs);
         }
@@ -262,5 +266,10 @@ class NeoFormTemplate
             }
         }
         return $el;
+    }
+
+    private function toggleSwitch(ToggleSwitch $control, array $params): Html
+    {
+        return $this->checkbox($control, $params);
     }
 }
