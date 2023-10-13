@@ -57,7 +57,7 @@ class NeoForm extends Form
     /**
      * @param array|scalar $redirectArgs
      */
-    public function finish(?string $flashMessage = null, string $redirect = 'default', $redirectArgs = []): void
+    public function finish(?string $flashMessage = null, ?string $redirect = 'default', array $redirectArgs = []): void
     {
         $presenter = $this->getPresenter();
         if ($flashMessage !== null) {
@@ -65,7 +65,9 @@ class NeoForm extends Form
             assert($translator instanceof Translator);
             $presenter->flashMessage($translator->translate($flashMessage), 'success');
         }
-        $presenter->redirect($redirect, $redirectArgs);
+        if ($redirect !== null) {
+            $presenter->redirect($redirect, $redirectArgs);
+        }
     }
 
     /**
