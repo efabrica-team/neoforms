@@ -434,12 +434,12 @@ protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     foreach($diff->getAdded() as $newRow) {
         $this->sourceRepository->insert($newRow);
     }
-    foreach($diff->getRemoved() as $removedRow) {
+    foreach($diff->getDeleted() as $removedRow) {
         $this->sourceRepository->delete($removedRow);
     }
     foreach($diff->getModified() as $updatedRow) {
-        $row = $this->sourceRepository->findOneBy($updatedRow->oldRow());
-        $row->update($updatedRow->diff());
+        $row = $this->sourceRepository->findOneBy($updatedRow->getOldRow());
+        $row->update($updatedRow->getDiff());
     }
 }
 ```

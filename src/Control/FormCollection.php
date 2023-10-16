@@ -15,7 +15,6 @@ use Nette\Forms\Controls\BaseControl;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
-use RuntimeException;
 use Traversable;
 
 class FormCollection extends NeoContainer
@@ -44,26 +43,37 @@ class FormCollection extends NeoContainer
     private int $requiredCount = 0;
 
     /**
-     * @param string                                     $label
-     * @param callable(FormCollectionItem): (void|mixed) $formFactory
+     * @param string                                          $label
+     * @param callable(FormCollectionItem): (void|mixed)|null $formFactory
      */
-    public function __construct(string $label, callable $formFactory)
+    public function __construct(string $label, ?callable $formFactory = null)
     {
         $this->setSingleRender(true);
         $this->label = $label;
-        $this->formFactory = Closure::fromCallable($formFactory);
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
-        $this->formFactory->__invoke($this->prototype);
+        if ($formFactory !== null) {
+            $this->formFactory = Closure::fromCallable($formFactory);
+            $this->formFactory->__invoke($this->prototype);
+        }
         NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->name);
     }
 
-    public function getDiff(): FormCollectionDiff
+    public function setFormFactory(callable $formFactory): self
     {
-        $httpData = $this->getHttpData();
-        if ($httpData === null) {
-            throw new RuntimeException('FormCollection::getDiff() called before form is submitted.');
+        foreach ($this->prototype->getComponents() as $component) {
+            $this->prototype->removeComponent($component);
         }
-        return new FormCollectionDiff($httpData);
+        $this->prototype->options = [];
+
+        $this->formFactory = Closure::fromCallable($formFactory);
+        $this->formFactory->__invoke($this->prototype);
+
+        return $this;
+    }
+
+    public function getDiff(?array $values = null): FormCollectionDiff
+    {
+        return new FormCollectionDiff($values ?? $this->getValues());
     }
 
     public function getLabel(): string
@@ -122,7 +132,7 @@ class FormCollection extends NeoContainer
 
     public function validate(?array $controls = null): void
     {
-        $this->updateChildren($this->getHttpData());
+        $this->updateChildren($this->getUntrustedValues());
         $this->removeComponent($this->prototype);
         parent::validate($controls);
         $this->addComponent($this->prototype, $this->prototype->name);
