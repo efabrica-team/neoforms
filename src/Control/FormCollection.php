@@ -10,7 +10,7 @@ use Generator;
 use JsonException;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Bridges\ApplicationLatte\TemplateFactory;
-use Nette\ComponentModel\IComponent;
+use Nette\ComponentModel\IContainer;
 use Nette\Forms\Controls\BaseControl;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
@@ -28,7 +28,7 @@ class FormCollection extends NeoContainer
     /**
      * @var Closure(FormCollectionItem): (void|mixed)
      */
-    private Closure $formFactory;
+    private ?Closure $formFactory = null;
 
     protected FormCollectionItem $prototype;
 
@@ -50,30 +50,25 @@ class FormCollection extends NeoContainer
     {
         $this->setSingleRender(true);
         $this->label = $label;
-        $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
         if ($formFactory !== null) {
             $this->formFactory = Closure::fromCallable($formFactory);
+        }
+    }
+
+    public function setParent(?IContainer $parent, ?string $name = null)
+    {
+        parent::setParent($parent, $name);
+        $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
+        if ($this->formFactory !== null) {
             $this->formFactory->__invoke($this->prototype);
         }
+        $this->addHidden(self::ORIGINAL_DATA, '{}');
         NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->name);
     }
 
-    public function setFormFactory(callable $formFactory): self
+    public function getDiff(): FormCollectionDiff
     {
-        foreach ($this->prototype->getComponents() as $component) {
-            $this->prototype->removeComponent($component);
-        }
-        $this->prototype->options = [];
-
-        $this->formFactory = Closure::fromCallable($formFactory);
-        $this->formFactory->__invoke($this->prototype);
-
-        return $this;
-    }
-
-    public function getDiff(?array $values = null): FormCollectionDiff
-    {
-        return new FormCollectionDiff($values ?? $this->getValues());
+        return new FormCollectionDiff($this->getValues('array'));
     }
 
     public function getLabel(): string
@@ -108,26 +103,6 @@ class FormCollection extends NeoContainer
     public function getPrototype(): FormCollectionItem
     {
         return $this->prototype;
-    }
-
-    protected function getHttpData(): ?array
-    {
-        if ($this->httpData !== null) {
-            return $this->httpData;
-        }
-        if ($this->getForm()->isSubmitted() === false) {
-            return null;
-        }
-
-        /** @var array $httpData */
-        $httpData = $this->getForm()->getHttpData();
-        /** @var string $lookupPath */
-        $lookupPath = $this->lookupPath(NeoForm::class);
-        foreach (explode(IComponent::NameSeparator, $lookupPath) as $path) {
-            $httpData = $httpData[$path] ?? null;
-        }
-
-        return $httpData;
     }
 
     public function validate(?array $controls = null): void
@@ -175,7 +150,7 @@ class FormCollection extends NeoContainer
             unset($components[$key]);
         }
         foreach ($components as $key => $_) {
-            if (!isset($values[$key]) && $_ !== $this->prototype) {
+            if (!isset($values[$key]) && $_ !== $this->prototype && $key !== self::ORIGINAL_DATA) {
                 $this->removeComponent($this->getComponent((string)$key));
             }
         }
@@ -243,13 +218,12 @@ class FormCollection extends NeoContainer
         foreach ($this->getItems() as $item) {
             $itemsDiv->addHtml($this->getItemHtml($renderer, $item));
         }
-        $originalData = $this->addHidden(self::ORIGINAL_DATA, json_encode($this->getUntrustedValues('array'), JSON_THROW_ON_ERROR));
+        $originalData = $this[self::ORIGINAL_DATA]->setValue(json_encode($this->getUntrustedValues('array'), JSON_THROW_ON_ERROR));
         $el = Html::el()
             ->addHtml($this->getLabelHtml())
             ->addHtml($collDiv->addHtml($itemsDiv)->addHtml($addButton))
             ->addHtml($originalData->getControl())
         ;
-        $this->removeComponent($originalData);
         return $el;
     }
 

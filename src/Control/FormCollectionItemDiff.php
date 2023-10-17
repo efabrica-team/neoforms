@@ -17,7 +17,7 @@ class FormCollectionItemDiff
                 continue;
             }
             $newValue = $newRow[$key] ?? null;
-            if (isset($newValue[FormCollection::ORIGINAL_DATA])) {
+            if (is_array($newValue) && isset($newValue[FormCollection::ORIGINAL_DATA])) {
                 continue;
             }
             if ($this->notEqual($newValue, $oldValue)) {
@@ -28,7 +28,7 @@ class FormCollectionItemDiff
             if ($key === FormCollection::ORIGINAL_DATA) {
                 continue;
             }
-            if (isset($newValue[FormCollection::ORIGINAL_DATA])) {
+            if (is_array($newValue) && isset($newValue[FormCollection::ORIGINAL_DATA])) {
                 $inDiff = new FormCollectionDiff($newValue);
                 if ($inDiff->isNotEmpty()) {
                     $this->diff[$key] = $inDiff;

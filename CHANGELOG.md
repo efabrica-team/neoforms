@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - nullable redirect parameter in finish()
-- FormCollection->setFormFactory()
+- FormCollection initialize prototype after setParent()
 ### Fixed
-- FormCollection getDiff() with parameter $values
+- FormCollection getDiff() uses getValues() instead of httpData
 
 ## [3.0.1] - 2023-10-09
 ### Fixed

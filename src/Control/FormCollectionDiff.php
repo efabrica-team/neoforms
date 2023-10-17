@@ -4,6 +4,8 @@ namespace Efabrica\NeoForms\Control;
 
 use Generator;
 use InvalidArgumentException;
+use JsonException;
+use RuntimeException;
 
 class FormCollectionDiff
 {
@@ -14,14 +16,18 @@ class FormCollectionDiff
     public function __construct(array $httpData)
     {
         $originalData = $httpData[FormCollection::ORIGINAL_DATA] ?? null;
+        unset($httpData[FormCollection::ORIGINAL_DATA]);
         if (!is_string($originalData)) {
             throw new InvalidArgumentException('Missing or incorrect original data for FormCollection');
         }
         $originalData = json_decode($originalData, true, 512, JSON_THROW_ON_ERROR) ?: [];
         assert(is_array($originalData));
         $this->originalData = $originalData;
-        unset($httpData[FormCollection::ORIGINAL_DATA]);
-        $this->newData = $httpData;
+        try {
+            $this->newData = json_decode(json_encode($httpData, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new RuntimeException('Error while normalizing newData', 0, $e);
+        }
     }
 
     public function isNotEmpty(): bool
