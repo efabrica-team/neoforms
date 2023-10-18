@@ -10,6 +10,7 @@ use Generator;
 use JsonException;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Bridges\ApplicationLatte\TemplateFactory;
+use Nette\ComponentModel\IComponent;
 use Nette\ComponentModel\IContainer;
 use Nette\Forms\Controls\BaseControl;
 use Nette\InvalidArgumentException;
@@ -107,7 +108,7 @@ class FormCollection extends NeoContainer
 
     public function validate(?array $controls = null): void
     {
-        $this->updateChildren($this->getUntrustedValues());
+        $this->updateChildren();
         $this->removeComponent($this->prototype);
         parent::validate($controls);
         $this->addComponent($this->prototype, $this->prototype->name);
@@ -123,9 +124,29 @@ class FormCollection extends NeoContainer
         return parent::setValues($data, $erase);
     }
 
+    protected function getHttpData(): ?array
+    {
+        if ($this->httpData !== null) {
+            return $this->httpData;
+        }
+        if ($this->getForm()->isSubmitted() === false) {
+            return null;
+        }
+
+        /** @var array $httpData */
+        $httpData = $this->getForm()->getHttpData();
+        /** @var string $lookupPath */
+        $lookupPath = $this->lookupPath(NeoForm::class);
+        foreach (explode(IComponent::NameSeparator, $lookupPath) as $path) {
+            $httpData = $httpData[$path] ?? null;
+        }
+
+        return $httpData;
+    }
+
     public function updateChildren(?iterable $data = null): void
     {
-        $data ??= [];
+        $data ??= $this->getHttpData();
         /** @var mixed $data */
         if ($data instanceof Traversable) {
             $values = iterator_to_array($data);
@@ -137,11 +158,9 @@ class FormCollection extends NeoContainer
                 is_object($data) ? get_class($data) : gettype($data)
             ));
         }
+        unset($values[self::ORIGINAL_DATA]);
         $components = iterator_to_array($this->getComponents());
         foreach ($values as $key => $childValues) {
-            if ($key === self::ORIGINAL_DATA) {
-                continue;
-            }
             if (!isset($components[$key])) {
                 $child = $this->addCollectionItem($key);
                 $this->formFactory->__invoke($child);
@@ -209,22 +228,27 @@ class FormCollection extends NeoContainer
         if ($collectionTemplate !== null) {
             return $this->renderTemplate($collectionTemplate, ['collection' => $this, 'addBtn' => $addButton]);
         }
+
         $collDiv = Html::el('div')->class('form-collection')
             ->setAttribute('data-proto', $this->getItemHtml($renderer, $this->prototype))
             ->setAttribute('data-proto-name', $this->prototype->getName())
             ->setAttribute('data-required-count', $this->requiredCount)
         ;
+
         $itemsDiv = Html::el('div')->class('form-collection-items');
         foreach ($this->getItems() as $item) {
             $itemsDiv->addHtml($this->getItemHtml($renderer, $item));
         }
-        $originalData = $this[self::ORIGINAL_DATA]->setValue(json_encode($this->getUntrustedValues('array'), JSON_THROW_ON_ERROR));
-        $el = Html::el()
+
+        $originalArray = $this->getUntrustedValues('array');
+        unset($originalArray[self::ORIGINAL_DATA]);
+        $originalData = $this[self::ORIGINAL_DATA]->setValue(json_encode($originalArray, JSON_THROW_ON_ERROR));
+
+        return Html::el()
             ->addHtml($this->getLabelHtml())
             ->addHtml($collDiv->addHtml($itemsDiv)->addHtml($addButton))
             ->addHtml($originalData->getControl())
         ;
-        return $el;
     }
 
     public function getItemHtml(NeoFormRenderer $renderer, FormCollectionItem $item): Html

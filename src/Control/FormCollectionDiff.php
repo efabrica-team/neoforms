@@ -24,6 +24,8 @@ class FormCollectionDiff
         assert(is_array($originalData));
         $this->originalData = $originalData;
         try {
+            // this is necessary because this is how ORIGINAL_DATA is retrieved from the form
+            // this ensures correct diff
             $this->newData = json_decode(json_encode($httpData, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new RuntimeException('Error while normalizing newData', 0, $e);
