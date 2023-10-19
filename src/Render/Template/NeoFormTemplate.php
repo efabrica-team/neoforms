@@ -254,7 +254,7 @@ class NeoFormTemplate
     public function applyAttrs(Html $el, array $attrs): Html
     {
         foreach ($attrs as $key => $value) {
-            if (!is_scalar($value)) {
+            if (!is_scalar($value) || $key === 'type') {
                 continue;
             }
             if ($key[0] === '+') {

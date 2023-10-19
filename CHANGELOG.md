@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FormCollection initialize prototype after setParent()
 ### Fixed
 - FormCollection getDiff() uses getValues() instead of httpData
+- SubmitButton / Password input type
 
 ## [3.0.1] - 2023-10-09
 ### Fixed
