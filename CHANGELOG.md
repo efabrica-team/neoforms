@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+
+## [3.1.0] - 2023-10-19
 ### Added
 - nullable redirect parameter in finish()
 - FormCollection initialize prototype after setParent()
@@ -197,7 +201,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/3.0.1...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/3.1.0...master
+[3.1.0]: https://git.efabrica.sk/libraries/neoforms/compare/3.0.1...3.1.0
 [3.0.1]: https://git.efabrica.sk/libraries/neoforms/compare/3.0.0...3.0.1
 [3.0.0]: https://git.efabrica.sk/libraries/neoforms/compare/2.5.0...3.0.0
 [2.5.0]: https://git.efabrica.sk/libraries/neoforms/compare/2.4.2...2.5.0
