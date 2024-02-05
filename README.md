@@ -17,13 +17,13 @@ NeoForms are the very much needed medicine for Nette\Forms.
 # Installation
 
 ```shell
-composer require efabrica/neo-forms
+composer require efabrica/neoforms
 ```
 
 ```neon
 # config.neon
 includes:
-    - ../../vendor/efabrica/neo-forms/config.neon
+    - ../../vendor/efabrica/neoforms/config.neon
 ```
 
 # Documentation
