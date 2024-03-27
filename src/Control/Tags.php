@@ -15,6 +15,8 @@ class Tags extends TextInput
 
     private ?string $placeholder;
 
+    private bool $sortable = false;
+
     public function __construct(?string $label = null, array $config = [], ?string $placeholder = null)
     {
         parent::__construct($label);
@@ -32,6 +34,12 @@ class Tags extends TextInput
         return $this->placeholder;
     }
 
+    public function setSortable(): Tags
+    {
+        $this->sortable = true;
+        return $this;
+    }
+
     public function getControl(): Html
     {
         $control = parent::getControl();
@@ -39,6 +47,9 @@ class Tags extends TextInput
             ->setAttribute('data-placeholder', $this->translate($this->placeholder))
             ->setAttribute('data-config', Json::encode($this->config))
         ;
+        if ($this->sortable) {
+            $control->setAttribute('data-sortable', 'true');
+        }
         $control->setAttribute('class', 'js-tagsinput ' . $control->getAttribute('class'));
         return $control;
     }
