@@ -54,9 +54,6 @@ class NeoForm extends Form
         return $this;
     }
 
-    /**
-     * @param array|scalar $redirectArgs
-     */
     public function finish(?string $flashMessage = null, ?string $redirect = 'default', array $redirectArgs = []): void
     {
         $presenter = $this->getPresenter();

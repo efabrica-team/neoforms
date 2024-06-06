@@ -34,6 +34,11 @@ trait NeoContainerTrait
         return $this->options[$name] ?? null;
     }
 
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
     /**
      * @param mixed $value
      * @return $this

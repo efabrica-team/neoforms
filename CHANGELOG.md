@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Tags - added setSortable method to set sorting on tags
-
+- Form->getOptions()
+### Fixed
+- Form class could not be changed if it was overwritten with options in a different library
+- incorrect typehint in NeoForm::finish method
 
 ## [3.1.0] - 2023-10-19
 ### Added
