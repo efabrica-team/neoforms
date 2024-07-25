@@ -104,7 +104,7 @@ class NeoForm extends Form
         });
     }
 
-    public function getValues($returnType = null, ?array $controls = null)
+    public function getValues($returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
         self::removeExcludedKeys($values);
