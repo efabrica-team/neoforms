@@ -56,7 +56,7 @@ class FormCollection extends NeoContainer
         }
     }
 
-    public function setParent(?IContainer $parent, ?string $name = null)
+    public function setParent(?IContainer $parent, ?string $name = null): static
     {
         parent::setParent($parent, $name);
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
@@ -114,14 +114,14 @@ class FormCollection extends NeoContainer
         $this->addComponent($this->prototype, $this->prototype->name);
     }
 
-    public function setValues($data, bool $erase = false)
+    public function setValues($values, bool $erase = false, bool $onlyDisabled = false): static
     {
-        /** @var mixed $data */
-        if ($data === null || is_iterable($data)) {
-            $this->updateChildren($data);
+        /** @var mixed $values */
+        if ($values === null || is_iterable($values)) {
+            $this->updateChildren($values);
         }
-        /** @var array|object $data */
-        return parent::setValues($data, $erase);
+        /** @var array|object $values */
+        return parent::setValues($values, $erase);
     }
 
     protected function getHttpData(): ?array
@@ -310,7 +310,7 @@ class FormCollection extends NeoContainer
         return $item;
     }
 
-    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null)
+    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null): object|array
     {
         $this->removeComponent($this->prototype);
         $values = parent::getUntrustedValues($returnType, $controls);
