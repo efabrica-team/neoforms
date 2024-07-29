@@ -30,7 +30,7 @@ class NeoFormTemplate
     {
         $renderRest = $attrs['rest'] ?? true;
         $el = clone $form->getElementPrototype();
-        $el->addHtml($errors)->addHtml(yield)->addHtml($renderRest ? $renderer->formRest($form) : '');
+        $el->addHtml($errors)->addHtml(yield ?? '')->addHtml($renderRest ? $renderer->formRest($form) : '');
         return $this->applyAttrs($el, $attrs);
     }
 
