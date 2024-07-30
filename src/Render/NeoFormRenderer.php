@@ -264,7 +264,12 @@ class NeoFormRenderer
             return $control->getOption('rendered') === true;
         }
         if ($control instanceof NeoContainer && $control->isSingleRender()) {
-            $first = $control->getComponents()->current();
+            $components = $control->getComponents();
+            if (is_array($components)){
+                $first = reset($components);
+            } else {
+                $first = $control->getComponents()->current();
+            }
             return $this->isRendered($first);
         }
         return false;
