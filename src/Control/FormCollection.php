@@ -60,11 +60,10 @@ class FormCollection extends NeoContainer
     {
         parent::setParent($parent, $name);
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
-        if ($this->formFactory !== null) {
-            $this->formFactory->__invoke($this->prototype);
-        }
+        $this->formFactory?->__invoke($this->prototype);
         $this->addHidden(self::ORIGINAL_DATA, '{}');
         NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->name);
+        return $this;
     }
 
     public function getDiff(): FormCollectionDiff
