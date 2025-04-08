@@ -40,7 +40,7 @@ class FormCollectionDiff
     public function getAdded(): Generator
     {
         foreach ($this->newData as $value) {
-            if (!isset($value[FormCollectionItem::UNIQID])) {
+            if (!isset($value[FormCollectionItem::UNIQID]) || !$this->existsInOriginalData($value[FormCollectionItem::UNIQID])) {
                 yield self::cleanArray($value);
             }
         }
@@ -122,5 +122,15 @@ class FormCollectionDiff
             }
         }
         return $array;
+    }
+
+    private function existsInOriginalData(string $uniqid): bool
+    {
+        foreach ($this->originalData as $originalValue) {
+            if (($originalValue[FormCollectionItem::UNIQID] ?? null) === $uniqid) {
+                return true;
+            }
+        }
+        return false;
     }
 }
