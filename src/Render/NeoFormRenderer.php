@@ -265,7 +265,7 @@ class NeoFormRenderer
         }
         if ($control instanceof NeoContainer && $control->isSingleRender()) {
             $components = $control->getComponents();
-            if (is_array($components)){
+            if (is_array($components)) {
                 $first = reset($components);
             } else {
                 $first = $control->getComponents()->current();
