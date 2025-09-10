@@ -7,6 +7,7 @@ use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Nette\Forms\Container;
 use Nette\Forms\Controls\BaseControl;
 use Nette\HtmlStringable;
+use Nette\Localization\Translator;
 use Nette\Utils\Html;
 
 /**
@@ -59,5 +60,10 @@ class NeoContainer extends Container
     {
         $this->singleRender = $singleRender;
         return $this;
+    }
+
+    public function getTranslator(): ?Translator
+    {
+        return $this->getForm()->getTranslator();
     }
 }
