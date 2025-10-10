@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Render\Template;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\Behavior\CustomReadonlyBehavior;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Generator;
@@ -227,6 +228,11 @@ class NeoFormTemplate
     public function readonly(BaseControl $control): Html
     {
         $value = $control->getValue();
+
+        if ($control instanceof CustomReadonlyBehavior) {
+            $control->setReadonly(true);
+            return $control->getControl();
+        }
         if ($value === null) {
             return Html::fromText('—');
         }
