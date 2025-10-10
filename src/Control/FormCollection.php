@@ -43,6 +43,8 @@ class FormCollection extends NeoContainer
 
     private int $requiredCount = 0;
 
+    private ?string $cssClass = null;
+
     /**
      * @param string                                          $label
      * @param callable(FormCollectionItem): (void|mixed)|null $formFactory
@@ -56,6 +58,11 @@ class FormCollection extends NeoContainer
         }
     }
 
+    public function addCssClass(string $class): self
+    {
+        $this->cssClass = $class;
+        return $this;
+    }
     public function setParent(?IContainer $parent, ?string $name = null): static
     {
         parent::setParent($parent, $name);
@@ -228,7 +235,7 @@ class FormCollection extends NeoContainer
             return $this->renderTemplate($collectionTemplate, ['collection' => $this, 'addBtn' => $addButton]);
         }
 
-        $collDiv = Html::el('div')->class('form-collection')
+        $collDiv = Html::el('div')->class('form-collection ' . $this->cssClass)
             ->setAttribute('data-proto', $this->getItemHtml($renderer, $this->prototype))
             ->setAttribute('data-proto-name', $this->prototype->getName())
             ->setAttribute('data-required-count', $this->requiredCount)
