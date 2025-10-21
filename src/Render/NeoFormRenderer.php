@@ -27,6 +27,8 @@ class NeoFormRenderer
 
     private Translator $translator;
 
+    public bool $isReadonly = false;
+
     public function __construct(NeoFormTemplate $template, Translator $translator)
     {
         $this->defaultTemplate = $template;
@@ -42,11 +44,11 @@ class NeoFormRenderer
     {
         $form->fireRenderEvents();
 
-        $readonly = $attrs['readonly'] ?? $form->isReadonly();
+        $this->isReadonly = $attrs['readonly'] ?? $form->isReadonly();
         /** @var BaseControl $control */
         foreach ($form->getComponents(true, BaseControl::class) as $control) {
             $control->setOption('rendered', false);
-            if ($readonly) {
+            if ($this->isReadonly) {
                 $control->setOption('readonly', $control->getOption('readonly') ?? true);
             }
         }
