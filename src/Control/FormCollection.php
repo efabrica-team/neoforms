@@ -273,13 +273,16 @@ class FormCollection extends NeoContainer
                     ->addHtml($renderer->container($item))
             )
             ->addHtml(
-                $this->getRemoveButtonHtml()
+                $renderer->isReadonly ? new Html() : $this->getRemoveButtonHtml()
             )
         ;
     }
 
     public function getAddButtonHtml(NeoFormRenderer $renderer): Html
     {
+        if ($renderer->isReadonly) {
+            return Html::el();
+        }
         return Html::el('div')->class('form-collection-actions')
             ->addHtml(
                 Html::el('a')->href('javascript:')
