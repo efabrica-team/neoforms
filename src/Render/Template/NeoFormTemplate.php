@@ -10,9 +10,7 @@ use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\Controls\Button;
 use Nette\Forms\Controls\Checkbox;
 use Nette\Forms\Controls\CheckboxList;
-use Nette\Forms\Controls\ChoiceControl;
 use Nette\Forms\Controls\HiddenField;
-use Nette\Forms\Controls\MultiChoiceControl;
 use Nette\Forms\Controls\MultiSelectBox;
 use Nette\Forms\Controls\RadioList;
 use Nette\Forms\Controls\SelectBox;
@@ -222,33 +220,6 @@ class NeoFormTemplate
     protected function textInput(TextInput $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
-    }
-
-    public function readonly(BaseControl $control): Html
-    {
-        $value = $control->getValue();
-        if ($value === null) {
-            return Html::fromText('—');
-        }
-        if ($control instanceof TextArea && is_string($value)) {
-            return Html::el('pre', $value);
-        }
-        if ($control instanceof Checkbox || is_bool($value)) {
-            return Html::fromText((is_scalar($value) && (bool)$value) ? '✓' : '✕');
-        }
-        if ($control instanceof ChoiceControl) {
-            $selectedItem = $control->getSelectedItem();
-            if (is_scalar($selectedItem)) {
-                return Html::fromText((string)$selectedItem);
-            }
-        }
-        if ($control instanceof MultiChoiceControl) {
-            return Html::fromText(implode(', ', $control->getSelectedItems()));
-        }
-        if (is_string($value)) {
-            return Html::fromText($value);
-        }
-        return Html::fromText('(?)');
     }
 
     public function applyAttrs(Html $el, array $attrs): Html

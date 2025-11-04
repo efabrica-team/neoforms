@@ -10,7 +10,7 @@ NeoForms are the very much needed medicine for Nette\Forms.
 - Gives you a way to render form fields individually with the `{formRow}`, 
 `{formLabel}` and `{formInput}` tags that you could be used to from Symfony.
 - Gives you a way to render rows and columns when building the form in PHP
-- Gives you a `readonly` mode to render a form for people who can't edit it by rendering regular text instead of inputs. (Say goodbye to grayed-out disabled fields!)
+- Gives you a `readonly` mode to render a form as non-editable.
 - Gives you FormCollection for pre-styled AJAX-less Multiplier with built-in diff calculator
 - ControlGroup inside of a ControlGroup (tree structure)
 
