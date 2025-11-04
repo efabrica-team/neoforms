@@ -132,7 +132,7 @@ class NeoFormRenderer
     public function formInput(BaseControl $el, array $attrs = []): Html
     {
         if ($attrs['readonly'] ?? (bool)$el->getOption('readonly')) {
-            return $this->template($el->getForm())->readonly($el);
+            $el->setAttribute('readonly', true);
         }
 
         if (is_string($attrs['placeholder'] ?? null)) {
