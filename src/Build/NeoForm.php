@@ -12,6 +12,7 @@ use Nette\Application\UI\Template;
 use Nette\Forms\Controls\Button;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
+use Stringable;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
@@ -104,7 +105,7 @@ class NeoForm extends Form
         });
     }
 
-    public function getValues($returnType = null, ?array $controls = null): object|array
+    public function getValues(string|object|bool|null $returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
         self::removeExcludedKeys($values);
@@ -122,7 +123,7 @@ class NeoForm extends Form
      * @param iterable|object $values
      * @return void
      */
-    public static function removeExcludedKeys(&$values): void
+    public static function removeExcludedKeys(iterable|object &$values): void
     {
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {
@@ -144,7 +145,7 @@ class NeoForm extends Form
      *      HtmlStringable = custom Html (Html::el())
      *      string = custom label with default Html
      */
-    public function group(?string $name = null, ?string $class = null, $label = true): ControlGroupBuilder
+    public function group(?string $name = null, ?string $class = null, bool $label = true): ControlGroupBuilder
     {
         if ($name !== null) {
             $group = $this->getGroup($name);
@@ -155,7 +156,7 @@ class NeoForm extends Form
         return $builder;
     }
 
-    public function addButton(string $name, $caption = null, ?string $icon = null): Button
+    public function addButton(string $name, string|Stringable|null $caption = null, ?string $icon = null): Button
     {
         return parent::addButton($name, $caption)->setOption('icon', $icon);
     }
