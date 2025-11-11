@@ -91,14 +91,14 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addDatePicker(string $name, string $label = null, int $maxLength = null): TbDatePicker
+    public function addDatePicker(string $name, ?string $label = null, ?int $maxLength = null): TbDatePicker
     {
         $component = new TbDatePicker($label, $maxLength);
         $this->addComponent($component, $name);
         return $component;
     }
 
-    public function addDateTimePicker(string $name, string $label = null, int $maxLength = null): TbDateTimePicker
+    public function addDateTimePicker(string $name, ?string $label = null, ?int $maxLength = null): TbDateTimePicker
     {
         $component = new TbDateTimePicker($label, $maxLength);
         $this->addComponent($component, $name);
