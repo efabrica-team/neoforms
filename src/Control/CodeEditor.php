@@ -11,15 +11,15 @@ use Nette\Utils\Json;
  */
 class CodeEditor extends TextArea
 {
-    public const MODE_JAVASCRIPT = 'ace/mode/javascript';
-    public const MODE_HTML = 'ace/mode/html';
-    public const MODE_CSS = 'ace/mode/css';
-    public const MODE_PHP = 'ace/mode/php';
-    public const MODE_JSON = 'ace/mode/json';
-    public const MODE_LATTE = 'ace/mode/latte';
-    public const MODE_PLAIN_TEXT = 'ace/mode/plain_text';
-    public const MODE_TWIG = 'ace/mode/twig';
-    public const MODES = [self::MODE_JAVASCRIPT, self::MODE_HTML, self::MODE_CSS, self::MODE_PHP, self::MODE_JSON, self::MODE_LATTE, self::MODE_PLAIN_TEXT, self::MODE_TWIG];
+    public const string MODE_JAVASCRIPT = 'ace/mode/javascript';
+    public const string MODE_HTML = 'ace/mode/html';
+    public const string MODE_CSS = 'ace/mode/css';
+    public const string MODE_PHP = 'ace/mode/php';
+    public const string MODE_JSON = 'ace/mode/json';
+    public const string MODE_LATTE = 'ace/mode/latte';
+    public const string MODE_PLAIN_TEXT = 'ace/mode/plain_text';
+    public const string MODE_TWIG = 'ace/mode/twig';
+    public const array MODES = [self::MODE_JAVASCRIPT, self::MODE_HTML, self::MODE_CSS, self::MODE_PHP, self::MODE_JSON, self::MODE_LATTE, self::MODE_PLAIN_TEXT, self::MODE_TWIG];
 
     private string $mode;
 
