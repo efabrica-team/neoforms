@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Updated some implicitly nullable parameters to be properly typed as nullable
+- Upgrade to php 8.4
 
 ## [3.4.1] - 2025-10-31
 ### Fixed

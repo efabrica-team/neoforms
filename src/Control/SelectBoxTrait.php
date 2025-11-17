@@ -2,14 +2,16 @@
 
 namespace Efabrica\NeoForms\Control;
 
+use Stringable;
+
 trait SelectBoxTrait
 {
     private array $itemTree = [];
 
     /**
-     * @param string|object|null $label
+     * @param string|Stringable|null $label
      */
-    public function __construct($label = null, ?array $items = null)
+    public function __construct(string|Stringable|null $label = null, ?array $items = null)
     {
         if ($items !== null) {
             $this->itemTree = $items;

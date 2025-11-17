@@ -58,7 +58,7 @@ class ControlGroupBuilder
     /**
      * @param string|true|HtmlStringable|null $label
      */
-    public function group(?string $name = null, ?string $class = null, $label = true): self
+    public function group(?string $name = null, ?string $class = null, string|true|HtmlStringable|null $label = true): self
     {
         $children = $this->group->getOption('children') ?? [];
         assert(is_array($children));

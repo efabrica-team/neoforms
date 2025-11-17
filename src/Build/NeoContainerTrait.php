@@ -15,6 +15,7 @@ use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
+use Stringable;
 
 /**
  * @used-by \Efabrica\NeoForms\Build\NeoForm
@@ -49,7 +50,7 @@ trait NeoContainerTrait
         return $this;
     }
 
-    public function addSelect(string $name, $label = null, ?array $items = null, ?int $size = null): SelectBox
+    public function addSelect(string $name, ?string $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return $this[$name] = (new SelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -57,7 +58,7 @@ trait NeoContainerTrait
         ;
     }
 
-    public function addMultiSelect(string $name, $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
+    public function addMultiSelect(string $name, ?string $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -126,7 +127,7 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addSubmit(string $name, $caption = null): SubmitButton
+    public function addSubmit(string $name, string|Stringable|null $caption = null): SubmitButton
     {
         $component = new SubmitButton($caption);
         $this->addComponent($component, $name);
