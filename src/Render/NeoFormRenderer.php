@@ -44,7 +44,7 @@ class NeoFormRenderer
     {
         $form->fireRenderEvents();
 
-        $this->isReadonly = $attrs['readonly'] ?? $form->isReadonly();
+        $this->isReadonly = $attrs['readonly'] ?? $form->isReadonly() || $form->isReadonlyFields();
         /** @var BaseControl $control */
         foreach ($form->getComponents(true, BaseControl::class) as $control) {
             $control->setOption('rendered', false);
@@ -131,7 +131,11 @@ class NeoFormRenderer
 
     public function formInput(BaseControl $el, array $attrs = []): Html
     {
-        if ($attrs['readonly'] ?? (bool)$el->getOption('readonly')) {
+        if (($attrs['readonly'] ?? (bool)$el->getOption('readonly')) || $el->getForm()->isReadonlyFields()) {
+            $el->setAttribute('readonly', true);
+        }
+
+        if ($el->getForm()->isReadonly()) {
             return $this->template($el->getForm())->readonly($el);
         }
 
