@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated some implicitly nullable parameters to be properly typed as nullable
 - Upgrade to php 8.4
 
+### Changed
+- NeoForms readonly fields mode with fields in readonly modes
+
 ## [3.4.1] - 2025-10-31
 ### Fixed
 - FormCollection in readonly mode - add/remove buttons are hidden

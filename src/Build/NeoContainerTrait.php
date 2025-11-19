@@ -50,7 +50,7 @@ trait NeoContainerTrait
         return $this;
     }
 
-    public function addSelect(string $name, ?string $label = null, ?array $items = null, ?int $size = null): SelectBox
+    public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return $this[$name] = (new SelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -58,7 +58,7 @@ trait NeoContainerTrait
         ;
     }
 
-    public function addMultiSelect(string $name, ?string $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
+    public function addMultiSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -66,14 +66,14 @@ trait NeoContainerTrait
         ;
     }
 
-    public function addToggleSwitch(string $name, ?string $label = null): ToggleSwitch
+    public function addToggleSwitch(string $name, Stringable|string|null $label = null): ToggleSwitch
     {
         $component = new ToggleSwitch($label);
         $this->addComponent($component, $name);
         return $component;
     }
 
-    public function addTags(string $name, ?string $label = null, array $config = [], ?string $placeholder = null): Tags
+    public function addTags(string $name, Stringable|string|null $label = null, array $config = [], ?string $placeholder = null): Tags
     {
         $component = new Tags($label, $config, $placeholder);
         $this->addComponent($component, $name);
@@ -82,7 +82,7 @@ trait NeoContainerTrait
 
     public function addStaticTags(
         string $name,
-        ?string $label,
+        Stringable|string|null $label,
         array $choices,
         bool $allowCustomTags = false,
         ?string $placeholder = null
@@ -92,14 +92,14 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addDatePicker(string $name, ?string $label = null, ?int $maxLength = null): TbDatePicker
+    public function addDatePicker(string $name, Stringable|string|null $label = null, ?int $maxLength = null): TbDatePicker
     {
         $component = new TbDatePicker($label, $maxLength);
         $this->addComponent($component, $name);
         return $component;
     }
 
-    public function addDateTimePicker(string $name, ?string $label = null, ?int $maxLength = null): TbDateTimePicker
+    public function addDateTimePicker(string $name, Stringable|string|null $label = null, ?int $maxLength = null): TbDateTimePicker
     {
         $component = new TbDateTimePicker($label, $maxLength);
         $this->addComponent($component, $name);
