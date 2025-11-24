@@ -25,7 +25,7 @@ class NeoForm extends Form
     use NeoContainerTrait;
 
     private bool $readonly = false;
-    private bool $readonlyFields = false;
+    private bool $readonlyAttr = false;
 
     private ?NeoFormTemplate $template = null;
 
@@ -49,15 +49,15 @@ class NeoForm extends Form
      * Set form to return fields with attribute readonly
      * @return $this
      */
-    public function setReadonlyFields(bool $readonlyFields = true): self
+    public function setReadonlyAttr(bool $readonlyAttr = true): self
     {
-        $this->readonlyFields = $readonlyFields;
+        $this->readonlyAttr = $readonlyAttr;
         return $this;
     }
 
-    public function isReadonlyFields(): bool
+    public function isReadonlyAttr(): bool
     {
-        return $this->readonlyFields;
+        return $this->readonlyAttr;
     }
 
     public function getTemplate(): ?NeoFormTemplate
@@ -90,7 +90,7 @@ class NeoForm extends Form
     public function setOnSuccess(callable $onSuccess): self
     {
         $fn = static function (NeoForm $form, array $values) use ($onSuccess) {
-            if ($form->isReadonly() || $form->isReadonlyFields()) {
+            if ($form->isReadonly() || $form->isReadonlyAttr()) {
                 return; // there is no submit button if the form is readonly
             }
             try {
