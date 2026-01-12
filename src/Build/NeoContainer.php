@@ -28,7 +28,7 @@ class NeoContainer extends Container
      *      HtmlStringable = custom Html (Html::el())
      *      string = custom label with default Html
      */
-    public function group(?string $name = null, ?string $class = null, bool $label = true): ControlGroupBuilder
+    public function group(?string $name = null, ?string $class = null, string|true|HtmlStringable|null $label = true): ControlGroupBuilder
     {
         if ($name !== null) {
             $childGroup = ($this->childGroups[$name] ??= $this->getForm()->addGroup(null, false));
