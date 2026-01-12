@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [3.5.1] - 2026-01-12
+### Fixed
+- group label type
+
 ## [3.5.0] - 2025-11-24
 ### Fixed
 - Updated some implicitly nullable parameters to be properly typed as nullable
@@ -237,7 +241,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/3.5.0...master
+[Unreleased]: https://git.efabrica.sk/libraries/neoforms/compare/3.5.1...master
+[3.5.1]: https://git.efabrica.sk/libraries/neoforms/compare/3.5.0...3.5.1
 [3.5.0]: https://git.efabrica.sk/libraries/neoforms/compare/3.4.1...3.5.0
 [3.4.1]: https://git.efabrica.sk/libraries/neoforms/compare/3.4.0...3.4.1
 [3.4.0]: https://git.efabrica.sk/libraries/neoforms/compare/3.3.0...3.4.0
