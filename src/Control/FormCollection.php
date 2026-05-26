@@ -69,7 +69,7 @@ class FormCollection extends NeoContainer
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
         $this->formFactory?->__invoke($this->prototype);
         $this->addHidden(self::ORIGINAL_DATA, '{}');
-        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->name);
+        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->getName());
         return $this;
     }
 
@@ -117,7 +117,7 @@ class FormCollection extends NeoContainer
         $this->updateChildren();
         $this->removeComponent($this->prototype);
         parent::validate($controls);
-        $this->addComponent($this->prototype, $this->prototype->name);
+        $this->addComponent($this->prototype, $this->prototype->getName());
     }
 
     public function setValues($values, bool $erase = false, bool $onlyDisabled = false): static
@@ -323,7 +323,7 @@ class FormCollection extends NeoContainer
     {
         $this->removeComponent($this->prototype);
         $values = parent::getUntrustedValues($returnType, $controls);
-        $this->addComponent($this->prototype, $this->prototype->name);
+        $this->addComponent($this->prototype, $this->prototype->getName());
         return $values;
     }
 
