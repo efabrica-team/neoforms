@@ -29,7 +29,7 @@ class NeoFormNode extends FormNode
             $this->position,
             $this->attributes,
             $this->content,
-            $this->endLine,
+            end($this->tagRanges),
         );
     }
 }
