@@ -2,6 +2,7 @@
 
 namespace Efabrica\NeoForms\Build;
 
+use Closure;
 use Efabrica\NeoForms\Control\CodeEditor;
 use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Control\FormCollectionItem;
@@ -127,7 +128,7 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addSubmit(string $name, string|Stringable|null $caption = null, ?\Closure $onSubmit = null): SubmitButton
+    public function addSubmit(string $name, string|Stringable|null $caption = null, ?Closure $onSubmit = null): SubmitButton
     {
         $component = new SubmitButton($caption);
         if ($onSubmit !== null) {
