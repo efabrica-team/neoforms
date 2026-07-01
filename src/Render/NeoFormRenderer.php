@@ -46,7 +46,7 @@ class NeoFormRenderer
 
         $this->isReadonly = $attrs['readonly'] ?? $form->isReadonly() || $form->isReadonlyAttr();
         /** @var BaseControl $control */
-        foreach ($form->getComponents(true, BaseControl::class) as $control) {
+        foreach (array_filter($form->getComponentTree(), static fn($c) => $c instanceof BaseControl) as $control) {
             $control->setOption('rendered', false);
             if ($this->isReadonly) {
                 $control->setOption('readonly', $control->getOption('readonly') ?? true);
