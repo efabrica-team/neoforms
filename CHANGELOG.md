@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.4] - 2026-07-01
+
 ### Fixed
 - NeoFormNode: use end($this->tagRanges) instead of removed $endLine property (latte 3.1 compat)
 - nette/component-model 4 compat: use getComponentTree() instead of removed getComponents(recursive, filter)
@@ -290,7 +293,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 0.0.1 - 2022-06-30
 - Initial release
 
-[Unreleased]: https://github.com/efabrica-team/neoforms/compare/3.5.3...master
+[Unreleased]: https://github.com/efabrica-team/neoforms/compare/3.5.4...master
+[3.5.4]: https://github.com/efabrica-team/neoforms/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/efabrica-team/neoforms/compare/3.5.2...3.5.3
 [3.5.2]: https://git.efabrica.sk/libraries/neoforms/compare/3.5.1...3.5.2
 [3.5.1]: https://git.efabrica.sk/libraries/neoforms/compare/3.5.0...3.5.1
