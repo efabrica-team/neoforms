@@ -5,6 +5,7 @@ namespace Efabrica\NeoForms\Control;
 use Nette\Forms\Controls\TextArea;
 use Nette\Utils\Html;
 use Nette\Utils\Json;
+use Stringable;
 
 /**
  * Ace Code Editor
@@ -25,9 +26,8 @@ class CodeEditor extends TextArea
 
     /**
      * @param self::MODE_* $mode
-     * @param string|object $label
      */
-    public function __construct(string $mode, $label = null)
+    public function __construct(string $mode, string|Stringable|null $label = null)
     {
         parent::__construct($label);
         $this->mode = $mode;

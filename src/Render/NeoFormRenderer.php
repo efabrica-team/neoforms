@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\SubmitButton as NeoSubmitButton;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Generator;
 use Nette\ComponentModel\Component;
@@ -43,32 +44,35 @@ class NeoFormRenderer
             $this->defaultTemplate;
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function form(NeoForm $form, array $attrs = []): Generator
     {
         $form->fireRenderEvents();
 
         $this->isReadonly =
-            $attrs["readonly"] ??
+            $attrs['readonly'] ??
             $form->isReadonly() || $form->isReadonlyAttr();
 
         foreach ($form->getComponentTree() as $control) {
             if (!$control instanceof BaseControl) {
                 continue;
             }
-            $control->setOption("rendered", false);
+            $control->setOption('rendered', false);
             if ($this->isReadonly) {
                 $control->setOption(
-                    "readonly",
-                    $control->getOption("readonly") ?? true,
+                    'readonly',
+                    $control->getOption('readonly') ?? true,
                 );
             }
         }
 
-        $showErrors = $attrs["formErrors"] ?? true;
+        $showErrors = $attrs['formErrors'] ?? true;
         $formErrors = $showErrors
             ? $this->template($form)->formErrors($form->getOwnErrors())
             : Html::el();
-        unset($attrs["formErrors"]);
+        unset($attrs['formErrors']);
 
         $generator = $this->template($form)->form(
             $this,
@@ -83,7 +87,7 @@ class NeoFormRenderer
     public function formGroup(NeoForm $form, ControlGroup $group): Html
     {
         $body = Html::el();
-        $children = $group->getOption("children");
+        $children = $group->getOption('children');
         if (is_iterable($children)) {
             foreach ($children as $child) {
                 if ($child instanceof ControlGroup) {
@@ -92,8 +96,7 @@ class NeoFormRenderer
             }
         }
         foreach ($this->getGroupControls($group) as $control) {
-            if (
-                $control instanceof BaseControl ||
+            if ($control instanceof BaseControl ||
                 $control instanceof Container
             ) {
                 if (!$this->isRendered($control)) {
@@ -102,11 +105,11 @@ class NeoFormRenderer
             }
         }
 
-        if (trim($body->getHtml()) === "") {
+        if (trim($body->getHtml()) === '') {
             return Html::el();
         }
 
-        $label = $group->getOption("label");
+        $label = $group->getOption('label');
         if (is_string($label)) {
             $label = $this->translator->translate($label);
         }
@@ -114,7 +117,7 @@ class NeoFormRenderer
             $label = null;
         }
 
-        $attrs = $group->getOption("attrs") ?? [];
+        $attrs = $group->getOption('attrs') ?? [];
         return $this->template($form)->formGroup(
             $label,
             $body,
@@ -124,6 +127,7 @@ class NeoFormRenderer
 
     /**
      * @param BaseControl|Container $el
+     * @param array<string, mixed> $attrs
      */
     public function formRow($el, array $attrs = []): Html
     {
@@ -135,11 +139,11 @@ class NeoFormRenderer
             return Html::el();
         }
 
-        $inputAttrs = $attrs["input"] ?? [];
-        unset($attrs["input"]);
+        $inputAttrs = $attrs['input'] ?? [];
+        unset($attrs['input']);
 
-        if ($attrs["readonly"] ?? false) {
-            $inputAttrs["readonly"] = $attrs["readonly"];
+        if ($attrs['readonly'] ?? false) {
+            $inputAttrs['readonly'] = $attrs['readonly'];
         }
 
         if ($el instanceof HiddenField) {
@@ -158,53 +162,60 @@ class NeoFormRenderer
         );
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function formInput(BaseControl $el, array $attrs = []): Html
     {
-        if (
-            ($attrs["readonly"] ?? (bool) $el->getOption("readonly")) ||
-            $el->getForm()->isReadonlyAttr()
+        $form = $el->getForm();
+        assert($form instanceof NeoForm);
+
+        if (($attrs['readonly'] ?? (bool) $el->getOption('readonly')) ||
+            $form->isReadonlyAttr()
         ) {
-            $el->setAttribute("readonly", true);
+            $el->setAttribute('readonly', true);
         }
 
-        if ($el->getForm()->isReadonly()) {
-            return $this->template($el->getForm())->readonly($el);
+        if ($form->isReadonly()) {
+            return $this->template($form)->readonly($el);
         }
 
-        if (is_string($attrs["placeholder"] ?? null)) {
-            $attrs["placeholder"] = $this->translator->translate(
-                $attrs["placeholder"],
+        if (is_string($attrs['placeholder'] ?? null)) {
+            $attrs['placeholder'] = $this->translator->translate(
+                $attrs['placeholder'],
             );
         }
 
         /** Hotfix as SubmitButton does not have the correct type */
-        if (
-            $el instanceof SubmitButton &&
-            !$el instanceof \Efabrica\NeoForms\Control\SubmitButton
+        if ($el instanceof SubmitButton &&
+            !$el instanceof NeoSubmitButton
         ) {
-            $el->setOption("type", null);
+            $el->setOption('type', null);
         }
 
-        $description = $el->getOption("description");
+        $description = $el->getOption('description');
         if (is_string($description)) {
-            $descriptionEl = $this->template($el->getForm())->description(
+            $descriptionEl = $this->template($form)->description(
                 $description,
             );
         } elseif ($description instanceof Html) {
             $descriptionEl = $description;
         }
-        return $this->template($el->getForm())->formInput(
+        return $this->template($form)->formInput(
             $el,
             $attrs,
             $descriptionEl ?? Html::el(),
         );
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function formRest(NeoForm $form, array $options = []): Html
     {
         $groups = [];
         foreach ($form->getGroups() as $key => $group) {
-            $group->setOption("label", $group->getOption("label") ?? $key);
+            $group->setOption('label', $group->getOption('label') ?? $key);
             $groups[$key] = $this->formGroup($form, $group);
         }
 
@@ -215,23 +226,24 @@ class NeoFormRenderer
                 continue;
             }
             if (!$component instanceof Button) {
-                if (
-                    $component instanceof BaseControl ||
+                if ($component instanceof BaseControl ||
                     $component instanceof Container
                 ) {
                     $body->addHtml($this->formRow($component));
                 }
-            } elseif ($options["buttons"] ?? true) {
+            } elseif ($options['buttons'] ?? true) {
                 $buttons[] = $this->formRow($component);
             }
         }
         return $this->template($form)->formRest($body, $groups, $buttons);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function formLabel(BaseControl $el, array $attrs = []): Html
     {
-        if (
-            $el instanceof Button ||
+        if ($el instanceof Button ||
             $el instanceof HiddenField ||
             $el instanceof Checkbox
         ) {
@@ -240,14 +252,14 @@ class NeoFormRenderer
 
         /** @var string|null $caption */
         $caption = $el->getCaption();
-        if ($caption === null || $caption === "") {
+        if ($caption === null || $caption === '') {
             return Html::el();
         }
 
-        if (is_string($el->getOption("info"))) {
+        if (is_string($el->getOption('info'))) {
             $el->setOption(
-                "info",
-                $this->translator->translate($el->getOption("info")),
+                'info',
+                $this->translator->translate($el->getOption('info')),
             );
         }
 
@@ -266,7 +278,7 @@ class NeoFormRenderer
         }
         throw new RuntimeException(
             get_class($el) .
-                " is not supported in NeoFormRenderer for rendering errors",
+                ' is not supported in NeoFormRenderer for rendering errors',
         );
     }
 
@@ -280,8 +292,7 @@ class NeoFormRenderer
         }
         $rows = Html::el();
         foreach ($el->getComponents() as $component) {
-            if (
-                $component instanceof BaseControl ||
+            if ($component instanceof BaseControl ||
                 $component instanceof Container
             ) {
                 $rows->addHtml($this->formRow($component));
@@ -328,16 +339,13 @@ class NeoFormRenderer
     private function isRendered(IComponent $control): bool
     {
         if ($control instanceof BaseControl) {
-            return $control->getOption("rendered") === true;
+            return $control->getOption('rendered') === true;
         }
         if ($control instanceof NeoContainer && $control->isSingleRender()) {
-            $components = $control->getComponents();
-            if (is_array($components)) {
-                $first = reset($components);
-            } else {
-                $first = $control->getComponents()->current();
+            foreach ($control->getComponents() as $first) {
+                return $this->isRendered($first);
             }
-            return $this->isRendered($first);
+            return false;
         }
         return false;
     }

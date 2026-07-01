@@ -24,6 +24,9 @@ abstract class AbstractForm extends ActiveRowForm
         $this->formFactory = $formFactory;
     }
 
+    /**
+     * @param iterable<array-key, mixed> $options
+     */
     public function create(?ActiveRow $row = null, iterable $options = []): NeoFormControl
     {
         $form = $this->formFactory->create();

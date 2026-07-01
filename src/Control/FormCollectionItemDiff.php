@@ -4,12 +4,25 @@ namespace Efabrica\NeoForms\Control;
 
 class FormCollectionItemDiff
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $oldRow;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $newRow;
 
+    /**
+     * @var array<string, mixed>
+     */
     private array $diff = [];
 
+    /**
+     * @param array<string, mixed> $oldRow
+     * @param array<string, mixed> $newRow
+     */
     public function __construct(array $oldRow, array $newRow)
     {
         foreach ($oldRow as $key => $oldValue) {
@@ -44,11 +57,17 @@ class FormCollectionItemDiff
         $this->newRow = FormCollectionDiff::cleanArray($newRow);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getOldRow(): array
     {
         return $this->oldRow;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getNewRow(): array
     {
         return $this->newRow;

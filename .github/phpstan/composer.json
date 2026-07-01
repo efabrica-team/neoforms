@@ -1,0 +1,16 @@
+{
+    "name": "efabrica/neoforms-ci-tools",
+    "description": "Isolated static analysis tooling for CI, kept out of the library's own composer.json to avoid dependency conflicts",
+    "type": "project",
+    "require": {
+        "efabrica/phpstan-config": "^0.22",
+        "efabrica/coding-standard": "^0.8"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}

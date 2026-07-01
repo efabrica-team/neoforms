@@ -15,6 +15,9 @@ abstract class FormDefinition
         return new NeoFormControl($form, fn(Template $template) => $this->template($template));
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     protected function onSuccess(NeoForm $form, array $values): void
     {
     }

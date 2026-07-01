@@ -25,10 +25,14 @@ class NeoForm extends Form
     use NeoContainerTrait;
 
     private bool $readonly = false;
+
     private bool $readonlyAttr = false;
 
     private ?NeoFormTemplate $template = null;
 
+    /**
+     * @var array<string, string>
+     */
     private static array $excludedKeys = [];
 
     /**
@@ -71,6 +75,9 @@ class NeoForm extends Form
         return $this;
     }
 
+    /**
+     * @param array<int|string, mixed> $redirectArgs
+     */
     public function finish(?string $flashMessage = null, ?string $redirect = 'default', array $redirectArgs = []): void
     {
         $presenter = $this->getPresenter();
@@ -111,6 +118,9 @@ class NeoForm extends Form
         return $this;
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function withTemplate(string $templatePath, array $args = []): NeoFormControl
     {
         return new NeoFormControl($this, function (Template $template) use ($templatePath, $args) {
@@ -121,7 +131,10 @@ class NeoForm extends Form
         });
     }
 
-    public function getValues(string|object|bool|null $returnType = null, ?array $controls = null): object|array
+    /**
+     * @return array<string, mixed>|object
+     */
+    public function getValues(string|object|null $returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
         self::removeExcludedKeys($values);
@@ -136,11 +149,11 @@ class NeoForm extends Form
     }
 
     /**
-     * @param iterable|object $values
-     * @return void
+     * @param iterable<array-key, mixed>|object $values
      */
     public static function removeExcludedKeys(iterable|object &$values): void
     {
+        // @phpstan-ignore-next-line foreach.nonIterable (plain objects, e.g. custom getValues() DTOs, are iterable over their public properties at runtime)
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {
                 self::removeExcludedKeys($value);

@@ -5,6 +5,7 @@ namespace Efabrica\NeoForms\Build;
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Nette\Forms\Container;
+use Nette\Forms\ControlGroup;
 use Nette\Forms\Controls\BaseControl;
 use Nette\HtmlStringable;
 use Nette\Localization\Translator;
@@ -17,6 +18,9 @@ class NeoContainer extends Container
 {
     use NeoContainerTrait;
 
+    /**
+     * @var array<string, ControlGroup>
+     */
     private array $childGroups = [];
 
     private bool $singleRender = false;

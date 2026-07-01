@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  tests:
+    name: PHPUnit (PHP ${{ matrix.php-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit tests
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install library dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install analysis tooling
+        run: composer install --no-interaction --no-progress --prefer-dist --working-dir=.github/phpstan
+
+      - name: Run PHPStan
+        run: php -d memory_limit=-1 .github/phpstan/vendor/bin/phpstan analyse -c .github/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.8.neon
+
+  phpcs:
+    name: Code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install analysis tooling
+        run: composer install --no-interaction --no-progress --prefer-dist --working-dir=.github/phpstan
+
+      - name: Run PHPCS
+        run: php .github/phpstan/vendor/bin/phpcs src --standard=.github/phpstan/vendor/efabrica/coding-standard/eFabrica --extensions=php -n

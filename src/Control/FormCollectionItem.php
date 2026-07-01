@@ -20,7 +20,10 @@ class FormCollectionItem extends NeoContainer
         }
     }
 
-    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null): object|array
+    /**
+     * @return array<string, mixed>|object
+     */
+    public function getUntrustedValues(string|object|null $returnType = ArrayHash::class, ?array $controls = null): object|array
     {
         if ($this->uniqId !== null && $this->uniqId->getParent() !== null && $this->uniqId->getValue() === '') {
             $this->removeComponent($this->uniqId);
