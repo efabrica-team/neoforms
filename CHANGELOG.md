@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - NeoFormNode: use end($this->tagRanges) instead of removed $endLine property (latte 3.1 compat)
+- nette/component-model 4 compat: use getComponentTree() instead of removed getComponents(recursive, filter)
 
 ## [3.5.3] - 2026-06-30
 
