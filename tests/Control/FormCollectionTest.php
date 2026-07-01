@@ -63,7 +63,7 @@ class FormCollectionTest extends TestCase
         foreach ($collection->getComponents() as $component) {
             $this->assertInstanceOf(FormCollectionItem::class, $component);
         }
-        $this->assertCount(1, $collection->getControls());
+        $this->assertCount(1, iterator_to_array($collection->getControls()));
         foreach ($collection->getControls() as $control) {
             $this->assertEquals('foo', $control->getName());
             $this->assertEquals('bar', $control->getValue());

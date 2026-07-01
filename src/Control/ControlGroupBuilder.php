@@ -78,6 +78,7 @@ class ControlGroupBuilder
     }
 
     /**
+     * @param array<int, mixed> $arguments
      * @return mixed
      */
     public function __call(string $name, array $arguments = [])

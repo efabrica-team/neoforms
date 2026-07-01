@@ -26,6 +26,9 @@ trait NeoContainerTrait
 {
     use DivTrait;
 
+    /**
+     * @var array<string, mixed>
+     */
     protected array $options = [];
 
     /**
@@ -36,6 +39,9 @@ trait NeoContainerTrait
         return $this->options[$name] ?? null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getOptions(): array
     {
         return $this->options;
@@ -74,6 +80,9 @@ trait NeoContainerTrait
         return $component;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function addTags(string $name, Stringable|string|null $label = null, array $config = [], ?string $placeholder = null): Tags
     {
         $component = new Tags($label, $config, $placeholder);
@@ -81,6 +90,9 @@ trait NeoContainerTrait
         return $component;
     }
 
+    /**
+     * @param string[]|array{value: string}[] $choices
+     */
     public function addStaticTags(
         string $name,
         Stringable|string|null $label,
@@ -128,6 +140,9 @@ trait NeoContainerTrait
         return $component;
     }
 
+    /**
+     * @param (Closure(SubmitButton, array<array-key, mixed>|object): void)|null $onSubmit
+     */
     public function addSubmit(string $name, string|Stringable|null $caption = null, ?Closure $onSubmit = null): SubmitButton
     {
         $component = new SubmitButton($caption);
@@ -138,7 +153,7 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addContainer($name, ?NeoContainer $container = null): NeoContainer
+    public function addContainer(int|string $name, ?NeoContainer $container = null): NeoContainer
     {
         $control = $container ?? new NeoContainer();
         $control->currentGroup = $this->currentGroup;

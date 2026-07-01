@@ -9,10 +9,19 @@ use RuntimeException;
 
 class FormCollectionDiff
 {
+    /**
+     * @var array<int|string, array<string, mixed>>
+     */
     private array $originalData;
 
+    /**
+     * @var array<int|string, array<string, mixed>>
+     */
     private array $newData;
 
+    /**
+     * @param array<int|string, mixed> $httpData
+     */
     public function __construct(array $httpData)
     {
         $originalData = $httpData[FormCollection::ORIGINAL_DATA] ?? null;
@@ -88,6 +97,10 @@ class FormCollectionDiff
         }
     }
 
+    /**
+     * @param array<array-key, mixed> $a
+     * @param array<array-key, mixed> $b
+     */
     protected function areArraysRecursivelyEqual(array $a, array $b): bool
     {
         if (count($a) !== count($b)) {
@@ -111,6 +124,10 @@ class FormCollectionDiff
         return true;
     }
 
+    /**
+     * @param array<array-key, mixed> $array
+     * @return array<array-key, mixed>
+     */
     public static function cleanArray(array $array): array
     {
         foreach ($array as $key => $value) {

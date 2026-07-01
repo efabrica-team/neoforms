@@ -13,6 +13,7 @@ use Nette\Bridges\ApplicationLatte\TemplateFactory;
 use Nette\ComponentModel\IComponent;
 use Nette\ComponentModel\IContainer;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Forms\Controls\HiddenField;
 use Nette\InvalidArgumentException;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Html;
@@ -39,6 +40,9 @@ class FormCollection extends NeoContainer
 
     private ?bool $simple = null;
 
+    /**
+     * @var array<string, mixed>|null
+     */
     private ?array $httpData = null;
 
     private int $requiredCount = 0;
@@ -56,6 +60,11 @@ class FormCollection extends NeoContainer
         if ($formFactory !== null) {
             $this->formFactory = Closure::fromCallable($formFactory);
         }
+        $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
+        $this->formFactory?->__invoke($this->prototype);
+        $prototypeName = $this->prototype->getName();
+        assert($prototypeName !== null);
+        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $prototypeName);
     }
 
     public function addCssClass(string $class): self
@@ -63,19 +72,21 @@ class FormCollection extends NeoContainer
         $this->cssClass = $class;
         return $this;
     }
+
     public function setParent(?IContainer $parent, ?string $name = null): static
     {
         parent::setParent($parent, $name);
-        $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
-        $this->formFactory?->__invoke($this->prototype);
-        $this->addHidden(self::ORIGINAL_DATA, '{}');
-        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $this->prototype->getName());
+        if ($this->getComponent(self::ORIGINAL_DATA, false) === null) {
+            $this->addHidden(self::ORIGINAL_DATA, '{}');
+        }
         return $this;
     }
 
     public function getDiff(): FormCollectionDiff
     {
-        return new FormCollectionDiff($this->getValues('array'));
+        $values = $this->getValues('array');
+        assert(is_array($values));
+        return new FormCollectionDiff($values);
     }
 
     public function getLabel(): string
@@ -120,16 +131,17 @@ class FormCollection extends NeoContainer
         $this->addComponent($this->prototype, $this->prototype->getName());
     }
 
-    public function setValues($values, bool $erase = false, bool $onlyDisabled = false): static
+    public function setValues(array|object $values, bool $erase = false, bool $onlyDisabled = false): static
     {
-        /** @var mixed $values */
-        if ($values === null || is_iterable($values)) {
+        if (is_iterable($values)) {
             $this->updateChildren($values);
         }
-        /** @var array|object $values */
         return parent::setValues($values, $erase);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     protected function getHttpData(): ?array
     {
         if ($this->httpData !== null) {
@@ -139,7 +151,7 @@ class FormCollection extends NeoContainer
             return null;
         }
 
-        /** @var array $httpData */
+        /** @var array<string, mixed> $httpData */
         $httpData = $this->getForm()->getHttpData();
         /** @var string $lookupPath */
         $lookupPath = $this->lookupPath(NeoForm::class);
@@ -150,6 +162,9 @@ class FormCollection extends NeoContainer
         return $httpData;
     }
 
+    /**
+     * @param iterable<array-key, mixed>|null $data
+     */
     public function updateChildren(?iterable $data = null): void
     {
         $data ??= $this->getHttpData();
@@ -169,7 +184,7 @@ class FormCollection extends NeoContainer
         foreach ($values as $key => $childValues) {
             if (!isset($components[$key])) {
                 $child = $this->addCollectionItem($key);
-                $this->formFactory->__invoke($child);
+                $this->formFactory?->__invoke($child);
                 $child->setValues($childValues);
             }
             unset($components[$key]);
@@ -214,6 +229,9 @@ class FormCollection extends NeoContainer
         $this->simple = $simple;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     protected function renderTemplate(string $path, array $params): Html
     {
         $presenter = $this->getForm()->getPresenter();
@@ -247,8 +265,11 @@ class FormCollection extends NeoContainer
         }
 
         $originalArray = $this->getUntrustedValues('array');
+        assert(is_array($originalArray));
         unset($originalArray[self::ORIGINAL_DATA]);
-        $originalData = $this[self::ORIGINAL_DATA]->setValue(json_encode($originalArray, JSON_THROW_ON_ERROR));
+        $originalDataControl = $this->getComponent(self::ORIGINAL_DATA);
+        assert($originalDataControl instanceof HiddenField);
+        $originalData = $originalDataControl->setValue(json_encode($originalArray, JSON_THROW_ON_ERROR));
 
         return Html::el()
             ->addHtml($this->getLabelHtml())
@@ -319,7 +340,10 @@ class FormCollection extends NeoContainer
         return $item;
     }
 
-    public function getUntrustedValues($returnType = ArrayHash::class, ?array $controls = null): object|array
+    /**
+     * @return array<string, mixed>|object
+     */
+    public function getUntrustedValues(string|object|null $returnType = ArrayHash::class, ?array $controls = null): object|array
     {
         $this->removeComponent($this->prototype);
         $values = parent::getUntrustedValues($returnType, $controls);

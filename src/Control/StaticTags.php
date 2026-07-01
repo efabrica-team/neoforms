@@ -25,14 +25,18 @@ class StaticTags extends Tags
         );
     }
 
+    /**
+     * @param string[]|array{value: string}[] $choices
+     * @return array{value: string}[]
+     */
     public static function formatChoices(array $choices): array
     {
-        if (is_string($choices[0] ?? null)) {
-            return array_map(static fn($c) => ['value' => $c], $choices);
-        }
-        return $choices;
+        return array_map(static fn($c) => is_string($c) ? ['value' => $c] : $c, $choices);
     }
 
+    /**
+     * @param string[]|array{value: string}[] $choices
+     */
     public function setSelectedChoices(array $choices): self
     {
         $choices = self::formatChoices($choices);

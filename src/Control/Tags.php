@@ -11,12 +11,18 @@ use Nette\Utils\Json;
  */
 class Tags extends TextInput
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $config;
 
     private ?string $placeholder;
 
     private bool $sortable = false;
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function __construct(?string $label = null, array $config = [], ?string $placeholder = null)
     {
         parent::__construct($label);
@@ -24,6 +30,9 @@ class Tags extends TextInput
         $this->placeholder = $placeholder;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getTagsConfig(): array
     {
         return $this->config;
@@ -54,6 +63,9 @@ class Tags extends TextInput
         return $control;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public static function getTagValues(?string $json): array
     {
         if ($json === null || trim($json) === '') {

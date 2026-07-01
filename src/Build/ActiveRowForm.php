@@ -21,14 +21,16 @@ abstract class ActiveRowForm extends FormDefinition
     }
 
     /**
-     * @param ActiveRow $row
-     * @return array $form->setDefaults(...)
+     * @return array<string, mixed> $form->setDefaults(...)
      */
     protected function initFormData(ActiveRow $row): array
     {
         return $row->toArray();
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     protected function onSuccess(NeoForm $form, array $values, ?ActiveRow $row = null): void
     {
         if ($row === null) {
@@ -38,10 +40,16 @@ abstract class ActiveRowForm extends FormDefinition
         }
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     protected function onCreate(NeoForm $form, array $values): void
     {
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
     {
     }

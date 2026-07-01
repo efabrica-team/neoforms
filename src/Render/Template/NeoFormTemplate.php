@@ -26,6 +26,9 @@ use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 
 class NeoFormTemplate
 {
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function form(NeoFormRenderer $renderer, NeoForm $form, Html $errors, array $attrs): Generator
     {
         $renderRest = $attrs['rest'] ?? true;
@@ -34,6 +37,9 @@ class NeoFormTemplate
         return $this->applyAttrs($el, $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function formRow(Html $label, Html $input, Html $errors, array $attrs): Html
     {
         return $this->applyAttrs(Html::el('div')->addHtml($label . $input . $errors), $attrs);
@@ -41,6 +47,7 @@ class NeoFormTemplate
 
     /**
      * @param string|HtmlStringable|null $label
+     * @param array<string, mixed> $attrs
      */
     public function formGroup($label, Html $body, array $attrs): Html
     {
@@ -61,10 +68,8 @@ class NeoFormTemplate
     }
 
     /**
-     * @param Html   $body
      * @param Html[] $groups
-     * @param array  $buttons
-     * @return Html
+     * @param Html[] $buttons
      */
     public function formRest(Html $body, array $groups, array $buttons): Html
     {
@@ -92,11 +97,17 @@ class NeoFormTemplate
         return $el;
     }
 
+    /**
+     * @param (string|HtmlStringable)[] $errors
+     */
     public function rowErrors(array $errors): Html
     {
         return $this->formErrors($errors);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function formLabel(BaseControl $control, array $attrs): Html
     {
         $el = $control->getLabel();
@@ -117,6 +128,9 @@ class NeoFormTemplate
         return Html::el('div')->class('form-text')->setHtml($description);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function formInput(BaseControl $control, array $attrs, Html $description): Html
     {
         return Html::el()
@@ -125,6 +139,9 @@ class NeoFormTemplate
         ;
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function control(BaseControl $control, array $attrs): Html
     {
         $attrs += $control->getOptions();
@@ -168,57 +185,90 @@ class NeoFormTemplate
         return $control->getControl();
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function checkbox(Checkbox $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function datepicker(AbstractDateTimePicker $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function select(SelectBox $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function multiSelect(MultiSelectBox $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function button(Button $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function textarea(TextArea $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function hidden(HiddenField $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function upload(UploadControl $control, array $attrs): Html
     {
         /** @var TextBase $control */
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function radio(RadioList $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function checkboxList(CheckboxList $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     protected function textInput(TextInput $control, array $attrs): Html
     {
         return $this->applyAttrs($control->getControl(), $attrs);
@@ -251,6 +301,9 @@ class NeoFormTemplate
         return Html::fromText('(?)');
     }
 
+    /**
+     * @param array<string, mixed> $attrs
+     */
     public function applyAttrs(Html $el, array $attrs): Html
     {
         foreach ($attrs as $key => $value) {
@@ -268,6 +321,9 @@ class NeoFormTemplate
         return $el;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     private function toggleSwitch(ToggleSwitch $control, array $params): Html
     {
         return $this->checkbox($control, $params);

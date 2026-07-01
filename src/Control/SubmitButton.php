@@ -2,7 +2,9 @@
 
 namespace Efabrica\NeoForms\Control;
 
-class SubmitButton extends \Nette\Forms\Controls\SubmitButton
+use Nette\Forms\Controls\SubmitButton as NetteSubmitButton;
+
+class SubmitButton extends NetteSubmitButton
 {
     public function setIcon(?string $icon): self
     {

@@ -5,8 +5,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "nette/forms": "^3.1",
-        "latte/latte": "^2.11 || ^3.0"
+        "nette/forms": "^3.3",
+        "latte/latte": "^2.11 || ^3.1.4"
     },
     "config": {
         "platform": {
