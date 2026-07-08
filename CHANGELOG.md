@@ -6,6 +6,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Major release. Long-deprecated API and Latte 2 support were removed, and some dependencies changed.
+**Breaking changes are tagged [BREAKING] below — see [UPGRADE.md](UPGRADE.md) for migration steps.**
+
+### Added
+- `ControlGroupBuilder::end()` to climb back to the parent builder after `row()`/`col()`/`group()` nesting
+- `@method` tags on `ControlGroupBuilder` for reliable `addX()` autocomplete
+- `NeoFormRenderer::renderToHtml()` to render a form outside of Latte
+- `FormCollection::$onAddItem` / `$onRemoveItem` lifecycle hooks
+- `NeoFormTemplate::setControlRenderer()` to register a custom renderer for a control class without subclassing the template
+- Shipped `Bootstrap5FormTemplate` and `TailwindFormTemplate`
+
+### Fixed
+- `{formErrors $form['x']}` fatally errored at runtime (compiled to a non-existent method); now renders the control's errors
+- `FormCollection` no longer leaks per-prototype state across forms and requests
+
+### Changed
+- **[BREAKING]** `nette/database` and `radekdostal/nette-datetimepicker` moved to `suggest`. Require them in your own `composer.json` if you use `ActiveRowForm` or the date pickers. ([UPGRADE.md §1](UPGRADE.md#1-composer-dependencies-nettedatabase-and-radekdostalnette-datetimepicker-moved-to-suggest))
+- **[BREAKING]** `NeoForm::addExcludedKeys()` is now an instance method (was `public static`); `removeExcludedKeys()` takes the extra keys as a parameter. Use `$form->addExcludedKeys(...)`, or subclass `NeoFormFactory` to apply keys to all forms. ([UPGRADE.md §2](UPGRADE.md#2-neoformaddexcludedkeys-is-now-an-instance-method-was-public-static))
+- **[BREAKING]** Latte 2 support dropped (`latte/latte` now `^3.1.4`); upgrade to Latte 3 first. ([UPGRADE.md §3](UPGRADE.md#3-latte-2-support-dropped-lattelatte-constraint-tightened-to-314))
+
+### Removed
+- **[BREAKING]** `AbstractForm` (deprecated since 2.x) — use `ActiveRowForm`. ([UPGRADE.md §4](UPGRADE.md#4-abstractform-removed-deprecated-since-2x))
+- **[BREAKING]** `NeoFormMacroSet` — only affects code referencing it directly; normal template usage is unchanged. ([UPGRADE.md §3](UPGRADE.md#3-latte-2-support-dropped-lattelatte-constraint-tightened-to-314))
+- **[BREAKING]** `ExampleActiveRowForm` demo class — copy what you need into your own form. ([UPGRADE.md §5](UPGRADE.md#5-exampleactiverowform-removed))
+
 ## [3.5.4] - 2026-07-01
 
 ### Fixed

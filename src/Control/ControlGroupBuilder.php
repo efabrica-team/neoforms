@@ -2,14 +2,48 @@
 
 namespace Efabrica\NeoForms\Control;
 
+use Closure;
 use Efabrica\NeoForms\Build\DivTrait;
+use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
+use Nette\Application\UI\Multiplier;
 use Nette\Forms\ControlGroup;
+use Nette\Forms\Controls\Button;
+use Nette\Forms\Controls\Checkbox;
+use Nette\Forms\Controls\CheckboxList;
+use Nette\Forms\Controls\RadioList;
+use Nette\Forms\Controls\TextArea;
+use Nette\Forms\Controls\TextInput;
+use Nette\Forms\Controls\UploadControl;
 use Nette\HtmlStringable;
 use Nette\Utils\Html;
+use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
+use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
+use Stringable;
 
 /**
  * @mixin NeoForm
+ * @method TextInput addText(string $name, string|Stringable|null $label = null, ?int $cols = null, ?int $maxLength = null)
+ * @method TextInput addPassword(string $name, string|Stringable|null $label = null, ?int $cols = null, ?int $maxLength = null)
+ * @method TextInput addInteger(string $name, string|Stringable|null $label = null)
+ * @method TextArea addTextArea(string $name, string|Stringable|null $label = null, ?int $cols = null, ?int $rows = null)
+ * @method UploadControl addUpload(string $name, string|Stringable|null $label = null)
+ * @method Checkbox addCheckbox(string $name, string|Stringable|null $caption = null)
+ * @method RadioList addRadioList(string $name, string|Stringable|null $label = null, ?array $items = null)
+ * @method CheckboxList addCheckboxList(string $name, string|Stringable|null $label = null, ?array $items = null)
+ * @method SelectBox addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null)
+ * @method MultiSelectBox addMultiSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null)
+ * @method ToggleSwitch addToggleSwitch(string $name, Stringable|string|null $label = null)
+ * @method Tags addTags(string $name, Stringable|string|null $label = null, array $config = [], ?string $placeholder = null)
+ * @method StaticTags addStaticTags(string $name, Stringable|string|null $label, array $choices, bool $allowCustomTags = false, ?string $placeholder = null)
+ * @method TbDatePicker addDatePicker(string $name, Stringable|string|null $label = null, ?int $maxLength = null)
+ * @method TbDateTimePicker addDateTimePicker(string $name, Stringable|string|null $label = null, ?int $maxLength = null)
+ * @method Multiplier addMultiplier(string $name, callable $factory)
+ * @method CodeEditor addCodeEditor(string $name, string $mode, ?string $label = null)
+ * @method SubmitButton addSubmit(string $name, string|Stringable|null $caption = null, ?Closure $onSubmit = null)
+ * @method NeoContainer addContainer(int|string $name, ?NeoContainer $container = null)
+ * @method FormCollection addCollection(string $name, string $label, callable $factory)
+ * @method Button addButton(string $name, string|Stringable|null $caption = null, ?string $icon = null)
  */
 class ControlGroupBuilder
 {
@@ -19,10 +53,19 @@ class ControlGroupBuilder
 
     private ControlGroup $group;
 
-    public function __construct(NeoForm $form, ControlGroup $group)
+    public function __construct(NeoForm $form, ControlGroup $group, private readonly ?self $parent = null)
     {
         $this->form = $form;
         $this->group = $group;
+    }
+
+    /**
+     * Returns the builder this group was created from via group()/row()/col().
+     * Top-level builders (created directly from NeoForm/NeoContainer) return themselves.
+     */
+    public function end(): self
+    {
+        return $this->parent ?? $this;
     }
 
     /**
@@ -69,7 +112,7 @@ class ControlGroupBuilder
             $childGroup = $children[] = $this->form->addGroup(null, false);
         }
 
-        $childBuilder = new self($this->form, $childGroup);
+        $childBuilder = new self($this->form, $childGroup, $this);
         $childBuilder->setClass($class)->setLabel($label === true ? $name : $label);
 
         $this->group->setOption('children', $children);

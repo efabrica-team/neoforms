@@ -55,6 +55,11 @@ class NeoFormRenderer
             $attrs['readonly'] ??
             $form->isReadonly() || $form->isReadonlyAttr();
 
+        // NOTE: rendering is stateful - the per-control 'rendered' option is used as scratch space
+        // to track which controls have already been emitted (so {formRest} can render "the rest").
+        // That state must be reset up-front on every render() so a form can be rendered more than
+        // once. Removing this statefulness would require threading a per-render context object
+        // through the whole renderer; deliberately out of scope here.
         foreach ($form->getComponentTree() as $control) {
             if (!$control instanceof BaseControl) {
                 continue;
@@ -82,6 +87,23 @@ class NeoFormRenderer
         );
         $generator->send(yield);
         return $generator->getReturn();
+    }
+
+    /**
+     * Fully renders the form to Html without exposing the internal generator-based
+     * incremental rendering used by the {neoForm}...{/neoForm} Latte tag.
+     * Use this when rendering a NeoForm outside of Latte (e.g. programmatically).
+     *
+     * @param array<string, mixed> $attrs
+     */
+    public function renderToHtml(NeoForm $form, array $attrs = []): Html
+    {
+        $generator = $this->form($form, $attrs);
+        foreach ($generator as $ignored) {
+            // no block body to inject - behaves like {neoForm form}{/neoForm}
+        }
+        $result = $generator->getReturn();
+        return $result instanceof Html ? $result : Html::fromHtml((string) $result);
     }
 
     public function formGroup(NeoForm $form, ControlGroup $group): Html

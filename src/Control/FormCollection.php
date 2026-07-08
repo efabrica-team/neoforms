@@ -50,6 +50,16 @@ class FormCollection extends NeoContainer
     private ?string $cssClass = null;
 
     /**
+     * @var array<callable(FormCollectionItem): void>
+     */
+    public array $onAddItem = [];
+
+    /**
+     * @var array<callable(FormCollectionItem): void>
+     */
+    public array $onRemoveItem = [];
+
+    /**
      * @param string                                          $label
      * @param callable(FormCollectionItem): (void|mixed)|null $formFactory
      */
@@ -62,9 +72,9 @@ class FormCollection extends NeoContainer
         }
         $this->prototype = $this->addCollectionItem('__prototype' . ++self::$prototypeIndex . '__', true);
         $this->formFactory?->__invoke($this->prototype);
-        $prototypeName = $this->prototype->getName();
-        assert($prototypeName !== null);
-        NeoForm::addExcludedKeys(self::ORIGINAL_DATA, FormCollectionItem::UNIQID, $prototypeName);
+        // ORIGINAL_DATA / UNIQID are stripped intrinsically by NeoForm::removeExcludedKeys(); the
+        // prototype container is stripped structurally by getUntrustedValues() (see below), so no
+        // per-instance key registration is needed here.
     }
 
     public function addCssClass(string $class): self
@@ -126,9 +136,30 @@ class FormCollection extends NeoContainer
     public function validate(?array $controls = null): void
     {
         $this->updateChildren();
+        $this->withoutPrototype(function () use ($controls): void {
+            parent::validate($controls);
+        });
+    }
+
+    /**
+     * Runs $fn with the prototype item temporarily detached from the component tree, so that
+     * parent Container logic (validation / value extraction) never sees the "__prototype__"
+     * placeholder. The prototype is always re-attached afterwards, even if $fn throws.
+     *
+     * @template T
+     * @param callable(): T $fn
+     * @return T
+     */
+    private function withoutPrototype(callable $fn): mixed
+    {
+        $name = $this->prototype->getName();
+        assert($name !== null);
         $this->removeComponent($this->prototype);
-        parent::validate($controls);
-        $this->addComponent($this->prototype, $this->prototype->getName());
+        try {
+            return $fn();
+        } finally {
+            $this->addComponent($this->prototype, $name);
+        }
     }
 
     public function setValues(array|object $values, bool $erase = false, bool $onlyDisabled = false): static
@@ -186,12 +217,21 @@ class FormCollection extends NeoContainer
                 $child = $this->addCollectionItem($key);
                 $this->formFactory?->__invoke($child);
                 $child->setValues($childValues);
+                foreach ($this->onAddItem as $callback) {
+                    $callback($child);
+                }
             }
             unset($components[$key]);
         }
         foreach ($components as $key => $_) {
             if (!isset($values[$key]) && $_ !== $this->prototype && $key !== self::ORIGINAL_DATA) {
-                $this->removeComponent($this->getComponent((string)$key));
+                $component = $this->getComponent((string)$key);
+                $this->removeComponent($component);
+                if ($component instanceof FormCollectionItem) {
+                    foreach ($this->onRemoveItem as $callback) {
+                        $callback($component);
+                    }
+                }
             }
         }
     }
@@ -345,10 +385,7 @@ class FormCollection extends NeoContainer
      */
     public function getUntrustedValues(string|object|null $returnType = ArrayHash::class, ?array $controls = null): object|array
     {
-        $this->removeComponent($this->prototype);
-        $values = parent::getUntrustedValues($returnType, $controls);
-        $this->addComponent($this->prototype, $this->prototype->getName());
-        return $values;
+        return $this->withoutPrototype(fn() => parent::getUntrustedValues($returnType, $controls));
     }
 
     public function setRequiredCount(int $count = 0): void

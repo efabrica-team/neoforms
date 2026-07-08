@@ -4,15 +4,19 @@ on:
   push:
     branches: [master]
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 jobs:
   tests:
-    name: PHPUnit (PHP ${{ matrix.php-version }})
+    name: PHPUnit (PHP ${{ matrix.php-version }}, ${{ matrix.deps }} deps)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.3', '8.4']
+        deps: [lowest, highest]
     steps:
       - uses: actions/checkout@v4
 
@@ -22,8 +26,36 @@ jobs:
           php-version: ${{ matrix.php-version }}
           coverage: none
 
+      - name: Install dependencies (highest)
+        if: matrix.deps == 'highest'
+        run: composer update --no-interaction --no-progress --prefer-dist
+
+      - name: Install dependencies (lowest)
+        if: matrix.deps == 'lowest'
+        run: composer update --no-interaction --no-progress --prefer-dist --prefer-lowest --prefer-stable
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit tests
+
+  canary:
+    name: Canary (nette/forms & latte/latte dev-master)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Require dev-master dependencies
+        run: composer require --no-interaction --no-progress --no-update "nette/forms:dev-master" "latte/latte:dev-master"
+
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: composer update --no-interaction --no-progress --prefer-dist
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit tests

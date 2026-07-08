@@ -74,7 +74,10 @@ class FormCollectionItemDiff
     }
 
     /**
-     * @return array<string, mixed> You can use this diff to update the row in the database.
+     * @return array<string, mixed|FormCollectionDiff> Changed fields only, keyed by field name.
+     *  You can use this diff to update the row in the database. For a field that is itself a
+     *  nested FormCollection, the value is a FormCollectionDiff instance instead of a scalar/array
+     *  - call ->getAdded()/->getModified()/->getDeleted() etc. on it recursively.
      */
     public function getDiff(): array
     {

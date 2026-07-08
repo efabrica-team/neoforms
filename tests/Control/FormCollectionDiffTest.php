@@ -169,6 +169,47 @@ class FormCollectionDiffTest extends TestCase
         $this->assertEquals(['name' => 'Jaquel', 'age' => 30], $itemDiff->getNewRow());
     }
 
+    public function testModifiedNestedCollectionFieldYieldsFormCollectionDiff(): void
+    {
+        $childOriginalJson = json_encode([
+            ['label' => 'A', FormCollectionItem::UNIQID => 'child-a'],
+        ]);
+        $johnUid = uniqid();
+        $johnOriginal = [
+            'name' => 'John',
+            'age' => 30,
+            'children' => [
+                FormCollection::ORIGINAL_DATA => $childOriginalJson,
+                ['label' => 'A', FormCollectionItem::UNIQID => 'child-a'],
+            ],
+            FormCollectionItem::UNIQID => $johnUid,
+        ];
+        $outerOriginalData = json_encode([$johnOriginal]);
+
+        $johnNew = $johnOriginal;
+        $johnNew['children'] = [
+            FormCollection::ORIGINAL_DATA => $childOriginalJson,
+            ['label' => 'A', FormCollectionItem::UNIQID => 'child-a'],
+            ['label' => 'B'],
+        ];
+
+        $httpData = [
+            FormCollection::ORIGINAL_DATA => $outerOriginalData,
+            $johnNew,
+        ];
+
+        $diff = new FormCollectionDiff($httpData);
+        $modified = iterator_to_array($diff->getModified());
+
+        $this->assertCount(1, $modified);
+        $childrenDiff = $modified[0]->getDiff()['children'] ?? null;
+        $this->assertInstanceOf(FormCollectionDiff::class, $childrenDiff);
+        $this->assertTrue($childrenDiff->isNotEmpty());
+
+        $added = iterator_to_array($childrenDiff->getAdded());
+        $this->assertEquals([['label' => 'B']], $added);
+    }
+
     public function testAreArraysRecursivelyEqualReturnsTrueForEqualArrays()
     {
         $a = [

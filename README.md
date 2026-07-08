@@ -209,7 +209,23 @@ $col2->addCheckbox('c');
 
 $a = $form->row('main');
 $b = $form->row('main');
-assert($a === $b); // true, it's the same instance
+assert($a !== $b); // true - row('main') builds a new ControlGroupBuilder every call
+assert($form->getGroup('main') === $form->getGroup('main')); // true - but the underlying ControlGroup is reused
+```
+
+Use `end()` to climb back up to the parent builder after `col()`/`row()`/`group()`, Doctrine-`QueryBuilder`-style - useful when nesting groups without keeping every intermediate variable around. Note that `end()` only chains after `col()`/`row()`/`group()`/`setLabel()`/`setClass()`/`setOption()`, never directly after an `addX()` call, since `addText()` and friends return the underlying Nette control, not the builder:
+
+```php
+$form->row()
+    ->group('left')->addText('a')->end() // wrong! addText() returns a TextInput, not the builder
+
+// instead, keep a reference to the builder to add multiple fields, or call end() on it separately:
+$row = $form->row();
+$left = $row->col('6');
+$left->addText('a');
+$left->addTextArea('b');
+$right = $left->end()->col('6'); // end() climbs back to $row, then col('6') creates a sibling
+$right->addCheckbox('c');
 ```
 
 ------
@@ -447,6 +463,43 @@ protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
 You don't have to use the Diff API. If you for example only use a simple collection of single text inputs, 
 you might find it easier to just persist the new array of values.
 
+### Lifecycle hooks
+
+`FormCollection::$onAddItem` and `$onRemoveItem` fire whenever an item is attached to or detached from the
+collection's component tree - useful for wiring extra validators/logging on dynamically-created items from
+outside the original factory closure:
+
+```php
+$collection = $form->addCollection('sources', 'Sources', function (NeoContainer $container) {
+    $container->addText('bookTitle', 'Book Title');
+});
+$collection->onAddItem[] = function (FormCollectionItem $item): void {
+    $item->addText('note', 'Internal Note'); // e.g. add an admin-only field to every row
+};
+```
+
+> `onAddItem` fires any time a component is attached to the tree - including on the very first
+> `setValues()`/hydration of existing rows loaded from the database, not just when a user clicks "add" in
+> the browser. If you want to know whether the user actually added a new row, keep using `getDiff()->getAdded()`
+> from the Diff API above; these hooks are for lower-level cross-cutting concerns instead.
+
+---
+
+## Rendering Outside of Latte
+
+`NeoFormRenderer::form()` returns a `Generator` on purpose - it's what lets the `{neoForm}...{/neoForm}` tag inject
+your block body mid-render. If you need to render a `NeoForm` somewhere without Latte (a console command, a PDF
+export, an API endpoint), use `renderToHtml()` instead of dealing with the generator yourself:
+
+```php
+/** @var \Efabrica\NeoForms\Render\NeoFormRenderer $renderer */
+/** @var \Efabrica\NeoForms\Build\NeoForm $form */
+$html = $renderer->renderToHtml($form);
+echo $html; // a plain Nette\Utils\Html instance, fully rendered
+```
+
+This is also what `NeoFormNetteRenderer` (the `Nette\Application\UI\Form` bridge, used by `{control someForm}`) uses
+internally to render a form as a single string.
 
 ---
 
@@ -537,6 +590,29 @@ protected function button(Button $control, array $attrs): Html
 
 Repeat similar customization for other form elements like checkboxes, radio buttons, select boxes, etc., based on your desired styling.
 
+> **Checkbox caption gotcha:** `{formLabel}`/`NeoFormTemplate::formLabel()` is never even called for `Checkbox`
+> controls - the renderer short-circuits to an empty `Html` for buttons, hidden fields and checkboxes, since a
+> checkbox's caption traditionally sits next to the input, not above it. That means `checkbox()` is the *only*
+> place the caption is rendered at all. Copying the `textInput()`-style override (`$control->getControl()`) to
+> `checkbox()` silently drops the caption text, because `Checkbox::getLabel()` intentionally returns `null` and
+> `getControl()` returns the caption nested *inside* the `<label>`. Use `getControlPart()`/`getLabelPart()` to
+> get the input and caption as separate sibling elements instead:
+>
+> ```php
+> protected function checkbox(Checkbox $control, array $attrs): Html
+> {
+>     $input = $control->getControlPart();
+>     $input->class ??= 'form-check-input';
+>     $label = $control->getLabelPart();
+>     $label->class ??= 'form-check-label';
+>     return Html::el('div')->class('form-check')
+>         ->addHtml($this->applyAttrs($input, $attrs))
+>         ->addHtml($label);
+> }
+> ```
+>
+> See `Bootstrap5FormTemplate::checkbox()` for the full, tested implementation of this pattern.
+
 **Step 6: Implement Additional Styling**
 
 If your template requires additional styling for specific elements or form groups, you can do so in your extended template class.
@@ -569,3 +645,49 @@ echo $form;
 
 By following these steps, you can create your own extended template for rendering forms in a way that aligns with Bootstrap 4 or any other
 custom styling you prefer. Customize the template methods according to your specific styling needs.
+
+### Shipped Templates
+
+Two ready-to-use templates ship with the library, so you don't have to write one from scratch:
+
+- `Efabrica\NeoForms\Render\Template\Bootstrap5FormTemplate` - `form-control`/`form-select` inputs, `is-invalid`/`invalid-feedback`
+  validation styling, `mb-3` row spacing, `btn btn-primary` buttons and Bootstrap `form-check` checkboxes.
+- `Efabrica\NeoForms\Render\Template\TailwindFormTemplate` - a deliberately minimal starting point (Tailwind has no component
+  classes to target the way Bootstrap does), exposing overridable `protected string $...Class` properties (e.g. `$inputClass`,
+  `$buttonClass`) instead of a finished design system.
+
+Wire either one up exactly like a custom template (Step 7 above), e.g.:
+
+```neon
+# config.neon
+services:
+    neoForms.template: Efabrica\NeoForms\Render\Template\Bootstrap5FormTemplate()
+```
+
+Both are subclasses of `NeoFormTemplate`, so you can still extend either one further if you need small tweaks.
+
+### Custom Control Renderers
+
+If you only need to customize the rendering of a single custom control (rather than restructure the whole template),
+`NeoFormTemplate::setControlRenderer()` is a lighter-weight alternative to subclassing:
+
+```php
+$template = new NeoFormTemplate();
+$template->setControlRenderer(App\Forms\ColorPicker::class, function (App\Forms\ColorPicker $control, array $attrs) {
+    return Html::el('input')->type('color')->name($control->getHtmlName())->value($control->getValue());
+});
+```
+
+Or wire it via DI:
+
+```neon
+# config.neon
+services:
+    -
+        type: Efabrica\NeoForms\Render\Template\NeoFormTemplate
+        setup:
+            - setControlRenderer(App\Forms\ColorPicker::class, [App\Forms\ColorPickerRenderer(), render])
+```
+
+Registered renderers are consulted before the built-in `instanceof` chain, so they take priority over the default rendering
+for that control class - but reserve full subclassing (as shown above) for wholesale HTML restructuring across many control types.

@@ -3,6 +3,8 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Control\FormCollection;
+use Efabrica\NeoForms\Control\FormCollectionItem;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
@@ -31,9 +33,12 @@ class NeoForm extends Form
     private ?NeoFormTemplate $template = null;
 
     /**
+     * Extra value keys to strip from getValues() output, scoped to this form instance.
+     * FormCollection's own bookkeeping keys are always stripped regardless of this list.
+     *
      * @var array<string, string>
      */
-    private static array $excludedKeys = [];
+    private array $excludedKeys = [];
 
     /**
      * @return $this
@@ -137,27 +142,43 @@ class NeoForm extends Form
     public function getValues(string|object|null $returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
-        self::removeExcludedKeys($values);
+        self::removeExcludedKeys($values, $this->excludedKeys);
         return $values;
     }
 
-    public static function addExcludedKeys(string ...$keys): void
+    /**
+     * Register extra value keys to strip from this form's getValues() output.
+     * @return $this
+     */
+    public function addExcludedKeys(string ...$keys): self
     {
         foreach ($keys as $key) {
-            self::$excludedKeys[$key] = $key;
+            $this->excludedKeys[$key] = $key;
         }
+        return $this;
     }
 
     /**
+     * Recursively strips FormCollection's internal bookkeeping keys (originalData, uniqId)
+     * plus any caller-supplied $excludedKeys from a values structure.
+     *
      * @param iterable<array-key, mixed>|object $values
+     * @param array<array-key, string> $excludedKeys
      */
-    public static function removeExcludedKeys(iterable|object &$values): void
+    public static function removeExcludedKeys(iterable|object &$values, array $excludedKeys = []): void
     {
+        $excluded = [
+            FormCollection::ORIGINAL_DATA => FormCollection::ORIGINAL_DATA,
+            FormCollectionItem::UNIQID => FormCollectionItem::UNIQID,
+        ];
+        foreach ($excludedKeys as $key) {
+            $excluded[$key] = $key;
+        }
         // @phpstan-ignore-next-line foreach.nonIterable (plain objects, e.g. custom getValues() DTOs, are iterable over their public properties at runtime)
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {
-                self::removeExcludedKeys($value);
-            } elseif (isset(self::$excludedKeys[$key])) {
+                self::removeExcludedKeys($value, $excludedKeys);
+            } elseif (isset($excluded[$key])) {
                 if (is_object($values)) {
                     unset($values->$key);
                 } else {

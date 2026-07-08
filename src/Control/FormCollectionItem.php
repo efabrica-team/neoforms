@@ -25,13 +25,18 @@ class FormCollectionItem extends NeoContainer
      */
     public function getUntrustedValues(string|object|null $returnType = ArrayHash::class, ?array $controls = null): object|array
     {
-        if ($this->uniqId !== null && $this->uniqId->getParent() !== null && $this->uniqId->getValue() === '') {
-            $this->removeComponent($this->uniqId);
+        $uniqId = $this->uniqId;
+        $removed = false;
+        if ($uniqId !== null && $uniqId->getParent() !== null && $uniqId->getValue() === '') {
+            $this->removeComponent($uniqId);
+            $removed = true;
         }
-        $values = parent::getUntrustedValues($returnType, $controls);
-        if ($this->uniqId !== null && $this->uniqId->getParent() === null) {
-            $this->addComponent($this->uniqId, self::UNIQID);
+        try {
+            return parent::getUntrustedValues($returnType, $controls);
+        } finally {
+            if ($removed && $uniqId !== null) {
+                $this->addComponent($uniqId, self::UNIQID);
+            }
         }
-        return $values;
     }
 }

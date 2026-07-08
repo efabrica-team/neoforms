@@ -1,5 +1,0 @@
-parameters:
-    ignoreErrors:
-        -
-            message: '#.*#'
-            path: src/DI/NeoFormMacroSet.php

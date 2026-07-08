@@ -6,7 +6,6 @@ use Efabrica\NeoForms\Build\NeoFormFactory;
 use Efabrica\NeoForms\Render\NeoFormNetteRenderer;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
-use Latte\Engine;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\FactoryDefinition;
 
@@ -37,14 +36,9 @@ class NeoFormsCompilerExtension extends CompilerExtension
         ;
 
         $latteEngine->addSetup('addProvider', ['neoFormRenderer', '@' . $this->prefix('renderer')]);
-        /** @phpstan-ignore-next-line (this if is sometimes true) */
-        if (Engine::VERSION_ID >= 30000) {
-            $di->addDefinition($this->prefix('latteExtension'))
-                ->setFactory(NeoFormLatteExtension::class);
-            $latteEngine->addSetup('addExtension', ['@' . $this->prefix('latteExtension')]);
-            /** @phpstan-ignore-next-line (else branch is reachable) */
-        } else {
-            $latteEngine->addSetup(NeoFormMacroSet::class . '::install(?->getCompiler())', ['@self']);
-        }
+
+        $di->addDefinition($this->prefix('latteExtension'))
+            ->setFactory(NeoFormLatteExtension::class);
+        $latteEngine->addSetup('addExtension', ['@' . $this->prefix('latteExtension')]);
     }
 }
