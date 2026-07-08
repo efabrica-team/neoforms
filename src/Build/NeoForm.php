@@ -3,6 +3,8 @@
 namespace Efabrica\NeoForms\Build;
 
 use Efabrica\NeoForms\Control\ControlGroupBuilder;
+use Efabrica\NeoForms\Control\FormCollection;
+use Efabrica\NeoForms\Control\FormCollectionItem;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Nette\Application\AbortException;
 use Nette\Application\BadRequestException;
@@ -24,44 +26,86 @@ class NeoForm extends Form
 {
     use NeoContainerTrait;
 
-    private bool $readonly = false;
+    private bool $viewMode = false;
 
-    private bool $readonlyAttr = false;
+    private bool $readonlyInputs = false;
 
     private ?NeoFormTemplate $template = null;
 
     /**
+     * Extra value keys to strip from getValues() output, scoped to this form instance.
+     * FormCollection's own bookkeeping keys are always stripped regardless of this list.
+     *
      * @var array<string, string>
      */
-    private static array $excludedKeys = [];
+    private array $excludedKeys = [];
 
     /**
+     * View mode: render every field as plain read-only text (no inputs, no submit button)
+     * instead of editable controls. This is the "say goodbye to grayed-out disabled fields"
+     * mode - use it to show a form to someone who may not edit it.
+     *
+     * @return $this
+     */
+    public function setViewMode(bool $viewMode = true): self
+    {
+        $this->viewMode = $viewMode;
+        return $this;
+    }
+
+    public function isViewMode(): bool
+    {
+        return $this->viewMode;
+    }
+
+    /**
+     * Keep rendering editable controls, but add the HTML `readonly` attribute to each input.
+     *
+     * @return $this
+     */
+    public function setReadonlyInputs(bool $readonlyInputs = true): self
+    {
+        $this->readonlyInputs = $readonlyInputs;
+        return $this;
+    }
+
+    public function hasReadonlyInputs(): bool
+    {
+        return $this->readonlyInputs;
+    }
+
+    /**
+     * @deprecated Use setViewMode() instead. Renders fields as plain text (view mode).
      * @return $this
      */
     public function setReadonly(bool $readonly = true): self
     {
-        $this->readonly = $readonly;
-        return $this;
-    }
-
-    public function isReadonly(): bool
-    {
-        return $this->readonly;
+        return $this->setViewMode($readonly);
     }
 
     /**
-     * Set form to return fields with attribute readonly
+     * @deprecated Use isViewMode() instead.
+     */
+    public function isReadonly(): bool
+    {
+        return $this->isViewMode();
+    }
+
+    /**
+     * @deprecated Use setReadonlyInputs() instead. Adds the HTML `readonly` attribute to inputs.
      * @return $this
      */
     public function setReadonlyAttr(bool $readonlyAttr = true): self
     {
-        $this->readonlyAttr = $readonlyAttr;
-        return $this;
+        return $this->setReadonlyInputs($readonlyAttr);
     }
 
+    /**
+     * @deprecated Use hasReadonlyInputs() instead.
+     */
     public function isReadonlyAttr(): bool
     {
-        return $this->readonlyAttr;
+        return $this->hasReadonlyInputs();
     }
 
     public function getTemplate(): ?NeoFormTemplate
@@ -97,7 +141,7 @@ class NeoForm extends Form
     public function setOnSuccess(callable $onSuccess): self
     {
         $fn = static function (NeoForm $form, array $values) use ($onSuccess) {
-            if ($form->isReadonly() || $form->isReadonlyAttr()) {
+            if ($form->isViewMode() || $form->hasReadonlyInputs()) {
                 return; // there is no submit button if the form is readonly
             }
             try {
@@ -137,27 +181,43 @@ class NeoForm extends Form
     public function getValues(string|object|null $returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
-        self::removeExcludedKeys($values);
+        self::removeExcludedKeys($values, $this->excludedKeys);
         return $values;
     }
 
-    public static function addExcludedKeys(string ...$keys): void
+    /**
+     * Register extra value keys to strip from this form's getValues() output.
+     * @return $this
+     */
+    public function addExcludedKeys(string ...$keys): self
     {
         foreach ($keys as $key) {
-            self::$excludedKeys[$key] = $key;
+            $this->excludedKeys[$key] = $key;
         }
+        return $this;
     }
 
     /**
+     * Recursively strips FormCollection's internal bookkeeping keys (originalData, uniqId)
+     * plus any caller-supplied $excludedKeys from a values structure.
+     *
      * @param iterable<array-key, mixed>|object $values
+     * @param array<array-key, string> $excludedKeys
      */
-    public static function removeExcludedKeys(iterable|object &$values): void
+    public static function removeExcludedKeys(iterable|object &$values, array $excludedKeys = []): void
     {
+        $excluded = [
+            FormCollection::ORIGINAL_DATA => FormCollection::ORIGINAL_DATA,
+            FormCollectionItem::UNIQID => FormCollectionItem::UNIQID,
+        ];
+        foreach ($excludedKeys as $key) {
+            $excluded[$key] = $key;
+        }
         // @phpstan-ignore-next-line foreach.nonIterable (plain objects, e.g. custom getValues() DTOs, are iterable over their public properties at runtime)
         foreach ($values as $key => &$value) {
             if (is_object($value) || is_array($value)) {
-                self::removeExcludedKeys($value);
-            } elseif (isset(self::$excludedKeys[$key])) {
+                self::removeExcludedKeys($value, $excludedKeys);
+            } elseif (isset($excluded[$key])) {
                 if (is_object($values)) {
                     unset($values->$key);
                 } else {
@@ -176,13 +236,12 @@ class NeoForm extends Form
      */
     public function group(?string $name = null, ?string $class = null, string|true|HtmlStringable|null $label = true): ControlGroupBuilder
     {
+        // reuse scope: form-level named groups (visible to getGroups()/{formRest})
         if ($name !== null) {
             $group = $this->getGroup($name);
         }
         $group ??= $this->addGroup($name, false);
-        $builder = new ControlGroupBuilder($this, $group);
-        $builder->setClass($class)->setLabel($label === true ? $name : $label);
-        return $builder;
+        return ControlGroupBuilder::create($this, $group, $name, $class, $label);
     }
 
     public function addButton(string $name, string|Stringable|null $caption = null, ?string $icon = null): Button

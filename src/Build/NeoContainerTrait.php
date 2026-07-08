@@ -32,7 +32,7 @@ trait NeoContainerTrait
     protected array $options = [];
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getOption(string $name)
     {
@@ -60,7 +60,7 @@ trait NeoContainerTrait
     public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return $this[$name] = (new SelectBox($label, $items))
-            ->setHtmlAttribute('size', $size > 1 ? $size : null)
+            ->setHtmlAttribute('size', ($size ?? 0) > 1 ? $size : null)
             ->checkDefaultValue(false)
         ;
     }
@@ -68,7 +68,7 @@ trait NeoContainerTrait
     public function addMultiSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
-            ->setHtmlAttribute('size', $size > 1 ? $size : null)
+            ->setHtmlAttribute('size', ($size ?? 0) > 1 ? $size : null)
             ->checkDefaultValue(false)
         ;
     }

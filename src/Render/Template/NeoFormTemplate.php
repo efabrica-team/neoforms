@@ -27,6 +27,25 @@ use RadekDostal\NetteComponents\DateTimePicker\AbstractDateTimePicker;
 class NeoFormTemplate
 {
     /**
+     * @var array<class-string<BaseControl>, callable(BaseControl, array<string, mixed>): (Html|string)>
+     */
+    private array $controlRenderers = [];
+
+    /**
+     * Registers a custom renderer for a control class, consulted before the built-in
+     * instanceof chain in control(). Useful for one-off custom controls without
+     * having to subclass the whole template.
+     *
+     * @param class-string<BaseControl> $controlClass
+     * @param callable(BaseControl, array<string, mixed>): (Html|string) $renderer
+     */
+    public function setControlRenderer(string $controlClass, callable $renderer): static
+    {
+        $this->controlRenderers[$controlClass] = $renderer;
+        return $this;
+    }
+
+    /**
      * @param array<string, mixed> $attrs
      */
     public function form(NeoFormRenderer $renderer, NeoForm $form, Html $errors, array $attrs): Generator
@@ -145,6 +164,11 @@ class NeoFormTemplate
     protected function control(BaseControl $control, array $attrs): Html
     {
         $attrs += $control->getOptions();
+        foreach ($this->controlRenderers as $controlClass => $renderer) {
+            if ($control instanceof $controlClass) {
+                return Html::fromHtml((string) $renderer($control, $attrs));
+            }
+        }
         if ($control instanceof ToggleSwitch) {
             return $this->toggleSwitch($control, $attrs + $control->getOptions());
         }
@@ -246,8 +270,9 @@ class NeoFormTemplate
      */
     protected function upload(UploadControl $control, array $attrs): Html
     {
-        /** @var TextBase $control */
-        return $this->applyAttrs($control->getControl(), $attrs);
+        $el = $control->getControl();
+        assert($el instanceof Html);
+        return $this->applyAttrs($el, $attrs);
     }
 
     /**

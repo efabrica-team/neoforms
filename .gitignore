@@ -7,5 +7,6 @@ log
 node_modules
 bower_components
 tests/_output/*
+.phpunit.cache
 composer.lock
 !/.github/phpstan/composer.lock

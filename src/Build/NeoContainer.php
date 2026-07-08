@@ -34,14 +34,13 @@ class NeoContainer extends Container
      */
     public function group(?string $name = null, ?string $class = null, string|true|HtmlStringable|null $label = true): ControlGroupBuilder
     {
+        // reuse scope: this container's local $childGroups cache
         if ($name !== null) {
             $childGroup = ($this->childGroups[$name] ??= $this->getForm()->addGroup(null, false));
         } else {
             $childGroup = $this->getForm()->addGroup(null, false);
         }
-        $childBuilder = new ControlGroupBuilder($this->getForm(), $childGroup);
-        $childBuilder->setClass($class)->setLabel($label === true ? $name : $label);
-        return $childBuilder;
+        return ControlGroupBuilder::create($this->getForm(), $childGroup, $name, $class, $label);
     }
 
     public function getHtml(NeoFormRenderer $renderer): Html

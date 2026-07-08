@@ -47,7 +47,7 @@ class NeoFormUnpairedNode extends StatementNode
 
     public static function createFormErrors(Tag $tag): self
     {
-        return self::create($tag, 'formError');
+        return self::create($tag, 'formErrors');
     }
 
     public static function createFormRow(Tag $tag): self

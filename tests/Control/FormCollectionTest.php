@@ -88,14 +88,10 @@ class FormCollectionTest extends TestCase
         $this->assertEquals(1, $formFactory->x);
     }
 
-    public function testConstructorAddsExcludedKeys(): void
+    public function testRemoveExcludedKeysStripsFrameworkKeysRecursively(): void
     {
-        $label = 'Test Label';
-        $formFactory = function () {
-        };
-        $collection = new FormCollection($label, $formFactory);
         $clazz = new stdClass();
-        $clazz->{$collection->getPrototype()->getName()} = 'test';
+        $clazz->{FormCollectionItem::UNIQID} = 'test';
         $clazz->test9 = 'test';
         $values = [
             "test" => "test",
@@ -112,8 +108,54 @@ class FormCollectionTest extends TestCase
             "test2" => "test2",
         ], $values);
         $this->assertEquals(['test9' => 'test'], (array)$clazz);
-        $this->assertFalse(isset($clazz->{$collection->getPrototype()->getName()}));
+    }
 
+    public function testRemoveExcludedKeysStripsCallerSuppliedKeys(): void
+    {
+        $values = [
+            'keep' => 'a',
+            'drop' => 'b',
+            'nested' => ['drop' => 'c', 'keep' => 'd'],
+        ];
+        NeoForm::removeExcludedKeys($values, ['drop']);
+        $this->assertEquals(['keep' => 'a', 'nested' => ['keep' => 'd']], $values);
+    }
+
+    public function testConstructingCollectionsDoesNotPolluteGlobalExclusions(): void
+    {
+        // Regression: each FormCollection used to register its unique "__prototype{N}__" name
+        // into a process-global static set (unbounded growth + cross-form leakage). The prototype
+        // is now stripped structurally by getUntrustedValues(), so no global registration happens
+        // and unrelated keys that merely look like a prototype name are left untouched.
+        $c1 = new FormCollection('A', function () {
+        });
+        $c2 = new FormCollection('B', function () {
+        });
+        $values = [
+            $c1->getPrototype()->getName() => 'x',
+            $c2->getPrototype()->getName() => 'y',
+            'keep' => 'z',
+        ];
+        NeoForm::removeExcludedKeys($values);
+
+        $this->assertArrayHasKey($c1->getPrototype()->getName(), $values);
+        $this->assertArrayHasKey($c2->getPrototype()->getName(), $values);
+        $this->assertSame('z', $values['keep']);
+    }
+
+    public function testAddExcludedKeysIsFluentAndInstanceScoped(): void
+    {
+        $formA = new NeoForm();
+        $formB = new NeoForm();
+
+        $this->assertSame($formA, $formA->addExcludedKeys('secret'));
+
+        // Instance state on formA must not bleed into a separate instance formB. Verified via the
+        // private $excludedKeys property since observing it through getValues() would require an
+        // anchored (submitted) form.
+        $prop = new \ReflectionProperty(NeoForm::class, 'excludedKeys');
+        $this->assertSame(['secret' => 'secret'], $prop->getValue($formA));
+        $this->assertSame([], $prop->getValue($formB));
     }
 
     public function testCleanArrayRemovesOriginalDataAndUniqidKeys(): void
@@ -170,5 +212,62 @@ class FormCollectionTest extends TestCase
     public function testCleanArrayReturnsEmptyArrayForEmptyInput(): void
     {
         $this->assertEquals([], FormCollectionDiff::cleanArray([]));
+    }
+
+    public function testOnAddItemAndOnRemoveItemDefaultToEmptyArrays(): void
+    {
+        $collection = new FormCollection('Test', function () {
+        });
+        $this->assertSame([], $collection->onAddItem);
+        $this->assertSame([], $collection->onRemoveItem);
+    }
+
+    public function testOnAddItemFiresForRealItemsNotPrototype(): void
+    {
+        $collection = new FormCollection('Test', function (FormCollectionItem $item) {
+            $item->addText('foo', 'Bar');
+        });
+        $added = [];
+        $collection->onAddItem[] = function (FormCollectionItem $item) use (&$added) {
+            $added[] = $item;
+        };
+
+        $collection->updateChildren(['a' => ['foo' => 'x'], 'b' => ['foo' => 'y']]);
+
+        $this->assertCount(2, $added);
+        foreach ($added as $item) {
+            $this->assertNotSame($collection->getPrototype(), $item);
+        }
+    }
+
+    public function testOnAddItemFiresAfterFactoryAndValuesAreSet(): void
+    {
+        $collection = new FormCollection('Test', function (FormCollectionItem $item) {
+            $item->addText('foo', 'Bar');
+        });
+        $seenValue = null;
+        $collection->onAddItem[] = function (FormCollectionItem $item) use (&$seenValue) {
+            $seenValue = $item->getComponent('foo')->getValue();
+        };
+
+        $collection->updateChildren(['a' => ['foo' => 'hello']]);
+
+        $this->assertSame('hello', $seenValue);
+    }
+
+    public function testOnRemoveItemFiresWhenChildDroppedByUpdateChildren(): void
+    {
+        $collection = new FormCollection('Test', function (FormCollectionItem $item) {
+            $item->addText('foo', 'Bar');
+        });
+        $collection->updateChildren(['a' => ['foo' => 'x'], 'b' => ['foo' => 'y']]);
+
+        $removed = [];
+        $collection->onRemoveItem[] = function (FormCollectionItem $item) use (&$removed) {
+            $removed[] = $item;
+        };
+        $collection->updateChildren(['a' => ['foo' => 'x']]);
+
+        $this->assertCount(1, $removed);
     }
 }

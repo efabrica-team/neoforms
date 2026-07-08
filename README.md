@@ -30,12 +30,10 @@ includes:
 
 <!-- TOC -->
   * [Using ActiveRowForm](#using-activerowform)
-      * [Presenter](#presenter)
-      * [Using component in latte (simple rendering)](#using-component-in-latte-simple-rendering)
-      * [Using component in latte (custom HTML structure around it)](#using-component-in-latte-custom-html-structure-around-it)
-      * [Using component in latte (stand-alone HTML template for form)](#using-component-in-latte-stand-alone-html-template-for-form)
-  * [{formGroup} example](#formgroup-example)
-  * [.row .col grid layout in PHP](#row-col-grid-layout-in-php)
+  * [Component Usage in Presenter](#component-usage-in-presenter)
+  * [Component Usage in Latte Templates](#component-usage-in-latte-templates)
+  * [Grouping Form Elements](#grouping-form-elements)
+  * [.row .col Grid Layout in PHP](#row-col-grid-layout-in-php)
   * [Latte Tags (API) Documentation](#latte-tags-api-documentation)
     * [`{neoForm}`](#neoform)
     * [`{formRow}`](#formrow)
@@ -49,7 +47,13 @@ includes:
     * [`"readonly"`](#readonly)
     * [`"class"`](#class)
     * [`"input"` and `"label"`](#input-and-label)
+  * [FormCollection](#formcollection)
+    * [Lifecycle hooks](#lifecycle-hooks)
+  * [Rendering Outside of Latte](#rendering-outside-of-latte)
   * [Custom Template](#custom-template)
+    * [Shipped Templates](#shipped-templates)
+    * [Custom Control Renderers](#custom-control-renderers)
+  * [Contributing](#contributing)
 <!-- TOC -->
 
 ### Using ActiveRowForm
@@ -209,7 +213,23 @@ $col2->addCheckbox('c');
 
 $a = $form->row('main');
 $b = $form->row('main');
-assert($a === $b); // true, it's the same instance
+assert($a !== $b); // true - row('main') builds a new ControlGroupBuilder every call
+assert($form->getGroup('main') === $form->getGroup('main')); // true - but the underlying ControlGroup is reused
+```
+
+Use `end()` to climb back up to the parent builder after `col()`/`row()`/`group()`, Doctrine-`QueryBuilder`-style - useful when nesting groups without keeping every intermediate variable around. Note that `end()` only chains after `col()`/`row()`/`group()`/`setLabel()`/`setClass()`/`setOption()`, never directly after an `addX()` call, since `addText()` and friends return the underlying Nette control, not the builder:
+
+```php
+$form->row()
+    ->group('left')->addText('a')->end() // wrong! addText() returns a TextInput, not the builder
+
+// instead, keep a reference to the builder to add multiple fields, or call end() on it separately:
+$row = $form->row();
+$left = $row->col('6');
+$left->addText('a');
+$left->addTextArea('b');
+$right = $left->end()->col('6'); // end() climbs back to $row, then col('6') creates a sibling
+$right->addCheckbox('c');
 ```
 
 ------
@@ -359,12 +379,24 @@ $form->addText('title', 'Title')->setOption('readonly', true);
 // or
 {formRow $form['title'], readonly => true}
 // or
-$form->setReadonly(true); // to make the entire form readonly
+$form->setViewMode(true); // render the whole form as plain read-only text
 // or
-{neoForm yourForm, readonly => true} // to make the entire form readonly
+{neoForm yourForm, readonly => true} // render the whole form as plain read-only text
 ```
 
 You can also provide a callback function for dynamic readonly behavior.
+
+There are two form-wide modes, and they are different:
+
+- **`$form->setViewMode(true)`** — renders every field as plain read-only text (no inputs, no
+  submit button). This is the "say goodbye to grayed-out disabled fields" mode. The Latte
+  `{neoForm yourForm, readonly => true}` attribute switches this same mode on.
+- **`$form->setReadonlyInputs(true)`** — keeps editable controls but adds the HTML `readonly`
+  attribute to each input.
+
+> The old method names `setReadonly()`/`isReadonly()` and `setReadonlyAttr()`/`isReadonlyAttr()`
+> still work as deprecated aliases of `setViewMode()`/`isViewMode()` and
+> `setReadonlyInputs()`/`hasReadonlyInputs()`. See [UPGRADE.md](UPGRADE.md) for the migration.
 
 ### `"class"`
 
@@ -447,125 +479,211 @@ protected function onUpdate(NeoForm $form, array $values, ActiveRow $row): void
 You don't have to use the Diff API. If you for example only use a simple collection of single text inputs, 
 you might find it easier to just persist the new array of values.
 
+### Lifecycle hooks
+
+`FormCollection::$onAddItem` and `$onRemoveItem` fire whenever an item is attached to or detached from the
+collection's component tree - useful for wiring extra validators/logging on dynamically-created items from
+outside the original factory closure:
+
+```php
+$collection = $form->addCollection('sources', 'Sources', function (NeoContainer $container) {
+    $container->addText('bookTitle', 'Book Title');
+});
+$collection->onAddItem[] = function (FormCollectionItem $item): void {
+    $item->addText('note', 'Internal Note'); // e.g. add an admin-only field to every row
+};
+```
+
+> `onAddItem` fires any time a component is attached to the tree - including on the very first
+> `setValues()`/hydration of existing rows loaded from the database, not just when a user clicks "add" in
+> the browser. If you want to know whether the user actually added a new row, keep using `getDiff()->getAdded()`
+> from the Diff API above; these hooks are for lower-level cross-cutting concerns instead.
+
+---
+
+## Rendering Outside of Latte
+
+`NeoFormRenderer::form()` returns a `Generator` on purpose - it's what lets the `{neoForm}...{/neoForm}` tag inject
+your block body mid-render. If you need to render a `NeoForm` somewhere without Latte (a console command, a PDF
+export, an API endpoint), use `renderToHtml()` instead of dealing with the generator yourself:
+
+```php
+/** @var \Efabrica\NeoForms\Render\NeoFormRenderer $renderer */
+/** @var \Efabrica\NeoForms\Build\NeoForm $form */
+$html = $renderer->renderToHtml($form);
+echo $html; // a plain Nette\Utils\Html instance, fully rendered
+```
+
+This is also what `NeoFormNetteRenderer` (the `Nette\Application\UI\Form` bridge, used by `{control someForm}`) uses
+internally to render a form as a single string.
 
 ---
 
 ## Custom Template
 
-To create your own extended template for rendering forms, you can follow our examples. Below is a step-by-step guide on how to create your
-custom extended template using Bootstrap 4 as an example:
+Rendering is driven by a `NeoFormTemplate` — one small method per element (`textInput()`,
+`button()`, `checkbox()`, `formRow()`, `formLabel()`, …). To restyle forms, extend it and
+override just the methods you care about; everything you don't override falls back to the base.
 
-**Step 1: Create a New PHP Class**
+> **Before writing your own:** two ready-made templates already ship with the library —
+> [`Bootstrap5FormTemplate` and `TailwindFormTemplate`](#shipped-templates). If you use Bootstrap
+> or Tailwind, wire one of those up instead of starting from scratch. The shipped
+> `Bootstrap5FormTemplate` also doubles as a complete, tested worked example to copy from.
 
-Create a new PHP class for your extended template by extending the base template class. In this example, we'll call
-it `Bootstrap5FormTemplate`. Make sure to place this class in an appropriate namespace, just like in the provided code.
+**Step 1 — extend the base template:**
 
 ```php
-namespace Your\Namespace\Here;
+namespace App\Forms;
 
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
-// ... Import other necessary classes here ...
 
-class Bootstrap4FormTemplate extends NeoFormTemplate
+class MyFormTemplate extends NeoFormTemplate
 {
-    // Your template implementation goes here
+    // override only the methods you need
 }
 ```
 
-**Step 2: Customize Form Elements**
-
-Override the methods in your extended template class to customize the rendering of form elements according to your preferred Bootstrap 4
-styling. For example, you can define how text inputs, buttons, checkboxes, and other form elements should be rendered with Bootstrap
-classes.
-
-Here's an example of customizing the rendering of text inputs:
+**Step 2 — override element methods.** Each returns a `Nette\Utils\Html` and receives the
+control plus the caller-supplied `$attrs`; end with `$this->applyAttrs($el, $attrs)` so
+`{formRow}`/`{formInput}` attributes still apply. Text inputs and buttons are the simplest:
 
 ```php
 protected function textInput(TextInput $control, array $attrs): Html
 {
     $el = $control->getControl();
-    $el->class ??= 'form-control'; // Add Bootstrap class, if no class was specified through ->setHtmlAttribute()
+    $el->class ??= 'form-control'; // only if no class was set via ->setHtmlAttribute()
+    return $this->applyAttrs($el, $attrs);
+}
+
+protected function button(Button $control, array $attrs): Html
+{
+    $el = $control->getControl();
+    $el->class ??= 'btn btn-primary';
+    $icon = $control->getOption('icon');
+    if (is_string($icon) && trim($icon) !== '') {
+        $el->insert(0, Html::el('i')->class("fa fa-$icon")); // render the "icon" option
+    }
     return $this->applyAttrs($el, $attrs);
 }
 ```
 
-**Step 3: Customize Form Labels**
-
-You can also customize how form labels are rendered. In Bootstrap, you may want to add the `col-form-label` class for proper alignment.
-Override the `formLabel` method to achieve this:
+**Labels.** The base `formLabel()` signature is `formLabel(BaseControl $control, array $attrs): Html`
+— it already handles the `required` class and the `info` tooltip. The easiest override just calls
+`parent` and adds your class (this is exactly what `Bootstrap5FormTemplate` does):
 
 ```php
 public function formLabel(BaseControl $control, array $attrs): Html
 {
-    $el = $control->getLabel();
-    $el->class ??= 'col-form-label'; // Add Bootstrap class
-    $el->class('required', $control->isRequired())->class('text-danger', $errors !== []);
-    $this->addInfo($control, $el);
-
-    foreach ($errors as $error) {
-        $el->addHtml(
-            Html::el('span')->class('c-button -icon -error -tooltip js-form-tooltip-error')
-                ->setAttribute('data-bs-toggle', 'tooltip')
-                ->title($control->translate($error))
-                ->addHtml(Html::el('i', 'warning')->class('material-icons-round'))
-        );
-    }
-    // Customize label rendering as needed
-    return $this->applyAttrs($el, $attrs);
+    return parent::formLabel($control, $attrs)->class('form-label');
 }
 ```
 
-**Step 4: Customize Buttons**
+> **Checkbox caption gotcha:** `{formLabel}`/`NeoFormTemplate::formLabel()` is never even called for
+> `Checkbox` controls — the renderer short-circuits to an empty `Html` for buttons, hidden fields and
+> checkboxes, since a checkbox's caption traditionally sits next to the input, not above it. That means
+> `checkbox()` is the *only* place the caption is rendered at all. Copying the `textInput()`-style override
+> (`$control->getControl()`) to `checkbox()` silently drops the caption text, because `Checkbox::getLabel()`
+> intentionally returns `null` and `getControl()` returns the caption nested *inside* the `<label>`. Use
+> `getControlPart()`/`getLabelPart()` to get the input and caption as separate sibling elements instead:
+>
+> ```php
+> protected function checkbox(Checkbox $control, array $attrs): Html
+> {
+>     $input = $control->getControlPart();
+>     $input->class ??= 'form-check-input';
+>     $label = $control->getLabelPart();
+>     $label->class ??= 'form-check-label';
+>     return Html::el('div')->class('form-check')
+>         ->addHtml($this->applyAttrs($input, $attrs))
+>         ->addHtml($label);
+> }
+> ```
+>
+> See `Bootstrap5FormTemplate::checkbox()` for the full, tested implementation of this pattern.
 
-For buttons, you can add Bootstrap classes and icons if desired. Customize the rendering of buttons like this:
-
-```php
-protected function button(Button $control, array $attrs): Html
-{
-    $el = $control->getControl();
-    $el->class ??= 'btn btn-primary'; // Add Bootstrap 4 classes
-    $icon = $control->getOption('icon');
-    if (is_string($icon) && trim($icon) !== '') {
-        $el->insert(0, Html::el('i')->class("fa fa-$icon")); // Add an icon if available
-    }
-    // Customize button rendering as needed
-    return $this->applyAttrs($el, $attrs);
-}
-```
-
-**Step 5: Customize Other Form Elements**
-
-Repeat similar customization for other form elements like checkboxes, radio buttons, select boxes, etc., based on your desired styling.
-
-**Step 6: Implement Additional Styling**
-
-If your template requires additional styling for specific elements or form groups, you can do so in your extended template class.
-
-**Step 7: Apply Your Custom Template**
-To use your custom template, you need to instantiate it and set it as the template for your forms when rendering. For example:
+**Step 3 — apply your template.** Set it on a single form:
 
 ```php
-use Your\Namespace\Here\BootstrapFormTemplate;
+use App\Forms\MyFormTemplate;
 use Efabrica\NeoForms\Build\NeoForm;
 
-// Instantiate your custom template
-$template = new Bootstrap4FormTemplate();
-
-// Create a NeoForm instance and set the custom template
 $form = new NeoForm();
-$form->setTemplate($template);
-
-// Render your form
+$form->setTemplate(new MyFormTemplate());
 echo $form;
 ```
 
-> If you want to use your custom template for all forms, you can set it as the default template by rewiring your auto-wiring :)
->
->```neon
-># config.neon
->services:
->    neoForms.template: Your\Namespace\Here\Bootstrap4FormTemplate()
->```
+…or make it the default for every form by rewiring the `neoForms.template` service:
 
-By following these steps, you can create your own extended template for rendering forms in a way that aligns with Bootstrap 4 or any other
-custom styling you prefer. Customize the template methods according to your specific styling needs.
+```neon
+# config.neon
+services:
+    neoForms.template: App\Forms\MyFormTemplate()
+```
+
+### Shipped Templates
+
+Two ready-to-use templates ship with the library, so you don't have to write one from scratch:
+
+- `Efabrica\NeoForms\Render\Template\Bootstrap5FormTemplate` - `form-control`/`form-select` inputs, `is-invalid`/`invalid-feedback`
+  validation styling, `mb-3` row spacing, `btn btn-primary` buttons and Bootstrap `form-check` checkboxes.
+- `Efabrica\NeoForms\Render\Template\TailwindFormTemplate` - a deliberately minimal starting point (Tailwind has no component
+  classes to target the way Bootstrap does), exposing overridable `protected string $...Class` properties (e.g. `$inputClass`,
+  `$buttonClass`) instead of a finished design system.
+
+Wire either one up exactly like a custom template (Step 3 above), e.g.:
+
+```neon
+# config.neon
+services:
+    neoForms.template: Efabrica\NeoForms\Render\Template\Bootstrap5FormTemplate()
+```
+
+Both are subclasses of `NeoFormTemplate`, so you can still extend either one further if you need small tweaks.
+
+### Custom Control Renderers
+
+If you only need to customize the rendering of a single custom control (rather than restructure the whole template),
+`NeoFormTemplate::setControlRenderer()` is a lighter-weight alternative to subclassing:
+
+```php
+$template = new NeoFormTemplate();
+$template->setControlRenderer(App\Forms\ColorPicker::class, function (App\Forms\ColorPicker $control, array $attrs) {
+    return Html::el('input')->type('color')->name($control->getHtmlName())->value($control->getValue());
+});
+```
+
+Or wire it via DI:
+
+```neon
+# config.neon
+services:
+    -
+        type: Efabrica\NeoForms\Render\Template\NeoFormTemplate
+        setup:
+            - setControlRenderer(App\Forms\ColorPicker::class, [App\Forms\ColorPickerRenderer(), render])
+```
+
+Registered renderers are consulted before the built-in `instanceof` chain, so they take priority over the default rendering
+for that control class - but reserve full subclassing (as shown above) for wholesale HTML restructuring across many control types.
+
+---
+
+## Contributing
+
+Install dependencies and run the test suite:
+
+```shell
+composer install
+composer test          # runs PHPUnit (config in phpunit.xml)
+```
+
+Static analysis and coding-standard checks use the shared eFabrica tooling, installed into
+`.github/phpstan` (the same setup CI runs):
+
+```shell
+composer install --working-dir=.github/phpstan   # one-time
+composer phpstan     # PHPStan level 8
+composer cs          # coding-standard report
+composer cbf         # auto-fix coding-standard violations
+```
+
