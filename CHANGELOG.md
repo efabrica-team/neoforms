@@ -16,12 +16,16 @@ Major release. Long-deprecated API and Latte 2 support were removed, and some de
 - `FormCollection::$onAddItem` / `$onRemoveItem` lifecycle hooks
 - `NeoFormTemplate::setControlRenderer()` to register a custom renderer for a control class without subclassing the template
 - Shipped `Bootstrap5FormTemplate` and `TailwindFormTemplate`
+- `NeoForm::setViewMode()`/`isViewMode()` and `setReadonlyInputs()`/`hasReadonlyInputs()` — self-explanatory names for the two form-wide readonly modes
+- Root `phpunit.xml` and `composer` scripts (`test`, `phpstan`, `cs`, `cbf`) so the suite and checks run out of the box
 
 ### Fixed
 - `{formErrors $form['x']}` fatally errored at runtime (compiled to a non-existent method); now renders the control's errors
 - `FormCollection` no longer leaks per-prototype state across forms and requests
+- README "Custom Template" tutorial no longer ships copy-paste-fatal example code (undefined `$errors`, nonexistent `addInfo()`, mismatched class name)
 
 ### Changed
+- **[BREAKING]** `NeoForm::setReadonly()`/`isReadonly()` renamed to `setViewMode()`/`isViewMode()`, and `setReadonlyAttr()`/`isReadonlyAttr()` renamed to `setReadonlyInputs()`/`hasReadonlyInputs()`. The old names still work as `@deprecated` aliases. ([UPGRADE.md §6](UPGRADE.md#6-readonly-methods-renamed-old-names-kept-as-deprecated-aliases))
 - **[BREAKING]** `nette/database` and `radekdostal/nette-datetimepicker` moved to `suggest`. Require them in your own `composer.json` if you use `ActiveRowForm` or the date pickers. ([UPGRADE.md §1](UPGRADE.md#1-composer-dependencies-nettedatabase-and-radekdostalnette-datetimepicker-moved-to-suggest))
 - **[BREAKING]** `NeoForm::addExcludedKeys()` is now an instance method (was `public static`); `removeExcludedKeys()` takes the extra keys as a parameter. Use `$form->addExcludedKeys(...)`, or subclass `NeoFormFactory` to apply keys to all forms. ([UPGRADE.md §2](UPGRADE.md#2-neoformaddexcludedkeys-is-now-an-instance-method-was-public-static))
 - **[BREAKING]** Latte 2 support dropped (`latte/latte` now `^3.1.4`); upgrade to Latte 3 first. ([UPGRADE.md §3](UPGRADE.md#3-latte-2-support-dropped-lattelatte-constraint-tightened-to-314))

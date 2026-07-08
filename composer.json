@@ -40,5 +40,17 @@
         "nette/database": "^3.1",
         "jetbrains/phpstorm-attributes": "^1.0",
         "phpunit/phpunit": "^10.3"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "phpstan": "php -d memory_limit=-1 .github/phpstan/vendor/bin/phpstan analyse -c .github/phpstan/vendor/efabrica/phpstan-config/conf/nette-lib/level.8.neon",
+        "cs": "php .github/phpstan/vendor/bin/phpcs src --standard=.github/phpstan/vendor/efabrica/coding-standard/eFabrica --extensions=php -n",
+        "cbf": "php .github/phpstan/vendor/bin/phpcbf src --standard=.github/phpstan/vendor/efabrica/coding-standard/eFabrica --extensions=php"
+    },
+    "scripts-descriptions": {
+        "test": "Run the PHPUnit test suite",
+        "phpstan": "Run PHPStan level 8 (first: composer install --working-dir=.github/phpstan)",
+        "cs": "Check coding standard (first: composer install --working-dir=.github/phpstan)",
+        "cbf": "Auto-fix coding standard violations"
     }
 }

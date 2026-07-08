@@ -26,9 +26,9 @@ class NeoForm extends Form
 {
     use NeoContainerTrait;
 
-    private bool $readonly = false;
+    private bool $viewMode = false;
 
-    private bool $readonlyAttr = false;
+    private bool $readonlyInputs = false;
 
     private ?NeoFormTemplate $template = null;
 
@@ -41,32 +41,71 @@ class NeoForm extends Form
     private array $excludedKeys = [];
 
     /**
+     * View mode: render every field as plain read-only text (no inputs, no submit button)
+     * instead of editable controls. This is the "say goodbye to grayed-out disabled fields"
+     * mode - use it to show a form to someone who may not edit it.
+     *
+     * @return $this
+     */
+    public function setViewMode(bool $viewMode = true): self
+    {
+        $this->viewMode = $viewMode;
+        return $this;
+    }
+
+    public function isViewMode(): bool
+    {
+        return $this->viewMode;
+    }
+
+    /**
+     * Keep rendering editable controls, but add the HTML `readonly` attribute to each input.
+     *
+     * @return $this
+     */
+    public function setReadonlyInputs(bool $readonlyInputs = true): self
+    {
+        $this->readonlyInputs = $readonlyInputs;
+        return $this;
+    }
+
+    public function hasReadonlyInputs(): bool
+    {
+        return $this->readonlyInputs;
+    }
+
+    /**
+     * @deprecated Use setViewMode() instead. Renders fields as plain text (view mode).
      * @return $this
      */
     public function setReadonly(bool $readonly = true): self
     {
-        $this->readonly = $readonly;
-        return $this;
-    }
-
-    public function isReadonly(): bool
-    {
-        return $this->readonly;
+        return $this->setViewMode($readonly);
     }
 
     /**
-     * Set form to return fields with attribute readonly
+     * @deprecated Use isViewMode() instead.
+     */
+    public function isReadonly(): bool
+    {
+        return $this->isViewMode();
+    }
+
+    /**
+     * @deprecated Use setReadonlyInputs() instead. Adds the HTML `readonly` attribute to inputs.
      * @return $this
      */
     public function setReadonlyAttr(bool $readonlyAttr = true): self
     {
-        $this->readonlyAttr = $readonlyAttr;
-        return $this;
+        return $this->setReadonlyInputs($readonlyAttr);
     }
 
+    /**
+     * @deprecated Use hasReadonlyInputs() instead.
+     */
     public function isReadonlyAttr(): bool
     {
-        return $this->readonlyAttr;
+        return $this->hasReadonlyInputs();
     }
 
     public function getTemplate(): ?NeoFormTemplate
@@ -102,7 +141,7 @@ class NeoForm extends Form
     public function setOnSuccess(callable $onSuccess): self
     {
         $fn = static function (NeoForm $form, array $values) use ($onSuccess) {
-            if ($form->isReadonly() || $form->isReadonlyAttr()) {
+            if ($form->isViewMode() || $form->hasReadonlyInputs()) {
                 return; // there is no submit button if the form is readonly
             }
             try {
@@ -197,13 +236,12 @@ class NeoForm extends Form
      */
     public function group(?string $name = null, ?string $class = null, string|true|HtmlStringable|null $label = true): ControlGroupBuilder
     {
+        // reuse scope: form-level named groups (visible to getGroups()/{formRest})
         if ($name !== null) {
             $group = $this->getGroup($name);
         }
         $group ??= $this->addGroup($name, false);
-        $builder = new ControlGroupBuilder($this, $group);
-        $builder->setClass($class)->setLabel($label === true ? $name : $label);
-        return $builder;
+        return ControlGroupBuilder::create($this, $group, $name, $class, $label);
     }
 
     public function addButton(string $name, string|Stringable|null $caption = null, ?string $icon = null): Button

@@ -141,3 +141,33 @@ see `src/Build/ActiveRowForm.php`.
 
 This demo class used to be autoloaded into every consumer's production app. If you extended or
 referenced it, copy the parts you need into your own form and drop the dependency.
+
+---
+
+### 6. Readonly methods renamed (old names kept as deprecated aliases)
+
+The two form-wide readonly modes had misleading names: `setReadonly()` did **not** add an HTML
+`readonly` attribute — it rendered the whole form as plain read-only text — while the smaller
+"add the `readonly` attribute" behavior was hidden behind `setReadonlyAttr()`. They were renamed
+to say what they do:
+
+| Old (deprecated) | New |
+| --- | --- |
+| `setReadonly(bool)` | `setViewMode(bool)` |
+| `isReadonly()` | `isViewMode()` |
+| `setReadonlyAttr(bool)` | `setReadonlyInputs(bool)` |
+| `isReadonlyAttr()` | `hasReadonlyInputs()` |
+
+```php
+// Before
+$form->setReadonly(true);        // renders the form as plain text
+$form->setReadonlyAttr(true);    // adds the HTML readonly attribute to inputs
+
+// After
+$form->setViewMode(true);
+$form->setReadonlyInputs(true);
+```
+
+**Nothing breaks at runtime** — the old methods remain as `@deprecated` forwarders, so you can
+migrate at your own pace. The Latte `{neoForm yourForm, readonly => true}` attribute is unchanged
+and still switches on view mode.

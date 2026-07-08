@@ -53,7 +53,7 @@ class NeoFormRenderer
 
         $this->isReadonly =
             $attrs['readonly'] ??
-            $form->isReadonly() || $form->isReadonlyAttr();
+            $form->isViewMode() || $form->hasReadonlyInputs();
 
         // NOTE: rendering is stateful - the per-control 'rendered' option is used as scratch space
         // to track which controls have already been emitted (so {formRest} can render "the rest").
@@ -193,12 +193,12 @@ class NeoFormRenderer
         assert($form instanceof NeoForm);
 
         if (($attrs['readonly'] ?? (bool) $el->getOption('readonly')) ||
-            $form->isReadonlyAttr()
+            $form->hasReadonlyInputs()
         ) {
             $el->setAttribute('readonly', true);
         }
 
-        if ($form->isReadonly()) {
+        if ($form->isViewMode()) {
             return $this->template($form)->readonly($el);
         }
 

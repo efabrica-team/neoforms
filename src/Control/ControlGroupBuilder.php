@@ -60,6 +60,27 @@ class ControlGroupBuilder
     }
 
     /**
+     * Builds a configured builder for an already-resolved ControlGroup. Shared by every
+     * group()/row()/col() entry point (NeoForm, NeoContainer and nested builders) so the
+     * class/label wiring lives in exactly one place. Callers still own *how* they resolve
+     * and store $group - that reuse scope differs intentionally per entry point.
+     *
+     * @param string|true|HtmlStringable|null $label
+     */
+    public static function create(
+        NeoForm $form,
+        ControlGroup $group,
+        ?string $name,
+        ?string $class,
+        string|true|HtmlStringable|null $label,
+        ?self $parent = null
+    ): self {
+        $builder = new self($form, $group, $parent);
+        $builder->setClass($class)->setLabel($label === true ? $name : $label);
+        return $builder;
+    }
+
+    /**
      * Returns the builder this group was created from via group()/row()/col().
      * Top-level builders (created directly from NeoForm/NeoContainer) return themselves.
      */
@@ -112,8 +133,8 @@ class ControlGroupBuilder
             $childGroup = $children[] = $this->form->addGroup(null, false);
         }
 
-        $childBuilder = new self($this->form, $childGroup, $this);
-        $childBuilder->setClass($class)->setLabel($label === true ? $name : $label);
+        // reuse scope: nested groups are stored in this builder's own `children` group-option
+        $childBuilder = self::create($this->form, $childGroup, $name, $class, $label, $this);
 
         $this->group->setOption('children', $children);
 

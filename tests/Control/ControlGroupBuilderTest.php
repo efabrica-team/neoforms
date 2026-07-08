@@ -3,6 +3,7 @@
 namespace Tests\Efabrica\NeoForms\Control;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Nette\Utils\Html;
 use PHPUnit\Framework\TestCase;
 
 class ControlGroupBuilderTest extends TestCase
@@ -56,5 +57,39 @@ class ControlGroupBuilderTest extends TestCase
         $form->row('main');
         $form->row('main');
         $this->assertCount(1, $form->getGroups());
+    }
+
+    public function testGroupAppliesLabelAndClassViaSharedFactory(): void
+    {
+        $form = new NeoForm();
+        $form->group('names', 'col-6', 'My Names');
+
+        $group = $form->getGroup('names');
+        $this->assertNotNull($group);
+        $this->assertSame('My Names', $group->getOption('label'));
+        $container = $group->getOption('container');
+        $this->assertInstanceOf(Html::class, $container);
+        $this->assertStringContainsString('col-6', (string)$container->getAttribute('class'));
+    }
+
+    public function testGroupLabelDefaultsToName(): void
+    {
+        $form = new NeoForm();
+        $form->group('billing');
+        $this->assertSame('billing', $form->getGroup('billing')?->getOption('label'));
+    }
+
+    public function testNestedBuilderGroupAppliesLabelAndClass(): void
+    {
+        $form = new NeoForm();
+        $form->group('outer')->group('inner', 'col-3', 'Inner');
+
+        $children = $form->getGroup('outer')?->getOption('children');
+        $this->assertIsArray($children);
+        $child = $children['inner'];
+        $this->assertSame('Inner', $child->getOption('label'));
+        $container = $child->getOption('container');
+        $this->assertInstanceOf(Html::class, $container);
+        $this->assertStringContainsString('col-3', (string)$container->getAttribute('class'));
     }
 }
