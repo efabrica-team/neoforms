@@ -7,12 +7,16 @@ on:
 
 jobs:
   tests:
-    name: PHPUnit (PHP ${{ matrix.php-version }})
+    name: PHPUnit (PHP ${{ matrix.php-version }}${{ matrix.lowest && ', lowest deps' || '' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.3', '8.4']
+        lowest: [false]
+        include:
+          - php-version: '8.3'
+            lowest: true
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +27,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: composer ${{ matrix.lowest && 'update --prefer-lowest' || 'install' }} --no-interaction --no-progress --prefer-dist
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit tests
