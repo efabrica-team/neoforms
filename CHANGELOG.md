@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.5] - 2026-10-02
+
+### Fixed
+- nette/forms 3.1 compatibility: overridden `getValues()`, `addSelect()`, `addMultiSelect()`, `addSubmit()` and `addButton()` no longer narrow parent parameter types (fatal error since 3.5.0)
+- `{neoForm}` tag compiles again with latte 3.0 / nette/forms < 3.3
+- Declared missing `nette/component-model` ^3.1 requirement (`getComponentTree()`)
+
 ## [3.5.4] - 2026-07-01
 
 ### Fixed

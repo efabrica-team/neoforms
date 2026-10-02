@@ -121,7 +121,10 @@ class NeoForm extends Form
         });
     }
 
-    public function getValues(string|object|bool|null $returnType = null, ?array $controls = null): object|array
+    /**
+     * @param string|object|bool|null $returnType (untyped for nette/forms 3.1 compatibility)
+     */
+    public function getValues(mixed $returnType = null, ?array $controls = null): object|array
     {
         $values = parent::getValues($returnType, $controls);
         self::removeExcludedKeys($values);
@@ -172,7 +175,10 @@ class NeoForm extends Form
         return $builder;
     }
 
-    public function addButton(string $name, string|Stringable|null $caption = null, ?string $icon = null): Button
+    /**
+     * @param string|Stringable|null $caption (untyped for nette/forms 3.1 compatibility)
+     */
+    public function addButton(string $name, mixed $caption = null, ?string $icon = null): Button
     {
         return parent::addButton($name, $caption)->setOption('icon', $icon);
     }

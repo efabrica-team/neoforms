@@ -29,7 +29,8 @@ class NeoFormNode extends FormNode
             $this->position,
             $this->attributes,
             $this->content,
-            end($this->tagRanges),
+            // nette/forms <3.3 (latte 3.0) sets endLine; nette/forms 3.3 (latte >=3.1.4) dropped it for tagRanges
+            $this->endLine ?? end($this->tagRanges),
         );
     }
 }

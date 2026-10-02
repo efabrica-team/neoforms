@@ -51,7 +51,10 @@ trait NeoContainerTrait
         return $this;
     }
 
-    public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox
+    /**
+     * @param string|Stringable|null $label (untyped for nette/forms 3.1 compatibility)
+     */
+    public function addSelect(string $name, mixed $label = null, ?array $items = null, ?int $size = null): SelectBox
     {
         return $this[$name] = (new SelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -59,7 +62,10 @@ trait NeoContainerTrait
         ;
     }
 
-    public function addMultiSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
+    /**
+     * @param string|Stringable|null $label (untyped for nette/forms 3.1 compatibility)
+     */
+    public function addMultiSelect(string $name, mixed $label = null, ?array $items = null, ?int $size = null): MultiSelectBox
     {
         return $this[$name] = (new MultiSelectBox($label, $items))
             ->setHtmlAttribute('size', $size > 1 ? $size : null)
@@ -128,7 +134,10 @@ trait NeoContainerTrait
         return $component;
     }
 
-    public function addSubmit(string $name, string|Stringable|null $caption = null, ?Closure $onSubmit = null): SubmitButton
+    /**
+     * @param string|Stringable|null $caption (untyped for nette/forms 3.1 compatibility)
+     */
+    public function addSubmit(string $name, mixed $caption = null, ?Closure $onSubmit = null): SubmitButton
     {
         $component = new SubmitButton($caption);
         if ($onSubmit !== null) {
