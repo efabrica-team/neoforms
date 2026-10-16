@@ -15,6 +15,7 @@ use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
+use Nette\HtmlStringable;
 use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
@@ -32,6 +33,8 @@ trait NeoContainerTrait
      * @var array<string, mixed>
      */
     protected array $options = [];
+
+    private int $staticCount = 0;
 
     /**
      * @return mixed|null
@@ -59,75 +62,52 @@ trait NeoContainerTrait
         return $this;
     }
 
-    private function addStatic(Html $html): StaticHtml
+    private function addStatic(StaticHtml $component, ?string $name): StaticHtml
     {
-        $component = new StaticHtml($html);
-        $this->addComponent($component, '_static' . uniqid());
+        $this->addComponent($component, $name ?? '_static' . ++$this->staticCount);
         return $component;
     }
 
     /**
-     * @param array<string, mixed> $attrs
+     * Raw HTML. It is neither escaped nor translated.
      */
-    public function addHtml(string|Stringable $html, array $attrs = []): StaticHtml
+    public function addHtml(string|Stringable $html, ?string $name = null): StaticHtml
     {
-        $el = Html::el('div', $attrs);
-        $el->addHtml($html instanceof Html ? $html : Html::fromHtml((string)$html));
-        return $this->addStatic($el);
+        return $this->addStatic(
+            new StaticHtml('html', $html instanceof HtmlStringable ? $html : Html::fromHtml((string)$html)),
+            $name,
+        );
+    }
+
+    public function addHeading(string|Stringable $text, int $level = StaticHtml::DEFAULT_HEADING_LEVEL, ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('heading', $text), $name)->setOption('level', max(1, min(6, $level)));
+    }
+
+    public function addParagraph(string|Stringable $text, ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('paragraph', $text), $name);
     }
 
     /**
-     * @param int<1, 6> $level
-     * @param array<string, mixed> $attrs
+     * @param string $type e.g. info, success, warning, danger; how it looks is up to the template
      */
-    public function addHeading(string|Stringable $text, int $level = StaticHtml::DEFAULT_HEADING_LEVEL, array $attrs = []): StaticHtml
+    public function addAlert(string|Stringable $text, string $type = 'info', ?string $name = null): StaticHtml
     {
-        $level = max(1, min(6, $level));
-        return $this->addStatic(Html::el('h' . $level, $attrs)->setText((string)$text));
+        return $this->addStatic(new StaticHtml('alert', $text), $name)->setOption('type', $type);
     }
 
     /**
-     * @param array<string, mixed> $attrs
+     * @param string $size sm, md or lg (the template maps these), anything else is used as a CSS length (e.g. "1rem")
      */
-    public function addParagraph(string|Stringable $text, array $attrs = []): StaticHtml
+    public function addSpace(string $size = 'md', ?string $name = null): StaticHtml
     {
-        return $this->addStatic(Html::el('p', $attrs)->setText((string)$text));
+        return $this->addStatic(new StaticHtml('space'), $name)->setOption('size', $size);
     }
 
-    public function addLineBreak(int $count = 1): StaticHtml
+    public function addSeparator(?string $name = null): StaticHtml
     {
-        $html = Html::el();
-        for ($i = 0; $i < max(1, $count); $i++) {
-            $html->addHtml(Html::el('br'));
-        }
-        return $this->addStatic($html);
-    }
-
-    /**
-     * Vertical spacing of the given height (any CSS length, e.g. "1rem").
-     */
-    public function addSpace(string $height = '1rem'): StaticHtml
-    {
-        return $this->addStatic(Html::el('div', ['style' => 'height: ' . $height . ';', 'aria-hidden' => 'true']));
-    }
-
-    /**
-     * Alert message with the given text and type.
-     *
-     * @param array<string, mixed> $attrs
-     */
-    public function addAlert(string|Stringable $text, string $type = 'info', array $attrs = []): StaticHtml
-    {
-        $attrs['class'] = trim(($attrs['class'] ?? '') . ' alert alert-' . $type);
-        return $this->addStatic(Html::el('div', $attrs)->setText((string)$text));
-    }
-
-    /**
-     * @param array<string, mixed> $attrs
-     */
-    public function addSeparator(array $attrs = []): StaticHtml
-    {
-        return $this->addStatic(Html::el('hr', $attrs));
+        return $this->addStatic(new StaticHtml('separator'), $name);
     }
 
     public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox

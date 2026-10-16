@@ -142,7 +142,7 @@ class NeoFormRenderer
 
         if ($el instanceof StaticHtml) {
             $el->setOption('rendered', true);
-            return $el->getHtml();
+            return $this->template($el->getForm())->staticHtml($el, $attrs);
         }
 
         $inputAttrs = $attrs['input'] ?? [];

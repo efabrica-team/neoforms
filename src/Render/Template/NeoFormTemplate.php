@@ -3,6 +3,7 @@
 namespace Efabrica\NeoForms\Render\Template;
 
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\StaticHtml;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use Efabrica\NeoForms\Render\NeoFormRenderer;
 use Generator;
@@ -43,6 +44,34 @@ class NeoFormTemplate
     public function formRow(Html $label, Html $input, Html $errors, array $attrs): Html
     {
         return $this->applyAttrs(Html::el('div')->addHtml($label . $input . $errors), $attrs);
+    }
+
+    /**
+     * Heading, paragraph, alert, space, separator or raw html added by NeoForm::add{Heading,Paragraph,...}().
+     * Override to restyle, call parent for the kinds you don't handle.
+     *
+     * @param array<string, mixed> $attrs
+     */
+    public function staticHtml(StaticHtml $control, array $attrs): Html
+    {
+        $content = $control->getContent();
+        $el = match ($control->getKind()) {
+            'heading' => Html::el('h' . (is_int($level = $control->getOption('level')) ? $level : StaticHtml::DEFAULT_HEADING_LEVEL)),
+            'paragraph' => Html::el('p'),
+            'alert' => Html::el('div', ['role' => 'alert', 'class' => 'alert alert-' . $control->getOption('type')]),
+            'space' => Html::el('div', ['aria-hidden' => 'true', 'style' => 'height: ' . $this->spaceHeight((string)$control->getOption('size'))]),
+            'separator' => Html::el('hr'),
+            default => Html::el('div'),
+        };
+        if ($content !== null) {
+            $el->addHtml($content instanceof HtmlStringable ? $content : Html::fromText((string)$content));
+        }
+        return $this->applyAttrs($this->applyAttrs($el, $control->getControlPrototype()->attrs), $attrs);
+    }
+
+    protected function spaceHeight(string $size): string
+    {
+        return ['sm' => '.5rem', 'md' => '1rem', 'lg' => '2rem'][$size] ?? $size;
     }
 
     /**

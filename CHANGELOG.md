@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [CONTENTO-2139] NeoForms helper functions for adding static HTML, headings, paragraphs, line breaks, spaces, alerts, and separators
+- [CONTENTO-2139] NeoForms helper functions for adding static HTML, headings, paragraphs, spaces, alerts, and separators (styled through `NeoFormTemplate::staticHtml()`)
 
 ## [3.5.5] - 2026-10-02
 
