@@ -59,12 +59,10 @@ trait NeoContainerTrait
         return $this;
     }
 
-    private int $staticCounter = 0;
-
     private function addStatic(Html $html): StaticHtml
     {
         $component = new StaticHtml($html);
-        $this->addComponent($component, '_static' . $this->staticCounter++);
+        $this->addComponent($component, '_static' . uniqid());
         return $component;
     }
 

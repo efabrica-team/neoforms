@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Control;
 
 use Nette\Forms\Controls\BaseControl;
 use Nette\Utils\Html;
+use Stringable;
 
 /**
  * Purely presentational element (heading, spacer, line break, ...). It has no value and is omitted from form values.
@@ -39,7 +40,7 @@ class StaticHtml extends BaseControl
         return $this->getHtml();
     }
 
-    public function getLabel(mixed $caption = null): ?Html
+    public function getLabel(string|Stringable|null $caption = null): ?Html
     {
         return null;
     }
