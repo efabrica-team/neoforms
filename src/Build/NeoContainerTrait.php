@@ -8,12 +8,14 @@ use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Control\FormCollectionItem;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
+use Efabrica\NeoForms\Control\StaticHtml;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\SubmitButton;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
+use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 use Stringable;
@@ -55,6 +57,79 @@ trait NeoContainerTrait
     {
         $this->options[$name] = $value;
         return $this;
+    }
+
+    private int $staticCounter = 0;
+
+    private function addStatic(Html $html): StaticHtml
+    {
+        $component = new StaticHtml($html);
+        $this->addComponent($component, '_static' . $this->staticCounter++);
+        return $component;
+    }
+
+    /**
+     * @param array<string, mixed> $attrs
+     */
+    public function addHtml(string|Stringable $html, array $attrs = []): StaticHtml
+    {
+        $el = Html::el('div', $attrs);
+        $el->addHtml($html instanceof Html ? $html : Html::fromHtml((string)$html));
+        return $this->addStatic($el);
+    }
+
+    /**
+     * @param int<1, 6> $level
+     * @param array<string, mixed> $attrs
+     */
+    public function addHeading(string|Stringable $text, int $level = StaticHtml::DEFAULT_HEADING_LEVEL, array $attrs = []): StaticHtml
+    {
+        $level = max(1, min(6, $level));
+        return $this->addStatic(Html::el('h' . $level, $attrs)->setText((string)$text));
+    }
+
+    /**
+     * @param array<string, mixed> $attrs
+     */
+    public function addParagraph(string|Stringable $text, array $attrs = []): StaticHtml
+    {
+        return $this->addStatic(Html::el('p', $attrs)->setText((string)$text));
+    }
+
+    public function addLineBreak(int $count = 1): StaticHtml
+    {
+        $html = Html::el();
+        for ($i = 0; $i < max(1, $count); $i++) {
+            $html->addHtml(Html::el('br'));
+        }
+        return $this->addStatic($html);
+    }
+
+    /**
+     * Vertical spacing of the given height (any CSS length, e.g. "1rem").
+     */
+    public function addSpace(string $height = '1rem'): StaticHtml
+    {
+        return $this->addStatic(Html::el('div', ['style' => 'height: ' . $height . ';', 'aria-hidden' => 'true']));
+    }
+
+    /**
+     * Alert message with the given text and type.
+     *
+     * @param array<string, mixed> $attrs
+     */
+    public function addAlert(string|Stringable $text, string $type = 'info', array $attrs = []): StaticHtml
+    {
+        $attrs['class'] = trim(($attrs['class'] ?? '') . ' alert alert-' . $type);
+        return $this->addStatic(Html::el('div', $attrs)->setText((string)$text));
+    }
+
+    /**
+     * @param array<string, mixed> $attrs
+     */
+    public function addSeparator(array $attrs = []): StaticHtml
+    {
+        return $this->addStatic(Html::el('hr', $attrs));
     }
 
     public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox
