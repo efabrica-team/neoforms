@@ -4,6 +4,7 @@ namespace Efabrica\NeoForms\Render;
 
 use Efabrica\NeoForms\Build\NeoContainer;
 use Efabrica\NeoForms\Build\NeoForm;
+use Efabrica\NeoForms\Control\StaticHtml;
 use Efabrica\NeoForms\Control\SubmitButton as NeoSubmitButton;
 use Efabrica\NeoForms\Render\Template\NeoFormTemplate;
 use Generator;
@@ -137,6 +138,11 @@ class NeoFormRenderer
 
         if ($this->isRendered($el)) {
             return Html::el();
+        }
+
+        if ($el instanceof StaticHtml) {
+            $el->setOption('rendered', true);
+            return $this->template($el->getForm())->staticHtml($el, $attrs);
         }
 
         $inputAttrs = $attrs['input'] ?? [];

@@ -8,12 +8,15 @@ use Efabrica\NeoForms\Control\FormCollection;
 use Efabrica\NeoForms\Control\FormCollectionItem;
 use Efabrica\NeoForms\Control\MultiSelectBox;
 use Efabrica\NeoForms\Control\SelectBox;
+use Efabrica\NeoForms\Control\StaticHtml;
 use Efabrica\NeoForms\Control\StaticTags;
 use Efabrica\NeoForms\Control\SubmitButton;
 use Efabrica\NeoForms\Control\Tags;
 use Efabrica\NeoForms\Control\ToggleSwitch;
 use JetBrains\PhpStorm\ExpectedValues;
 use Nette\Application\UI\Multiplier;
+use Nette\HtmlStringable;
+use Nette\Utils\Html;
 use RadekDostal\NetteComponents\DateTimePicker\TbDatePicker;
 use RadekDostal\NetteComponents\DateTimePicker\TbDateTimePicker;
 use Stringable;
@@ -30,6 +33,8 @@ trait NeoContainerTrait
      * @var array<string, mixed>
      */
     protected array $options = [];
+
+    private int $staticCount = 0;
 
     /**
      * @return mixed|null
@@ -55,6 +60,54 @@ trait NeoContainerTrait
     {
         $this->options[$name] = $value;
         return $this;
+    }
+
+    private function addStatic(StaticHtml $component, ?string $name): StaticHtml
+    {
+        $this->addComponent($component, $name ?? '_static' . ++$this->staticCount);
+        return $component;
+    }
+
+    /**
+     * Raw HTML. It is neither escaped nor translated.
+     */
+    public function addHtml(string|Stringable $html, ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(
+            new StaticHtml('html', $html instanceof HtmlStringable ? $html : Html::fromHtml((string)$html)),
+            $name,
+        );
+    }
+
+    public function addHeading(string|Stringable $text, int $level = StaticHtml::DEFAULT_HEADING_LEVEL, ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('heading', $text), $name)->setOption('level', max(1, min(6, $level)));
+    }
+
+    public function addParagraph(string|Stringable $text, ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('paragraph', $text), $name);
+    }
+
+    /**
+     * @param string $type e.g. info, success, warning, danger; how it looks is up to the template
+     */
+    public function addAlert(string|Stringable $text, string $type = 'info', ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('alert', $text), $name)->setOption('type', $type);
+    }
+
+    /**
+     * @param string $size sm, md or lg (the template maps these), anything else is used as a CSS length (e.g. "1rem")
+     */
+    public function addSpace(string $size = 'md', ?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('space'), $name)->setOption('size', $size);
+    }
+
+    public function addSeparator(?string $name = null): StaticHtml
+    {
+        return $this->addStatic(new StaticHtml('separator'), $name);
     }
 
     public function addSelect(string $name, Stringable|string|null $label = null, ?array $items = null, ?int $size = null): SelectBox
